@@ -1,0 +1,77 @@
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: system-ui, sans-serif;
+}
+
+.app header h1 {
+  margin: 0;
+}
+
+.app header p {
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.seed-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.seed-form input,
+.seed-form textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.seed-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.seed-form button {
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-radius: 8px;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seed-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.seed-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.seed-list li {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.seed-list li p {
+  margin: 0.4rem 0;
+  color: #374151;
+}
+
+.seed-list li small {
+  color: #9ca3af;
+}
