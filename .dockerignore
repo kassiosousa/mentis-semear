@@ -1,0 +1,12 @@
+.git
+.github
+**/node_modules
+**/vendor
+**/dist
+backend/.env
+backend/storage/logs/*.log
+frontend/.env
+.env
+docker-compose.yml
+docker-compose.prod.yml
+README.md

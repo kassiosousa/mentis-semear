@@ -1,0 +1,80 @@
+services:
+  # ---------------------------------------------------------------------------
+  # MySQL database
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: mentis-mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${DB_DATABASE:?set DB_DATABASE in .env}
+      MYSQL_USER: ${DB_USERNAME:?set DB_USERNAME in .env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - mentis
+
+  # ---------------------------------------------------------------------------
+  # PHP-FPM (Laravel backend) — code baked into the image, no bind mounts
+  # ---------------------------------------------------------------------------
+  php:
+    build:
+      context: .
+      dockerfile: docker/prod/php/Dockerfile
+    image: mentis-semear-php-prod
+    container_name: mentis-php-prod
+    restart: unless-stopped
+    environment:
+      APP_NAME: ${APP_NAME:-Mentis Semear}
+      APP_ENV: ${APP_ENV:-production}
+      APP_KEY: ${APP_KEY:?set APP_KEY in .env (php artisan key:generate --show)}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-https://mentis.kassiosousa.com.br}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mentis
+
+  # ---------------------------------------------------------------------------
+  # Nginx — serves the React static build and proxies /api to php-fpm
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: docker/prod/nginx/Dockerfile
+      args:
+        VITE_API_URL: /api
+    image: mentis-semear-web-prod
+    container_name: mentis-web-prod
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    depends_on:
+      - php
+    networks:
+      - mentis
+
+networks:
+  mentis:
+    driver: bridge
+
+volumes:
+  mysql-data:

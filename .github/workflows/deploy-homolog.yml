@@ -1,0 +1,60 @@
+name: Deploy Homolog
+
+on:
+  push:
+    branches: [homolog]
+  workflow_dispatch:
+
+# Never run two deploys at the same time; cancel an in-flight one if a newer push arrives.
+concurrency:
+  group: deploy-homolog
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to mentis.kassiosousa.com.br
+    runs-on: ubuntu-latest
+    environment: homolog
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          PORT="${SSH_PORT:-22}"
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "$PORT" "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Sync project to the server
+        run: |
+          PORT="${SSH_PORT:-22}"
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'node_modules' \
+            --exclude 'vendor' \
+            --exclude 'dist' \
+            --exclude '.env' \
+            --exclude 'backend/.env' \
+            --exclude 'frontend/.env' \
+            -e "ssh -p $PORT" \
+            ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+
+      - name: Build and start the stack
+        run: |
+          PORT="${SSH_PORT:-22}"
+          # $DEPLOY_PATH / $PORT expand on the runner; the rest runs on the server.
+          ssh -p "$PORT" "$SSH_USER@$SSH_HOST" \
+            "cd '$DEPLOY_PATH' \
+             && docker compose -f docker-compose.prod.yml up -d --build --remove-orphans \
+             && docker image prune -f \
+             && docker compose -f docker-compose.prod.yml ps"
