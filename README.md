@@ -92,3 +92,40 @@ make migrate     # roda migrations
 make test        # roda os testes do backend
 make down        # derruba a stack
 ```
+
+## CI/CD (GitHub Actions)
+
+| Workflow | Arquivo | Dispara em | O que faz |
+| -------- | ------- | ---------- | --------- |
+| CI | `.github/workflows/ci.yml` | push/PR em `master` e `homolog` | Testa o backend (PHPUnit) e linta + builda o frontend |
+| Deploy Homolog | `.github/workflows/deploy-homolog.yml` | push em `homolog` | `rsync` do código para o VPS + `docker compose -f docker-compose.prod.yml up -d --build` via SSH |
+
+### Ambiente de produção
+
+O deploy usa **arquivos Docker separados** (`docker-compose.prod.yml` + `docker/prod/`), diferentes do dev:
+
+- **php**: código "assado" na imagem, `composer install --no-dev --optimize-autoloader`, caches de config/rota/view e OPcache com `validate_timestamps=0`.
+- **web (nginx)**: build multi-stage que compila o React para estático e o serve; `/api` e `/up` são proxied para o php-fpm (mesma origem — sem CORS em produção).
+- **mysql**: volume persistente.
+
+### Secrets do repositório (Settings → Secrets and variables → Actions)
+
+| Secret | Exemplo | Descrição |
+| ------ | ------- | --------- |
+| `SSH_HOST` | `123.45.67.89` | IP ou host do VPS |
+| `SSH_USER` | `deploy` | Usuário de deploy no servidor |
+| `SSH_PORT` | `22` | (opcional) porta SSH; default 22 |
+| `SSH_PRIVATE_KEY` | *(chave privada)* | Chave do usuário `deploy` (a pública fica em `~/.ssh/authorized_keys` do servidor) |
+| `DEPLOY_PATH` | `/home/deploy/mentis-semear` | Pasta do projeto no servidor |
+
+### Setup inicial no servidor (uma vez)
+
+```bash
+# como usuário deploy, no VPS
+mkdir -p /home/deploy/mentis-semear && cd /home/deploy/mentis-semear
+cp .env.prod.example .env         # (ou crie manualmente) e preencha as senhas
+# gere a APP_KEY e cole no .env:
+docker compose -f docker-compose.prod.yml run --rm php php artisan key:generate --show
+```
+
+Depois é só `git push origin homolog` — o workflow sincroniza e sobe a stack. Aponte seu proxy reverso / HTTPS (Nginx, Traefik ou Caddy) do domínio `mentis.kassiosousa.com.br` para a porta `APP_PORT` (default `8080`) do container `web`.
