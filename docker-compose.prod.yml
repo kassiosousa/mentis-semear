@@ -47,6 +47,9 @@ services:
       SESSION_DRIVER: database
       CACHE_STORE: database
       QUEUE_CONNECTION: database
+      AUTH_GUARD: api
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (php artisan jwt:secret --show)}
+      JWT_TTL: ${JWT_TTL:-60}
     depends_on:
       mysql:
         condition: service_healthy
