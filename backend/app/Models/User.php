@@ -2,31 +2,68 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserType;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasUuids, Notifiable;
+
+    /** @var list<string> */
+    protected $fillable = ['name', 'type', 'email', 'password'];
+
+    /** @var list<string> */
+    protected $hidden = ['password'];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'type' => UserType::class,
         ];
+    }
+
+    // ---- JWT (guard `api`) ----
+
+    /** The identifier stored in the JWT `sub` claim (the user's UUID). */
+    public function getJWTIdentifier(): mixed
+    {
+        return $this->getKey();
+    }
+
+    /** @return array<string, mixed> */
+    public function getJWTCustomClaims(): array
+    {
+        return [];
+    }
+
+    // ---- Relationships ----
+
+    /** Workshops the user created. */
+    public function createdWorkshops(): HasMany
+    {
+        return $this->hasMany(Workshop::class, 'user_creator_id');
+    }
+
+    /** Workshops the user facilitates. */
+    public function facilitatedWorkshops(): HasMany
+    {
+        return $this->hasMany(Workshop::class, 'user_facilitator_id');
+    }
+
+    /** Diary entries authored by the user. */
+    public function diaries(): HasMany
+    {
+        return $this->hasMany(Diary::class, 'user_creator_id');
     }
 }
