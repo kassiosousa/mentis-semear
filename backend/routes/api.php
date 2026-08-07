@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\SeedController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json(['status' => 'ok', 'service' => 'mentis-semear-api']));
@@ -18,7 +18,7 @@ Route::prefix('auth')->group(function (): void {
     });
 });
 
-Route::prefix('seeds')->group(function (): void {
-    Route::get('/', [SeedController::class, 'index']);
-    Route::post('/', [SeedController::class, 'store']);
+// Gestão de usuários — apenas admin.
+Route::middleware(['auth:api', 'type:admin'])->group(function (): void {
+    Route::apiResource('users', UserController::class);
 });

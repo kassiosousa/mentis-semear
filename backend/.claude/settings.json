@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "allow": [
+      "Bash(docker compose:*)",
+      "Bash(MSYS_NO_PATHCONV=1 docker compose:*)",
+      "Bash(php artisan:*)",
+      "Bash(composer:*)",
+      "Bash(./vendor/bin/pint:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/backend/.claude/hooks/format-php.sh\"",
+            "timeout": 60,
+            "statusMessage": "Formatando PHP (Pint)..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/backend/.claude/hooks/run-tests.sh\"",
+            "timeout": 180,
+            "statusMessage": "Rodando testes..."
+          }
+        ]
+      }
+    ]
+  }
+}
