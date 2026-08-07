@@ -13,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Atrás do proxy reverso (Apache/Cloudflare) que termina o HTTPS:
+        // confia no X-Forwarded-* para o Laravel gerar URLs https corretamente.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'type' => \App\Http\Middleware\EnsureUserType::class,
         ]);
