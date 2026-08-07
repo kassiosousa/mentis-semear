@@ -37,7 +37,9 @@ jobs:
       - name: Sync project to the server
         run: |
           PORT="${SSH_PORT:-22}"
-          rsync -az --delete \
+          # --no-owner --no-group: o usuário deploy não é root e não pode
+          # preservar dono/grupo dos arquivos (evita "chgrp Operation not permitted").
+          rsync -az --no-owner --no-group --delete \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'node_modules' \
