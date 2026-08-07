@@ -19,4 +19,7 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Generate the OpenAPI/Swagger docs (non-fatal: never crash the app if it fails)
+php artisan l5-swagger:generate || true
+
 exec "$@"
