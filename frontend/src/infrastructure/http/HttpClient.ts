@@ -1,30 +1,16 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+export type QueryParams = Record<string, string | number | boolean | null | undefined>;
 
-export class HttpClient {
-  constructor(private readonly baseUrl: string = API_BASE_URL) {}
+export interface HttpRequestOptions {
+  params?: QueryParams;
+  headers?: Record<string, string>;
+  signal?: AbortSignal;
+  skipAuth?: boolean;
+}
 
-  async get<T>(path: string): Promise<T> {
-    return this.request<T>('GET', path);
-  }
-
-  async post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('POST', path, body);
-  }
-
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Request failed: ${response.status} ${response.statusText}`);
-    }
-
-    return (await response.json()) as T;
-  }
+export interface HttpClient {
+  get<T>(path: string, options?: HttpRequestOptions): Promise<T>;
+  post<T>(path: string, body?: unknown, options?: HttpRequestOptions): Promise<T>;
+  put<T>(path: string, body?: unknown, options?: HttpRequestOptions): Promise<T>;
+  patch<T>(path: string, body?: unknown, options?: HttpRequestOptions): Promise<T>;
+  delete<T>(path: string, options?: HttpRequestOptions): Promise<T>;
 }
