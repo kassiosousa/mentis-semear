@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import type { AuthSession } from '@/domain/auth/entities/AuthSession';
-import type { Permission, RoleName } from '@/domain/auth/entities/User';
-import { hasAnyPermission, hasPermission, hasRole } from '@/domain/auth/entities/User';
+import type { UserType } from '@/domain/auth/entities/User';
+import { hasType } from '@/domain/auth/entities/User';
 import { container } from '@/presentation/container';
 
 export function useSession(): AuthSession | null {
@@ -15,13 +15,12 @@ export function useCurrentUser() {
   return useSession()?.user ?? null;
 }
 
-export function usePermissions() {
+export function useUserType(): UserType | null {
+  return useCurrentUser()?.type ?? null;
+}
+
+export function useIsType(...types: UserType[]): boolean {
   const user = useCurrentUser();
 
-  return {
-    can: (permission: Permission) => (user === null ? false : hasPermission(user, permission)),
-    canAny: (...permissions: Permission[]) =>
-      user === null ? false : hasAnyPermission(user, permissions),
-    is: (role: RoleName) => (user === null ? false : hasRole(user, role)),
-  };
+  return user === null ? false : hasType(user, ...types);
 }
