@@ -7,11 +7,353 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8080",
-            "description": "Ambiente local (dev)"
+            "url": "/",
+            "description": "Mesma origem (dev e produção)"
         }
     ],
     "paths": {
+        "/api/assessments": {
+            "get": {
+                "tags": [
+                    "Assessments"
+                ],
+                "summary": "Lista avaliações (paginado)",
+                "operationId": "d88c31516fb8559c3559254bcb23a6ef",
+                "parameters": [
+                    {
+                        "name": "workshop_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Assessment"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Assessments"
+                ],
+                "summary": "Registra uma avaliação anônima",
+                "operationId": "0cc4ab6ca8a3e9dc31d6cf7476849c32",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "workshop_id",
+                                    "score"
+                                ],
+                                "properties": {
+                                    "workshop_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "score": {
+                                        "type": "integer",
+                                        "example": 9,
+                                        "maximum": 10,
+                                        "minimum": 0
+                                    },
+                                    "suggestions": {
+                                        "type": "string",
+                                        "example": "Muito bom!",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Assessment"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/public/assessments": {
+            "post": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Avaliação pública anônima (sem autenticação)",
+                "operationId": "7f083c5cd70b2571f59d3521856eef9d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "workshop_id",
+                                    "score"
+                                ],
+                                "properties": {
+                                    "workshop_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "score": {
+                                        "type": "integer",
+                                        "example": 9,
+                                        "maximum": 10,
+                                        "minimum": 0
+                                    },
+                                    "suggestions": {
+                                        "type": "string",
+                                        "example": "Muito bom!",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Avaliação registrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Assessment"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                }
+            }
+        },
+        "/api/assessments/{assessment}": {
+            "get": {
+                "tags": [
+                    "Assessments"
+                ],
+                "summary": "Detalha uma avaliação",
+                "operationId": "6a8c7c077e00528d519e3fb0cf93c3d8",
+                "parameters": [
+                    {
+                        "name": "assessment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Avaliação",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Assessment"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Assessments"
+                ],
+                "summary": "Atualiza uma avaliação (campos parciais)",
+                "operationId": "be0427370843599db02262ce227117ff",
+                "parameters": [
+                    {
+                        "name": "assessment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "score": {
+                                        "type": "integer",
+                                        "maximum": 10,
+                                        "minimum": 0
+                                    },
+                                    "suggestions": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Assessment"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Assessments"
+                ],
+                "summary": "Remove uma avaliação",
+                "operationId": "ee6b35faf717390180c65662141cc1bf",
+                "parameters": [
+                    {
+                        "name": "assessment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removida"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/register": {
             "post": {
                 "tags": [
@@ -171,6 +513,437 @@
                     },
                     "401": {
                         "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/check-ins": {
+            "get": {
+                "tags": [
+                    "CheckIns"
+                ],
+                "summary": "Lista check-ins (paginado)",
+                "operationId": "4ec1707208d5361e97dd9e6fb8142140",
+                "parameters": [
+                    {
+                        "name": "workshop_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CheckIn"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "CheckIns"
+                ],
+                "summary": "Registra um check-in",
+                "operationId": "73cd5eb6388344a74bfa04936b51691a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "workshop_id",
+                                    "name",
+                                    "position",
+                                    "sector",
+                                    "lgpd_read",
+                                    "cpf",
+                                    "birthday",
+                                    "gender",
+                                    "celphone"
+                                ],
+                                "properties": {
+                                    "workshop_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "João Participante"
+                                    },
+                                    "position": {
+                                        "type": "string",
+                                        "example": "Analista"
+                                    },
+                                    "sector": {
+                                        "type": "string",
+                                        "example": "TI"
+                                    },
+                                    "lgpd_read": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "cpf": {
+                                        "type": "string",
+                                        "example": "12345678901"
+                                    },
+                                    "birthday": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-05-20"
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "example": "M"
+                                    },
+                                    "celphone": {
+                                        "type": "string",
+                                        "example": "11999999999"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CheckIn"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação (CPF já registrado neste workshop, etc.)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/public/check-ins": {
+            "post": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Check-in público de participante (sem autenticação)",
+                "operationId": "9d346e66444a6f3c5f0518e57373bdb1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "workshop_id",
+                                    "name",
+                                    "position",
+                                    "sector",
+                                    "lgpd_read",
+                                    "cpf",
+                                    "birthday",
+                                    "gender",
+                                    "celphone"
+                                ],
+                                "properties": {
+                                    "workshop_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "João Participante"
+                                    },
+                                    "position": {
+                                        "type": "string",
+                                        "example": "Analista"
+                                    },
+                                    "sector": {
+                                        "type": "string",
+                                        "example": "TI"
+                                    },
+                                    "lgpd_read": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "cpf": {
+                                        "type": "string",
+                                        "example": "12345678901"
+                                    },
+                                    "birthday": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-05-20"
+                                    },
+                                    "gender": {
+                                        "type": "string",
+                                        "example": "M"
+                                    },
+                                    "celphone": {
+                                        "type": "string",
+                                        "example": "11999999999"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Check-in registrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CheckIn"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Falha de validação (CPF já registrado neste workshop, etc.)"
+                    }
+                }
+            }
+        },
+        "/api/check-ins/{checkIn}": {
+            "get": {
+                "tags": [
+                    "CheckIns"
+                ],
+                "summary": "Detalha um check-in",
+                "operationId": "3f89c68bde7f3dced3779cd0391d6a4b",
+                "parameters": [
+                    {
+                        "name": "checkIn",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Check-in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CheckIn"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "CheckIns"
+                ],
+                "summary": "Atualiza um check-in (campos parciais)",
+                "operationId": "24dbbefc3c1813039c8197cd16d675bd",
+                "parameters": [
+                    {
+                        "name": "checkIn",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "position": {
+                                        "type": "string"
+                                    },
+                                    "sector": {
+                                        "type": "string"
+                                    },
+                                    "lgpd_read": {
+                                        "type": "boolean"
+                                    },
+                                    "cpf": {
+                                        "type": "string"
+                                    },
+                                    "birthday": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "celphone": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CheckIn"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "CheckIns"
+                ],
+                "summary": "Remove um check-in",
+                "operationId": "dce9f0f69f2be007340b748f4a472371",
+                "parameters": [
+                    {
+                        "name": "checkIn",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removido"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
                     }
                 },
                 "security": [
@@ -464,6 +1237,564 @@
                     },
                     "409": {
                         "description": "Empresa possui workshops vinculados"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/diaries": {
+            "get": {
+                "tags": [
+                    "Diaries"
+                ],
+                "summary": "Lista diários (paginado)",
+                "operationId": "f8edff380fdb2168574b18cff9182d7d",
+                "parameters": [
+                    {
+                        "name": "workshop_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Diary"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Diaries"
+                ],
+                "summary": "Cria o diário de um workshop (1 por workshop)",
+                "operationId": "c7845a0e85d0863872c88bc8cbf6a41b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "workshop_id",
+                                    "title",
+                                    "description",
+                                    "datetime"
+                                ],
+                                "properties": {
+                                    "workshop_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Relato do dia"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "datetime": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-09-01 16:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Diary"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação (workshop inexistente ou já com diário)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/diaries/{diary}": {
+            "get": {
+                "tags": [
+                    "Diaries"
+                ],
+                "summary": "Detalha um diário",
+                "operationId": "ea1b1515584fd0f83986a0c3630ce217",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Diário",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Diary"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Diaries"
+                ],
+                "summary": "Atualiza um diário (campos parciais)",
+                "operationId": "7c6961f8ae6df4bbdf0e99fb0abfdd4f",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "datetime": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Diary"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Diaries"
+                ],
+                "summary": "Remove um diário (evidências são removidas em cascata)",
+                "operationId": "948da250b19d1202c3aa8235334863ea",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removido"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    },
+                    "409": {
+                        "description": "Vínculo impede a remoção"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/diary-evidences": {
+            "get": {
+                "tags": [
+                    "DiaryEvidences"
+                ],
+                "summary": "Lista evidências (paginado)",
+                "operationId": "03925b9cbe1209e9b3d007a0bdc9552c",
+                "parameters": [
+                    {
+                        "name": "diary_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/DiaryEvidence"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "DiaryEvidences"
+                ],
+                "summary": "Adiciona uma evidência a um diário",
+                "operationId": "36db609ba3444a174db15f3ae9130971",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "diary_id",
+                                    "link"
+                                ],
+                                "properties": {
+                                    "diary_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "link": {
+                                        "type": "string",
+                                        "example": "https://drive.google.com/file/abc"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/DiaryEvidence"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/diary-evidences/{diaryEvidence}": {
+            "get": {
+                "tags": [
+                    "DiaryEvidences"
+                ],
+                "summary": "Detalha uma evidência",
+                "operationId": "d810f9c5d2e4dfe998f621ba6aee4df7",
+                "parameters": [
+                    {
+                        "name": "diaryEvidence",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Evidência",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/DiaryEvidence"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "DiaryEvidences"
+                ],
+                "summary": "Atualiza o link de uma evidência",
+                "operationId": "429d4da6a5a4a68af84eb608c90a232a",
+                "parameters": [
+                    {
+                        "name": "diaryEvidence",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "link": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/DiaryEvidence"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "DiaryEvidences"
+                ],
+                "summary": "Remove uma evidência",
+                "operationId": "432efaf939aa6ef0e4e934b84194dad6",
+                "parameters": [
+                    {
+                        "name": "diaryEvidence",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removida"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
                     }
                 },
                 "security": [
@@ -1120,6 +2451,39 @@
     },
     "components": {
         "schemas": {
+            "Assessment": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "workshop_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "score": {
+                        "type": "integer",
+                        "example": 9,
+                        "maximum": 10,
+                        "minimum": 0
+                    },
+                    "suggestions": {
+                        "type": "string",
+                        "example": "Muito bom!",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "AuthToken": {
                 "properties": {
                     "access_token": {
@@ -1136,6 +2500,71 @@
                     },
                     "user": {
                         "$ref": "#/components/schemas/User"
+                    }
+                },
+                "type": "object"
+            },
+            "CheckIn": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "workshop_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "João Participante"
+                    },
+                    "position": {
+                        "type": "string",
+                        "example": "Analista"
+                    },
+                    "sector": {
+                        "type": "string",
+                        "example": "TI"
+                    },
+                    "lgpd_read": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "lgpd_consent_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "cpf": {
+                        "type": "string",
+                        "example": "12345678901"
+                    },
+                    "birthday": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-05-20"
+                    },
+                    "gender": {
+                        "type": "string",
+                        "example": "M"
+                    },
+                    "celphone": {
+                        "type": "string",
+                        "example": "11999999999"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -1159,6 +2588,74 @@
                         "type": "string",
                         "format": "email",
                         "example": "contato@acme.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "DiaryEvidence": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "diary_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_creator_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "link": {
+                        "type": "string",
+                        "example": "https://drive.google.com/file/abc"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Diary": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "workshop_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_creator_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Relato do dia"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Como foi a dinâmica..."
+                    },
+                    "datetime": {
+                        "type": "string",
+                        "format": "date-time"
                     },
                     "created_at": {
                         "type": "string",
@@ -1269,12 +2766,32 @@
     },
     "tags": [
         {
+            "name": "Assessments",
+            "description": "Assessments"
+        },
+        {
+            "name": "Público",
+            "description": "Público"
+        },
+        {
             "name": "Auth",
             "description": "Auth"
         },
         {
+            "name": "CheckIns",
+            "description": "CheckIns"
+        },
+        {
             "name": "Companies",
             "description": "Companies"
+        },
+        {
+            "name": "Diaries",
+            "description": "Diaries"
+        },
+        {
+            "name": "DiaryEvidences",
+            "description": "DiaryEvidences"
         },
         {
             "name": "Users",
