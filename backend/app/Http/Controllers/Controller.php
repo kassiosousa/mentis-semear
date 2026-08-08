@@ -9,7 +9,7 @@ use OpenApi\Attributes as OA;
     title: 'Mentis Semear API',
     description: 'API do monólito Mentis Semear (autenticação JWT, workshops, check-ins, avaliações e diário).',
 )]
-#[OA\Server(url: 'http://localhost:8080', description: 'Ambiente local (dev)')]
+#[OA\Server(url: '/', description: 'Mesma origem (dev e produção)')]
 #[OA\SecurityScheme(
     securityScheme: 'bearerAuth',
     type: 'http',
