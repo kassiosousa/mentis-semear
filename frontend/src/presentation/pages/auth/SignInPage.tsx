@@ -104,7 +104,7 @@ export function SignInPage() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="voce@mentissemear.com"
+                placeholder="voce@email.com"
                 className="h-11"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -125,7 +125,7 @@ export function SignInPage() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="h-11"
+                className="h-11 tracking-wider"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 aria-invalid={fieldErrors.password !== undefined}
