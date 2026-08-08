@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CheckInController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\DiaryEvidenceController;
+use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WorkshopController;
 use Illuminate\Support\Facades\Route;
@@ -30,9 +31,13 @@ Route::prefix('auth')->group(function (): void {
     });
 });
 
-// Gestão de usuários — apenas admin.
+// Gestão de usuários + auditoria — apenas admin.
 Route::middleware(['auth:api', 'type:admin'])->group(function (): void {
     Route::apiResource('users', UserController::class);
+
+    // Logs de auditoria (somente leitura — gravados automaticamente).
+    Route::get('logs', [LogController::class, 'index']);
+    Route::get('logs/{log}', [LogController::class, 'show']);
 });
 
 // Domínio operacional — admin e usuário padrão.
