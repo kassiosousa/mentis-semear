@@ -180,6 +180,299 @@
                 ]
             }
         },
+        "/api/companies": {
+            "get": {
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Lista empresas (paginado)",
+                "operationId": "a261a49d113a2af2a5ccb5798c6aae7e",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nome",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Company"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 42
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Cria uma empresa",
+                "operationId": "4ba2fab8115d4cb8d481328838cb4bba",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "address",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "ACME Ltda"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Rua das Flores, 123"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "contato@acme.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Company"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/companies/{company}": {
+            "get": {
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Detalha uma empresa",
+                "operationId": "03cb9962567d5b36fab6c2a6421cbbb2",
+                "parameters": [
+                    {
+                        "name": "company",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Empresa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Company"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Atualiza uma empresa (campos parciais)",
+                "operationId": "194dcca9b798d3b4364f7dac6a8e94ac",
+                "parameters": [
+                    {
+                        "name": "company",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "ACME S.A."
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Company"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Companies"
+                ],
+                "summary": "Remove uma empresa",
+                "operationId": "e984ee4fa7f09a2e201384187409c335",
+                "parameters": [
+                    {
+                        "name": "company",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removida"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "409": {
+                        "description": "Empresa possui workshops vinculados"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -505,6 +798,324 @@
                     }
                 ]
             }
+        },
+        "/api/workshops": {
+            "get": {
+                "tags": [
+                    "Workshops"
+                ],
+                "summary": "Lista workshops (paginado)",
+                "operationId": "73578eb072bfb9d1eea09cdd3825fc4e",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "Filtra por empresa",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Workshop"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 42
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Workshops"
+                ],
+                "summary": "Cria um workshop (o criador é o usuário autenticado)",
+                "operationId": "c3aa25df0c3fd52b996cbb0eceee4407",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "company_id",
+                                    "datetime",
+                                    "address",
+                                    "checkin_link",
+                                    "assessment_link"
+                                ],
+                                "properties": {
+                                    "company_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "user_facilitator_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
+                                    },
+                                    "datetime": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-09-01 14:00:00"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Auditório - Matriz"
+                                    },
+                                    "checkin_link": {
+                                        "type": "string",
+                                        "example": "https://mentis.kassiosousa.com.br/checkin/abc"
+                                    },
+                                    "assessment_link": {
+                                        "type": "string",
+                                        "example": "https://mentis.kassiosousa.com.br/avaliacao/abc"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Workshop"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/workshops/{workshop}": {
+            "get": {
+                "tags": [
+                    "Workshops"
+                ],
+                "summary": "Detalha um workshop",
+                "operationId": "48b7f393b5598ba02b99ee72c348c0b9",
+                "parameters": [
+                    {
+                        "name": "workshop",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Workshop",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Workshop"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Workshops"
+                ],
+                "summary": "Atualiza um workshop (campos parciais)",
+                "operationId": "d221b0e5ff44c997c74729d8a84a9f15",
+                "parameters": [
+                    {
+                        "name": "workshop",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "company_id": {
+                                        "type": "integer"
+                                    },
+                                    "user_facilitator_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
+                                    },
+                                    "datetime": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    },
+                                    "checkin_link": {
+                                        "type": "string"
+                                    },
+                                    "assessment_link": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Workshop"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Workshops"
+                ],
+                "summary": "Remove um workshop (check-ins, avaliações e diário são removidos em cascata)",
+                "operationId": "46e75bfcc56a8e963702567f23adf490",
+                "parameters": [
+                    {
+                        "name": "workshop",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removido"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    },
+                    "409": {
+                        "description": "Vínculo impede a remoção"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -525,6 +1136,37 @@
                     },
                     "user": {
                         "$ref": "#/components/schemas/User"
+                    }
+                },
+                "type": "object"
+            },
+            "Company": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "ACME Ltda"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Rua das Flores, 123"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "contato@acme.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -566,6 +1208,54 @@
                     }
                 },
                 "type": "object"
+            },
+            "Workshop": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "company_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_creator_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "user_facilitator_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "datetime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-09-01T14:00:00Z"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Auditório - Matriz"
+                    },
+                    "checkin_link": {
+                        "type": "string",
+                        "example": "https://mentis.kassiosousa.com.br/checkin/abc"
+                    },
+                    "assessment_link": {
+                        "type": "string",
+                        "example": "https://mentis.kassiosousa.com.br/avaliacao/abc"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -583,8 +1273,16 @@
             "description": "Auth"
         },
         {
+            "name": "Companies",
+            "description": "Companies"
+        },
+        {
             "name": "Users",
             "description": "Users"
+        },
+        {
+            "name": "Workshops",
+            "description": "Workshops"
         }
     ]
 }
