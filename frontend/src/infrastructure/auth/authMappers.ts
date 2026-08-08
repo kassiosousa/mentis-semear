@@ -38,7 +38,7 @@ export function toAuthTokens(model: TokensApiModel, now: Date = new Date()): Aut
   };
 }
 
-export function toUserEntity(model: UserApiModel): User {
+export function toUser(model: UserApiModel): User {
   return {
     id: model.id,
     name: model.name,
@@ -47,8 +47,4 @@ export function toUserEntity(model: UserApiModel): User {
     createdAt: model.created_at ?? null,
     updatedAt: model.updated_at ?? null,
   };
-}
-
-export function toUser(model: UserApiModel): User {
-  return toUserEntity(model);
 }

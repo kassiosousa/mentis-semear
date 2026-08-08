@@ -34,7 +34,7 @@ export function DashboardPage() {
 
         <CardContent>
           <AwaitingApiBlock>
-            Sem dados — este módulo ainda não tem endpoint na API.
+            Sem dados.
           </AwaitingApiBlock>
         </CardContent>
       </Card>

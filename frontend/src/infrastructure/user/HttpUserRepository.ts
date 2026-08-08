@@ -6,7 +6,7 @@ import type {
   UserPage,
   UserRepository,
 } from '@/domain/user/repositories/UserRepository';
-import { toUserEntity, type UserApiModel } from '@/infrastructure/auth/authMappers';
+import { toUser, type UserApiModel } from '@/infrastructure/auth/authMappers';
 import { unwrap } from '@/infrastructure/http/envelope';
 import type { HttpClient } from '@/infrastructure/http/HttpClient';
 
@@ -27,7 +27,7 @@ export class HttpUserRepository implements UserRepository {
 
     if (Array.isArray(payload)) {
       return {
-        users: payload.map(toUserEntity),
+        users: payload.map(toUser),
         currentPage: 1,
         perPage: payload.length,
         total: payload.length,
@@ -37,7 +37,7 @@ export class HttpUserRepository implements UserRepository {
     const models = payload.data ?? [];
 
     return {
-      users: models.map(toUserEntity),
+      users: models.map(toUser),
       currentPage: payload.current_page ?? 1,
       perPage: payload.per_page ?? models.length,
       total: payload.total ?? models.length,
@@ -47,13 +47,13 @@ export class HttpUserRepository implements UserRepository {
   async create(input: CreateUserInput): Promise<User> {
     const payload = await this.http.post<unknown>('/users', input);
 
-    return toUserEntity(unwrap<UserApiModel>(payload));
+    return toUser(unwrap<UserApiModel>(payload));
   }
 
   async update(id: string, input: UpdateUserInput): Promise<User> {
     const payload = await this.http.put<unknown>(`/users/${id}`, input);
 
-    return toUserEntity(unwrap<UserApiModel>(payload));
+    return toUser(unwrap<UserApiModel>(payload));
   }
 
   async remove(id: string): Promise<void> {
