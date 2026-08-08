@@ -1,4 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   ForbiddenError,
   NotFoundError,
@@ -14,6 +15,15 @@ function isRetryable(error: unknown): boolean {
 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        if (error instanceof UnauthorizedError) return;
+
+        toast.error(error.message, {
+          id: `query:${JSON.stringify(query.queryKey)}`,
+        });
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 30_000,

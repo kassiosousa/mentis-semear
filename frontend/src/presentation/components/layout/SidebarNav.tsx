@@ -23,6 +23,7 @@ interface NavItem {
   icon: ComponentType<{ className?: string }>;
   to?: string;
   badge?: string;
+  exact?: boolean;
 }
 
 interface NavGroup {
@@ -33,15 +34,20 @@ interface NavGroup {
 const SEEDS: NavItem = { label: 'Sementes', icon: Sprout, to: '/sementes' };
 
 const ADMIN_ITEMS: NavItem[] = [
-  { label: 'Usuários', icon: Users },
-  { label: 'Empresas', icon: Building2 },
+  { label: 'Usuários', icon: Users, to: '/admin/usuarios' },
+  { label: 'Empresas', icon: Building2, to: '/admin/empresas' },
   { label: 'Oficinas', icon: Presentation },
 ];
 
 const FACILITADOR_ITEMS: NavItem[] = [{ label: 'Nova oficina', icon: CalendarPlus }];
 
 function menuItemsFor(type: UserType): NavItem[] {
-  const home: NavItem = { label: 'Painel', icon: LayoutDashboard, to: homePathFor(type) };
+  const home: NavItem = {
+    label: 'Painel',
+    icon: LayoutDashboard,
+    to: homePathFor(type),
+    exact: true,
+  };
 
   if (type === 'admin') return [home, ...ADMIN_ITEMS, SEEDS];
   if (type === 'facilitador') return [home, ...FACILITADOR_ITEMS, SEEDS];
@@ -66,7 +72,7 @@ const ITEM_BASE =
   'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors';
 
 function NavLinkItem({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
-  const { label, icon: Icon, to, badge } = item;
+  const { label, icon: Icon, to, badge, exact = false } = item;
 
   if (to === undefined) {
     return (
@@ -88,7 +94,7 @@ function NavLinkItem({ item, onNavigate }: { item: NavItem; onNavigate?: () => v
     <Link
       to={to}
       onClick={onNavigate}
-      activeOptions={{ exact: to === '/' }}
+      activeOptions={{ exact }}
       className={`${ITEM_BASE} text-subtitle hover:bg-primary-500/8 hover:text-title data-[status=active]:bg-primary-500/10 data-[status=active]:text-title`}
     >
       <span className="absolute top-1/2 -left-3 h-6 w-1 origin-left -translate-y-1/2 scale-x-0 rounded-r-full bg-primary-500 transition-transform group-data-[status=active]:scale-x-100" />

@@ -1,4 +1,8 @@
-import { adminDashboardRoute } from '@/presentation/routes/modules/admin.routes';
+import {
+  adminCompaniesRoute,
+  adminDashboardRoute,
+  adminUsersRoute,
+} from '@/presentation/routes/modules/admin.routes';
 import { forbiddenRoute, loginRoute } from '@/presentation/routes/modules/auth.routes';
 import { dashboardRoute } from '@/presentation/routes/modules/dashboard.routes';
 import { facilitadorDashboardRoute } from '@/presentation/routes/modules/facilitador.routes';
@@ -12,6 +16,8 @@ export const routeTree = rootRoute.addChildren([
   protectedRoute.addChildren([
     dashboardRoute,
     adminDashboardRoute,
+    adminUsersRoute,
+    adminCompaniesRoute,
     facilitadorDashboardRoute,
     seedsRoute,
   ]),

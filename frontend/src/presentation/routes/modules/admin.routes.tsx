@@ -11,3 +11,23 @@ export const adminDashboardRoute = createRoute({
     'AdminDashboardPage',
   ),
 });
+
+export const adminCompaniesRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/empresas',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/CompaniesPage'),
+    'CompaniesPage',
+  ),
+});
+
+export const adminUsersRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/usuarios',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/UsersPage'),
+    'UsersPage',
+  ),
+});

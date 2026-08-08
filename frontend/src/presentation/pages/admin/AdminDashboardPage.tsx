@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import {
   ArrowRight,
   Building2,
@@ -37,11 +38,22 @@ interface Shortcut {
   label: string;
   description: string;
   icon: ComponentType<{ className?: string }>;
+  to?: string;
 }
 
 const SHORTCUTS: Shortcut[] = [
-  { label: 'Usuários', description: 'Cadastros, perfis e aprovações', icon: Users },
-  { label: 'Empresas', description: 'Organizações parceiras', icon: Building2 },
+  {
+    label: 'Usuários',
+    description: 'Cadastros, perfis e aprovações',
+    icon: Users,
+    to: '/admin/usuarios',
+  },
+  {
+    label: 'Empresas',
+    description: 'Organizações parceiras',
+    icon: Building2,
+    to: '/admin/empresas',
+  },
   { label: 'Oficinas', description: 'Agenda e histórico', icon: Presentation },
 ];
 
@@ -50,7 +62,7 @@ export function AdminDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeading title="Painel do Admin" subtitle={`Bem-vindo, ${user?.name ?? ''}.`} />
+      <PageHeading title="Painel do Administrador" subtitle={`Bem-vindo, ${user?.name ?? ''}.`} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Empresas" value="—" icon={Building2} />
@@ -127,14 +139,8 @@ export function AdminDashboardPage() {
         <h2 className="mb-3 text-sm font-medium text-muted-foreground">Atalhos</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {SHORTCUTS.map(({ label, description, icon: Icon }) => (
-            <Card
-              key={label}
-              size="sm"
-              aria-disabled
-              className="border border-dashed border-border opacity-60 ring-0"
-              title="Tela ainda não implementada"
-            >
+          {SHORTCUTS.map(({ label, description, icon: Icon, to }) => {
+            const body = (
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Icon className="size-4 text-primary" />
@@ -142,10 +148,37 @@ export function AdminDashboardPage() {
                   <ArrowRight className="ml-auto size-4 text-muted-foreground" />
                 </CardTitle>
                 <CardDescription>{description}</CardDescription>
-                <span className="mt-1 text-xs text-muted-foreground">Em breve</span>
+                {to === undefined && (
+                  <span className="mt-1 text-xs text-muted-foreground">Em breve</span>
+                )}
               </CardHeader>
-            </Card>
-          ))}
+            );
+
+            if (to === undefined) {
+              return (
+                <Card
+                  key={label}
+                  size="sm"
+                  aria-disabled
+                  className="border border-dashed border-border opacity-60 ring-0"
+                  title="Tela ainda não implementada"
+                >
+                  {body}
+                </Card>
+              );
+            }
+
+            return (
+              <Link key={label} to={to} className="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                <Card
+                  size="sm"
+                  className="h-full transition-colors hover:bg-primary-500/5 hover:ring-primary-500/30"
+                >
+                  {body}
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
