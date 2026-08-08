@@ -1,5 +1,6 @@
 import type { AuthTokens } from '@/domain/auth/entities/AuthSession';
 import type { User } from '@/domain/auth/entities/User';
+import { DEFAULT_USER_TYPE, isUserType } from '@/domain/auth/entities/User';
 
 export interface TokensApiModel {
   access_token?: string;
@@ -10,11 +11,12 @@ export interface TokensApiModel {
 }
 
 export interface UserApiModel {
-  id: number;
+  id: string;
   name: string;
   email: string;
-  roles?: string[] | null;
-  permissions?: string[] | null;
+  type?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface SessionApiModel extends TokensApiModel {
@@ -41,7 +43,8 @@ export function toUser(model: UserApiModel): User {
     id: model.id,
     name: model.name,
     email: model.email,
-    roles: model.roles ?? [],
-    permissions: model.permissions ?? [],
+    type: isUserType(model.type) ? model.type : DEFAULT_USER_TYPE,
+    createdAt: model.created_at ?? null,
+    updatedAt: model.updated_at ?? null,
   };
 }

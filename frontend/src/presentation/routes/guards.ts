@@ -1,7 +1,7 @@
 import { redirect } from '@tanstack/react-router';
 import type { AuthSession } from '@/domain/auth/entities/AuthSession';
-import type { Permission, RoleName } from '@/domain/auth/entities/User';
-import { hasAllPermissions, hasAnyPermission, hasRole } from '@/domain/auth/entities/User';
+import type { UserType } from '@/domain/auth/entities/User';
+import { hasType } from '@/domain/auth/entities/User';
 import type { RouterContext } from '@/presentation/routes/routerContext';
 
 export interface GuardArgs {
@@ -14,6 +14,15 @@ export interface AuthenticatedContext {
 }
 
 export type RouteGuard = (args: GuardArgs) => Promise<AuthenticatedContext>;
+
+export type HomePath = '/admin' | '/facilitador' | '/';
+
+export function homePathFor(type: UserType): HomePath {
+  if (type === 'admin') return '/admin';
+  if (type === 'facilitador') return '/facilitador';
+
+  return '/';
+}
 
 export async function requireAuth({
   context,
@@ -32,15 +41,15 @@ export async function requireGuest({ context }: GuardArgs): Promise<void> {
   const session = await context.container.auth.restoreSession.execute();
 
   if (session !== null) {
-    throw redirect({ to: '/' });
+    throw redirect({ to: homePathFor(session.user.type) });
   }
 }
 
-export function requirePermissions(...permissions: Permission[]): RouteGuard {
+export function requireType(...types: UserType[]): RouteGuard {
   return async (args) => {
     const { session } = await requireAuth(args);
 
-    if (!hasAllPermissions(session.user, permissions)) {
+    if (!hasType(session.user, ...types)) {
       throw redirect({ to: '/sem-permissao' });
     }
 
@@ -48,26 +57,10 @@ export function requirePermissions(...permissions: Permission[]): RouteGuard {
   };
 }
 
-export function requireAnyPermission(...permissions: Permission[]): RouteGuard {
-  return async (args) => {
-    const { session } = await requireAuth(args);
+export function redirectToOwnPanel({ context }: { context: AuthenticatedContext }): void {
+  const path = homePathFor(context.session.user.type);
 
-    if (!hasAnyPermission(session.user, permissions)) {
-      throw redirect({ to: '/sem-permissao' });
-    }
-
-    return { session };
-  };
-}
-
-export function requireRole(role: RoleName): RouteGuard {
-  return async (args) => {
-    const { session } = await requireAuth(args);
-
-    if (!hasRole(session.user, role)) {
-      throw redirect({ to: '/sem-permissao' });
-    }
-
-    return { session };
-  };
+  if (path !== '/') {
+    throw redirect({ to: path });
+  }
 }

@@ -1,29 +1,33 @@
-export type Permission = string;
+export const USER_TYPES = ['admin', 'facilitador', 'empresa', 'usuario'] as const;
 
-export type RoleName = string;
+export type UserType = (typeof USER_TYPES)[number];
+
+export const DEFAULT_USER_TYPE: UserType = 'usuario';
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
-  roles: RoleName[];
-  permissions: Permission[];
+  type: UserType;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
-export const SUPER_ADMIN_ROLE: RoleName = 'admin';
+export const USER_TYPE_LABELS: Record<UserType, string> = {
+  admin: 'Administrador',
+  facilitador: 'Facilitador',
+  empresa: 'Empresa',
+  usuario: 'Usuário',
+};
 
-export function hasRole(user: User, role: RoleName): boolean {
-  return user.roles.includes(role);
+export function isUserType(value: unknown): value is UserType {
+  return USER_TYPES.includes(value as UserType);
 }
 
-export function hasPermission(user: User, permission: Permission): boolean {
-  return hasRole(user, SUPER_ADMIN_ROLE) || user.permissions.includes(permission);
+export function hasType(user: User, ...types: readonly UserType[]): boolean {
+  return types.includes(user.type);
 }
 
-export function hasAllPermissions(user: User, permissions: readonly Permission[]): boolean {
-  return permissions.every((permission) => hasPermission(user, permission));
-}
-
-export function hasAnyPermission(user: User, permissions: readonly Permission[]): boolean {
-  return permissions.some((permission) => hasPermission(user, permission));
+export function labelOfType(type: UserType): string {
+  return USER_TYPE_LABELS[type];
 }

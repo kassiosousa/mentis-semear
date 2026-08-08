@@ -1,3 +1,6 @@
+import { CalendarClock, Presentation, Sprout } from 'lucide-react';
+import { AwaitingApiBlock, StatCard } from '@/presentation/components/dashboard/panels';
+import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import {
   Card,
   CardContent,
@@ -12,36 +15,29 @@ export function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Painel</h1>
-        <p className="text-sm text-muted-foreground">Bem-vindo, {user?.name}.</p>
-      </div>
+      <PageHeading title="Painel" subtitle={`Bem-vindo, ${user?.name ?? ''}.`} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Ordens de serviço</CardTitle>
-            <CardDescription>Módulo ainda não implementado.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">—</CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Clientes</CardTitle>
-            <CardDescription>Módulo ainda não implementado.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">—</CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Estoque</CardTitle>
-            <CardDescription>Módulo ainda não implementado.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">—</CardContent>
-        </Card>
+        <StatCard label="Oficinas participadas" value="—" icon={Presentation} />
+        <StatCard label="Próximos encontros" value="—" icon={CalendarClock} />
+        <StatCard label="Sementes plantadas" value="—" icon={Sprout} />
       </div>
+
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2">
+            <CalendarClock className="size-4 text-primary" />
+            Próximos encontros
+          </CardTitle>
+          <CardDescription>Oficinas em que você está inscrito.</CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <AwaitingApiBlock>
+            Sem dados — este módulo ainda não tem endpoint na API.
+          </AwaitingApiBlock>
+        </CardContent>
+      </Card>
     </div>
   );
 }
