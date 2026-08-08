@@ -16,6 +16,4 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'user', ref: '#/components/schemas/User'),
     ],
 )]
-final class AuthTokenSchema
-{
-}
+final class AuthTokenSchema {}
