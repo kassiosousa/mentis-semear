@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuditLog;
 use App\Http\Middleware\EnsureUserType;
 use App\Http\Middleware\ForceJsonResponse;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Toda requisição /api é tratada como JSON → erros retornam
         // 401/403/404/422 corretos (em vez de redirecionar para `login`).
         $middleware->api(prepend: [ForceJsonResponse::class]);
+
+        // Auditoria: grava logs das ações (POST/PUT/PATCH/DELETE) em /api/*.
+        $middleware->api(append: [AuditLog::class]);
 
         $middleware->alias([
             'type' => EnsureUserType::class,
