@@ -71,4 +71,30 @@ final class PublicEndpointsTest extends TestCase
         $this->postJson('/api/public/assessments', ['workshop_id' => $workshop->id, 'score' => 99])
             ->assertStatus(422);
     }
+
+    public function test_workshop_gets_an_auto_generated_token(): void
+    {
+        $workshop = $this->workshop();
+
+        $this->assertNotEmpty($workshop->token);
+    }
+
+    public function test_public_workshop_lookup_by_token_returns_only_public_data(): void
+    {
+        $workshop = $this->workshop();
+
+        $this->getJson("/api/public/workshops/{$workshop->token}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $workshop->id)
+            ->assertJsonPath('data.address', 'L')
+            ->assertJsonPath('data.company', 'ACME')
+            // Nunca expõe links internos nem dados de participantes.
+            ->assertJsonMissingPath('data.checkin_link')
+            ->assertJsonMissingPath('data.user_creator_id');
+    }
+
+    public function test_public_workshop_lookup_returns_404_for_unknown_token(): void
+    {
+        $this->getJson('/api/public/workshops/inexistente')->assertNotFound();
+    }
 }

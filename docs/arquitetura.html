@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mentis Semear — Documentação Técnica (Backend)</title>
+<!--
+  Documentação de arquitetura do backend Mentis Semear.
+  Diagramas renderizados com Mermaid (via CDN) — requer internet ao abrir.
+  Gerado a partir do código na branch homolog.
+-->
+<style>
+  :root {
+    --ground: #F7FAF5;
+    --surface: #FFFFFF;
+    --surface-2: #EEF5E9;
+    --ink: #14261A;
+    --body: #2E3B32;
+    --muted: #55665A;
+    --accent: #39751F;
+    --accent-bright: #53AE32;
+    --border: #D6E5CB;
+    --shadow: 0 1px 2px rgba(20,38,26,.06), 0 8px 24px rgba(20,38,26,.05);
+    --canvas: #FBFDF9;
+    --canvas-border: #CFE0C3;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0E1A12; --surface: #14261A; --surface-2: #1B2E21;
+      --ink: #F2F8EE; --body: #E3EEDC; --muted: #9FB3A5;
+      --accent: #7BC95E; --accent-bright: #53AE32;
+      --border: #24382B;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--body); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header.top { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 40px; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  h1 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; letter-spacing: -.02em; color: var(--ink); margin: 0 0 8px; text-wrap: balance; }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0; font-size: 17px; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 26px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat .n { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  section { margin-top: 52px; }
+  h2 { font-size: 22px; letter-spacing: -.01em; color: var(--ink); margin: 0 0 4px; display: flex; align-items: baseline; gap: 12px; }
+  h2 .idx { font-family: var(--mono); font-size: 13px; color: var(--accent-bright); font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 15px; }
+
+  .diagram { background: var(--canvas); border: 1px solid var(--canvas-border); border-radius: 14px; padding: 22px; overflow-x: auto; box-shadow: var(--shadow); }
+  .diagram pre.mermaid { margin: 0; text-align: center; min-height: 60px; background: transparent; }
+  figcaption { color: var(--muted); font-size: 13px; margin-top: 10px; font-family: var(--mono); }
+
+  /* ---- Mermaid: legibilidade forçada (vence o tema do Mermaid) ---- */
+  .diagram svg text,
+  .diagram svg tspan,
+  .diagram svg .nodeLabel,
+  .diagram svg .edgeLabel,
+  .diagram svg .edgeLabel *,
+  .diagram svg .label,
+  .diagram svg foreignObject div,
+  .diagram svg foreignObject span,
+  .diagram svg foreignObject p { fill: #FFFFFF !important; color: #FFFFFF !important; }
+
+  .diagram svg .node rect,
+  .diagram svg .node polygon,
+  .diagram svg .node path,
+  .diagram svg .node circle,
+  .diagram svg g.classGroup rect,
+  .diagram svg .er.entityBox,
+  .diagram svg .er.attributeBoxEven,
+  .diagram svg .er.attributeBoxOdd,
+  .diagram svg .relationshipLabelBox,
+  .diagram svg .edgeLabel rect,
+  .diagram svg rect.label-container { fill: #2E6B1B !important; stroke: #8FD06F !important; }
+
+  .diagram svg .edgeLabel .label,
+  .diagram svg .edgeLabel foreignObject > *,
+  .diagram svg .edgeLabel span,
+  .diagram svg .edgeLabel div { background-color: #2E6B1B !important; color: #FFFFFF !important; border-radius: 4px; padding: 0 5px; }
+
+  .diagram svg g.classGroup line { stroke: #8FD06F !important; }
+
+  .diagram svg .edgePaths path,
+  .diagram svg .relation,
+  .diagram svg path.er { stroke: #39751F !important; fill: none !important; }
+  .diagram svg marker path,
+  .diagram svg .arrowheadPath,
+  .diagram svg .arrowMarkerPath { fill: #39751F !important; stroke: #39751F !important; }
+
+  /* Subgráficos (clusters): fundo verde translúcido + rótulo escuro legível */
+  .diagram svg .cluster rect { fill: rgba(83,174,50,.10) !important; stroke: #53AE32 !important; }
+  .diagram svg .cluster-label,
+  .diagram svg .cluster-label *,
+  .diagram svg .cluster-label span,
+  .diagram svg .cluster-label div { fill: #14261A !important; color: #14261A !important; background: transparent !important; }
+
+  .reqgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 14px; font-size: 15px; color: var(--ink); display: flex; align-items: center; gap: 9px; }
+  .card h3 .tag { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--accent); background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; letter-spacing: .04em; }
+  ul.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  ul.checks li { position: relative; padding-left: 26px; font-size: 14.5px; color: var(--body); }
+  ul.checks li::before { content: "✓"; position: absolute; left: 0; top: 0; color: #fff; background: var(--accent-bright); width: 17px; height: 17px; border-radius: 5px; font-size: 11px; font-weight: 700; display: grid; place-items: center; margin-top: 3px; }
+  ul.checks code { font-family: var(--mono); font-size: .86em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--accent); }
+
+  footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  footer code { font-family: var(--mono); color: var(--accent); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Documentação técnica · Backend</p>
+    <h1>Mentis Semear — API de workshops</h1>
+    <p class="lede">Monólito Laravel 13 (PHP 8.4) + MySQL, autenticação JWT, endpoints públicos para participantes e auditoria automática. Diagramas e requisitos atendidos abaixo.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">8</div><div class="l">entidades / tabelas</div></div>
+      <div class="stat"><div class="n">46</div><div class="l">rotas de API</div></div>
+      <div class="stat"><div class="n">66</div><div class="l">testes (156 asserts)</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">perfis de usuário</div></div>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="idx">01</span> Requisitos atendidos</h2>
+    <p class="sub">Escopo entregue e verificado no backend em produção (<a href="https://mentis.kassiosousa.com.br/api/documentation">/api/documentation</a>).</p>
+    <div class="reqgrid">
+
+      <div class="card">
+        <h3>Autenticação &amp; autorização <span class="tag">auth</span></h3>
+        <ul class="checks">
+          <li>JWT via guard <code>api</code>: <code>register</code>, <code>login</code>, <code>me</code>, <code>logout</code> (access token)</li>
+          <li>Perfis por enum <code>UserType</code>: admin, usuario, facilitador, empresa</li>
+          <li>Gate por perfil (middleware <code>type</code>): <code>users</code> só admin; domínio para admin + usuário padrão</li>
+          <li><code>users.id</code> em <strong>UUID</strong> (v7); demais tabelas em <code>bigint</code></li>
+          <li>Senha com hash bcrypt; nunca retornada</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Entidades &amp; CRUD <span class="tag">7 recursos</span></h3>
+        <ul class="checks">
+          <li>CRUD RESTful: Users, Companies, Workshops, CheckIns, Assessments, Diaries, DiaryEvidences</li>
+          <li>Validação isolada em <code>FormRequest</code> (Store/Update parcial)</li>
+          <li>Regras de negócio: Diary <strong>1:1</strong> com workshop; CPF único por workshop; <code>score</code> 0–10; criador = usuário autenticado</li>
+          <li>Integridade referencial: FK bloqueia remoção → <code>409</code>; referência inexistente → <code>422</code></li>
+          <li>Listagens paginadas com filtros</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Participantes (público) <span class="tag">sem login</span></h3>
+        <ul class="checks">
+          <li><code>POST /api/public/check-ins</code> — auto check-in do participante</li>
+          <li><code>POST /api/public/assessments</code> — avaliação anônima</li>
+          <li><code>throttle:60,1</code> contra abuso</li>
+          <li>Consentimento LGPD registrado com timestamp (<code>lgpd_consent_at</code>)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Auditoria (Logs) <span class="tag">automática</span></h3>
+        <ul class="checks">
+          <li>Middleware <code>AuditLog</code> grava toda ação (POST/PUT/PATCH/DELETE) bem-sucedida em <code>/api/*</code></li>
+          <li>Registra usuário, método, rota e status — gravação no <code>terminate</code> (sem latência)</li>
+          <li>Consulta admin somente-leitura: <code>GET /api/logs</code> paginada (<code>per_page</code>)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>API, docs &amp; robustez <span class="tag">openapi</span></h3>
+        <ul class="checks">
+          <li>Swagger/OpenAPI gerado (l5-swagger) em <code>/api/documentation</code></li>
+          <li><code>ForceJsonResponse</code>: erros sempre em JSON com status correto (401/403/404/422)</li>
+          <li><code>trustProxies</code>: URLs HTTPS corretas atrás de Apache/Cloudflare</li>
+          <li>Respostas consistentes sob a chave <code>data</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Qualidade &amp; entrega <span class="tag">devops</span></h3>
+        <ul class="checks">
+          <li><strong>66 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
+          <li>Laravel Pint (formatação) + hooks de projeto</li>
+          <li>Docker dev + prod; CI no GitHub Actions</li>
+          <li>Deploy automático: push em <code>homolog</code> → VPS (rsync + compose via SSH)</li>
+          <li>Produção no ar: <code>https://mentis.kassiosousa.com.br</code>; seeder de admin</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">02</span> Diagrama de entidades (ER)</h2>
+    <p class="sub">Tabelas, chaves e cardinalidades. FKs para <code>users</code> são UUID (char36); demais são bigint.</p>
+    <figure class="diagram" style="margin:0">
+      <pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#EAF3E3','primaryBorderColor':'#39751F','primaryTextColor':'#14261A','lineColor':'#4b5d51','fontFamily':'ui-monospace, monospace','fontSize':'13px'}}}%%
+erDiagram
+  USERS ||--o{ WORKSHOPS : "cria"
+  USERS ||--o{ WORKSHOPS : "facilita"
+  USERS ||--o{ DIARIES : "cria"
+  USERS ||--o{ DIARY_EVIDENCES : "cria"
+  USERS ||..o{ LOGS : "executa (solto)"
+  COMPANIES ||--o{ WORKSHOPS : "hospeda"
+  WORKSHOPS ||--o{ CHECK_INS : "recebe"
+  WORKSHOPS ||--o{ ASSESSMENTS : "recebe"
+  WORKSHOPS ||--|| DIARIES : "tem 1:1"
+  DIARIES ||--o{ DIARY_EVIDENCES : "contem"
+
+  USERS {
+    char36 id PK
+    string name
+    string type "admin|usuario|facilitador|empresa"
+    string email UK
+    string password
+  }
+  COMPANIES {
+    bigint id PK
+    string name
+    string address
+    string email
+  }
+  WORKSHOPS {
+    bigint id PK
+    bigint company_id FK
+    char36 user_creator_id FK
+    char36 user_facilitator_id FK "nullable"
+    datetime datetime
+    string checkin_link
+    string assessment_link
+  }
+  CHECK_INS {
+    bigint id PK
+    bigint workshop_id FK
+    string name
+    char11 cpf "unico por workshop"
+    bool lgpd_read
+    datetime lgpd_consent_at
+    date birthday
+  }
+  ASSESSMENTS {
+    bigint id PK
+    bigint workshop_id FK
+    tinyint score "0-10"
+    string suggestions "nullable"
+  }
+  DIARIES {
+    bigint id PK
+    bigint workshop_id FK "unico 1:1"
+    char36 user_creator_id FK
+    string title
+    text description
+    datetime datetime
+  }
+  DIARY_EVIDENCES {
+    bigint id PK
+    bigint diary_id FK
+    char36 user_creator_id FK
+    string link
+  }
+  LOGS {
+    bigint id PK
+    string description
+    char36 user_id "nullable"
+    datetime created_at
+  }
+      </pre>
+      <figcaption>Linha tracejada = referência solta (logs.user_id, sem FK rígida, preserva o rastro após exclusão).</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="idx">03</span> Diagrama de classes</h2>
+    <p class="sub">Models Eloquent, o enum <code>UserType</code>, a interface <code>JWTSubject</code> e os relacionamentos (métodos de associação).</p>
+    <figure class="diagram" style="margin:0">
+      <pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#EAF3E3','primaryBorderColor':'#39751F','primaryTextColor':'#14261A','lineColor':'#4b5d51','fontFamily':'ui-monospace, monospace','fontSize':'13px'}}}%%
+classDiagram
+  class JWTSubject {
+    &lt;&lt;interface&gt;&gt;
+    +getJWTIdentifier()
+    +getJWTCustomClaims()
+  }
+  class UserType {
+    &lt;&lt;enumeration&gt;&gt;
+    Admin
+    Usuario
+    Facilitador
+    Empresa
+  }
+  class User {
+    +string id (UUID)
+    +string name
+    +UserType type
+    +string email
+    +createdWorkshops()
+    +facilitatedWorkshops()
+    +diaries()
+  }
+  class Company {
+    +int id
+    +string name
+    +workshops()
+  }
+  class Workshop {
+    +int id
+    +datetime datetime
+    +company()
+    +creator()
+    +facilitator()
+    +checkIns()
+    +assessments()
+    +diary()
+  }
+  class CheckIn {
+    +int id
+    +string cpf
+    +bool lgpd_read
+    +workshop()
+  }
+  class Assessment {
+    +int id
+    +int score
+    +workshop()
+  }
+  class Diary {
+    +int id
+    +string title
+    +workshop()
+    +creator()
+    +evidences()
+  }
+  class DiaryEvidence {
+    +int id
+    +string link
+    +diary()
+    +creator()
+  }
+  class Log {
+    +int id
+    +string description
+    +user()
+  }
+
+  User ..|> JWTSubject
+  User --> UserType : type
+  Company "1" --> "0..*" Workshop
+  User "1" --> "0..*" Workshop : creator / facilitator
+  Workshop "1" --> "0..*" CheckIn
+  Workshop "1" --> "0..*" Assessment
+  Workshop "1" --> "1" Diary
+  User "1" --> "0..*" Diary
+  Diary "1" --> "0..*" DiaryEvidence
+  User "1" --> "0..*" DiaryEvidence
+  Log ..> User
+      </pre>
+      <figcaption>Associações traçadas espelham os métodos Eloquent (belongsTo / hasMany / hasOne).</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="idx">04</span> Diagrama de dependências</h2>
+    <p class="sub">Da borda até o banco: TLS no Apache, container nginx, pipeline de middleware do Laravel e persistência.</p>
+    <figure class="diagram" style="margin:0">
+      <pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#EAF3E3','primaryBorderColor':'#39751F','primaryTextColor':'#14261A','lineColor':'#4b5d51','fontFamily':'ui-monospace, monospace','fontSize':'13px'}}}%%
+flowchart TB
+  Client(["Cliente / Browser"]) --&gt;|HTTPS| CF["Cloudflare"]
+  CF --&gt; AP["Apache + certbot (TLS)"]
+  AP --&gt;|"proxy 127.0.0.1:8083"| NG["nginx (container)"]
+  NG --&gt;|"/"| SPA["React SPA (estatico)"]
+  NG --&gt;|"/api"| PHP["Laravel · php-fpm"]
+
+  PHP --&gt; M1["ForceJsonResponse"]
+  M1 --&gt; M2["auth:api (JWT)"]
+  M2 --&gt; M3["type: admin / usuario"]
+  M3 --&gt; M4["AuditLog"]
+  M4 --&gt; CTRL["Controller"]
+  CTRL --&gt; FR["FormRequest (validacao)"]
+  FR --&gt; MODEL["Eloquent Model"]
+  MODEL --&gt; DB[("MySQL")]
+
+  M2 -.usa.-&gt; JWTLIB[["jwt-auth"]]
+  M4 -.grava acao.-&gt; LOGS[("logs")]
+  PHP -.OpenAPI.-&gt; SW[["l5-swagger · /api/documentation"]]
+
+  CI["GitHub Actions (push homolog)"] -.rsync + compose via SSH.-&gt; AP
+      </pre>
+      <figcaption>Linhas tracejadas = dependências laterais (bibliotecas, gravação de auditoria, deploy). Fluxo sólido = caminho da requisição.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2><span class="idx">05</span> Diagrama de arquitetura</h2>
+    <p class="sub">Visão de implantação (contêineres e fronteiras): do cliente ao banco, com as camadas do Laravel e a esteira de deploy.</p>
+    <figure class="diagram" style="margin:0">
+      <pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#EAF3E3','primaryBorderColor':'#39751F','primaryTextColor':'#14261A','lineColor':'#4b5d51','fontFamily':'ui-monospace, monospace','fontSize':'13px'}}}%%
+flowchart TB
+  BROWSER["Navegador — React SPA (Vite + TS)"]
+  CF["Cloudflare — DNS / TLS / WAF"]
+
+  subgraph VPS["VPS Debian"]
+    APACHE["Apache + certbot — proxy reverso / HTTPS"]
+    subgraph DOCKER["Docker Compose (producao)"]
+      WEB["nginx — SPA estatico + proxy /api"]
+      subgraph LAR["Laravel · php-fpm 8.4"]
+        direction TB
+        RT["Rotas /api"]
+        MW["Middleware"]
+        CTRL["Controllers + FormRequests"]
+        MOD["Models Eloquent + Enums"]
+        RT --> MW --> CTRL --> MOD
+      end
+      DB[("MySQL 8")]
+    end
+  end
+
+  JWT["lib · jwt-auth"]
+  SW["lib · l5-swagger"]
+  GH["GitHub Actions — CI + Deploy Homolog"]
+
+  BROWSER --> CF --> APACHE
+  APACHE --> WEB
+  WEB --> LAR
+  MOD --> DB
+  CTRL -.usa.-> JWT
+  CTRL -.gera OpenAPI.-> SW
+  GH -.rsync + compose via SSH.-> VPS
+      </pre>
+      <figcaption>Caixas = contêineres/componentes; subgráficos = fronteiras (VPS, Docker, camadas do Laravel). Tracejado = bibliotecas e a esteira de deploy.</figcaption>
+    </figure>
+  </section>
+
+  <footer>
+    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (8 entidades, 46 rotas, 66 testes verdes).
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'loose' });
+</script>
+</body>
+</html>

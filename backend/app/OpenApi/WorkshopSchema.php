@@ -11,6 +11,7 @@ use OpenApi\Attributes as OA;
     schema: 'Workshop',
     properties: [
         new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'token', type: 'string', example: 'aB3xK9pQ2mL', description: 'Token público (usado nos links de check-in/avaliação)'),
         new OA\Property(property: 'company_id', type: 'integer', example: 1),
         new OA\Property(property: 'user_creator_id', type: 'string', format: 'uuid'),
         new OA\Property(property: 'user_facilitator_id', type: 'string', format: 'uuid', nullable: true),

@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\User;
 use App\Models\Workshop;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 final class WorkshopManagementTest extends TestCase
@@ -120,5 +121,53 @@ final class WorkshopManagementTest extends TestCase
             ->assertNoContent();
 
         $this->assertDatabaseMissing('workshops', ['id' => $workshop->id]);
+    }
+
+    public function test_workshop_creation_aborts_after_5_token_collisions(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $company = $this->company();
+
+        // Força Str::random a sempre devolver o mesmo token → colisão garantida.
+        Str::createRandomStringsUsing(fn () => 'COLLISION01');
+
+        // Primeiro workshop ocupa o token.
+        Workshop::create([...$this->payload($company), 'user_creator_id' => $admin->id]);
+
+        // Segundo: 5 tentativas, todas colidem → 500 e nada gravado.
+        $this->withToken($this->tokenFor($admin))
+            ->postJson('/api/workshops', $this->payload($company))
+            ->assertStatus(500)
+            ->assertJsonPath('message', 'Não foi possível criar o workshop: falha ao gerar um token único. Tente novamente.');
+
+        Str::createRandomStringsNormally();
+
+        // A operação foi cancelada por completo: só o primeiro workshop existe.
+        $this->assertSame(1, Workshop::count());
+    }
+
+    public function test_workshop_creation_retries_and_succeeds_on_token_collision(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $company = $this->company();
+
+        // Colide nas 2 primeiras tentativas e libera na 3ª → criação bem-sucedida.
+        $tokens = ['DUPLICATE01', 'DUPLICATE01', 'DUPLICATE01', 'UNIQUE99999'];
+        $i = 0;
+        Str::createRandomStringsUsing(function () use (&$i, $tokens) {
+            return $tokens[min($i++, count($tokens) - 1)];
+        });
+
+        // Ocupa 'DUPLICATE01'.
+        Workshop::create([...$this->payload($company), 'user_creator_id' => $admin->id]);
+
+        $this->withToken($this->tokenFor($admin))
+            ->postJson('/api/workshops', $this->payload($company))
+            ->assertCreated()
+            ->assertJsonPath('data.token', 'UNIQUE99999');
+
+        Str::createRandomStringsNormally();
+
+        $this->assertSame(2, Workshop::count());
     }
 }
