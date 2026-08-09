@@ -1,6 +1,7 @@
 import type { Assessment, CheckIn, Workshop } from '@/domain/workshop/entities/Workshop';
 import type {
   WorkshopFilters,
+  WorkshopInput,
   WorkshopPage,
   WorkshopRepository,
 } from '@/domain/workshop/repositories/WorkshopRepository';
@@ -88,6 +89,17 @@ function toCheckIn(model: CheckInApiModel): CheckIn {
   };
 }
 
+function toBody(input: WorkshopInput) {
+  return {
+    company_id: input.companyId,
+    user_facilitator_id: input.facilitatorId,
+    datetime: input.datetime,
+    address: input.address,
+    checkin_link: input.checkinLink,
+    assessment_link: input.assessmentLink,
+  };
+}
+
 function toAssessment(model: AssessmentApiModel): Assessment {
   return {
     id: model.id,
@@ -122,6 +134,22 @@ export class HttpWorkshopRepository implements WorkshopRepository {
     const payload = await this.http.get<unknown>(`/workshops/${id}`);
 
     return toWorkshop(unwrap<WorkshopApiModel>(payload));
+  }
+
+  async create(input: WorkshopInput): Promise<Workshop> {
+    const payload = await this.http.post<unknown>('/workshops', toBody(input));
+
+    return toWorkshop(unwrap<WorkshopApiModel>(payload));
+  }
+
+  async update(id: number, input: WorkshopInput): Promise<Workshop> {
+    const payload = await this.http.put<unknown>(`/workshops/${id}`, toBody(input));
+
+    return toWorkshop(unwrap<WorkshopApiModel>(payload));
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.http.delete<unknown>(`/workshops/${id}`);
   }
 
   async checkIns(workshopId: number): Promise<CheckIn[]> {

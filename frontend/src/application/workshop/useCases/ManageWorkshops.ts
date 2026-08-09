@@ -1,6 +1,7 @@
 import type { Assessment, CheckIn, Workshop } from '@/domain/workshop/entities/Workshop';
 import type {
   WorkshopFilters,
+  WorkshopInput,
   WorkshopPage,
   WorkshopRepository,
 } from '@/domain/workshop/repositories/WorkshopRepository';
@@ -18,6 +19,30 @@ export class FindWorkshop {
 
   execute(id: number): Promise<Workshop> {
     return this.workshops.find(id);
+  }
+}
+
+export class CreateWorkshop {
+  constructor(private readonly workshops: WorkshopRepository) {}
+
+  execute(input: WorkshopInput): Promise<Workshop> {
+    return this.workshops.create(input);
+  }
+}
+
+export class UpdateWorkshop {
+  constructor(private readonly workshops: WorkshopRepository) {}
+
+  execute(id: number, input: WorkshopInput): Promise<Workshop> {
+    return this.workshops.update(id, input);
+  }
+}
+
+export class DeleteWorkshop {
+  constructor(private readonly workshops: WorkshopRepository) {}
+
+  execute(id: number): Promise<void> {
+    return this.workshops.remove(id);
   }
 }
 

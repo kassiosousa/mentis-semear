@@ -14,10 +14,13 @@ import {
   UpdateUser,
 } from '@/application/user/useCases/ManageUsers';
 import {
+  CreateWorkshop,
+  DeleteWorkshop,
   FindWorkshop,
   ListWorkshopAssessments,
   ListWorkshopCheckIns,
   ListWorkshops,
+  UpdateWorkshop,
 } from '@/application/workshop/useCases/ManageWorkshops';
 import { HttpAuthRepository } from '@/infrastructure/auth/HttpAuthRepository';
 import { HttpCompanyRepository } from '@/infrastructure/company/HttpCompanyRepository';
@@ -59,6 +62,9 @@ export const container = {
   workshops: {
     list: new ListWorkshops(workshopRepository),
     find: new FindWorkshop(workshopRepository),
+    create: new CreateWorkshop(workshopRepository),
+    update: new UpdateWorkshop(workshopRepository),
+    remove: new DeleteWorkshop(workshopRepository),
     checkIns: new ListWorkshopCheckIns(workshopRepository),
     assessments: new ListWorkshopAssessments(workshopRepository),
   },

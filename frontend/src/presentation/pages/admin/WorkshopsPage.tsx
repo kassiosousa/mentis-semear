@@ -1,11 +1,20 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, ChevronLeft, ChevronRight, FilterX } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, FilterX, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import type { Workshop } from '@/domain/workshop/entities/Workshop';
 import { isPast } from '@/domain/workshop/entities/Workshop';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/presentation/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/presentation/components/ui/dialog';
 import { Input } from '@/presentation/components/ui/input';
 import { Label } from '@/presentation/components/ui/label';
 import {
@@ -26,8 +35,9 @@ import {
   TableRow,
 } from '@/presentation/components/ui/table';
 import { useDirectory } from '@/presentation/hooks/useDirectory';
-import { useWorkshops } from '@/presentation/hooks/useWorkshops';
+import { useDeleteWorkshop, useWorkshops } from '@/presentation/hooks/useWorkshops';
 import { AssessmentSummary, CheckInCount } from '@/presentation/pages/admin/WorkshopMetrics';
+import { WorkshopFormDialog } from '@/presentation/pages/admin/WorkshopFormDialog';
 
 const ALL = 'todos';
 const COLUMNS = 8;
@@ -52,6 +62,8 @@ interface WorkshopTableProps {
   emptyMessage: string;
   companyName: (id: number) => string;
   facilitatorName: (id: string | null) => string | null;
+  onEdit: (workshop: Workshop) => void;
+  onDelete: (workshop: Workshop) => void;
 }
 
 function WorkshopTable({
@@ -61,6 +73,8 @@ function WorkshopTable({
   emptyMessage,
   companyName,
   facilitatorName,
+  onEdit,
+  onDelete,
 }: WorkshopTableProps) {
   return (
     <Table>
@@ -133,13 +147,34 @@ function WorkshopTable({
               <TableCell>
                 <AssessmentSummary workshopId={workshop.id} />
               </TableCell>
-              <TableCell className="pr-4 text-right">
-                <Button variant="ghost" size="icon-sm" asChild title="Abrir detalhe">
-                  <Link to="/admin/oficinas/$id" params={{ id: String(workshop.id) }}>
-                    <ArrowRight className="size-4" />
-                    <span className="sr-only">Abrir oficina #{workshop.id}</span>
-                  </Link>
-                </Button>
+              <TableCell className="pr-4">
+                <div className="flex justify-end gap-1">
+                  <Button variant="ghost" size="icon-sm" asChild title="Abrir detalhe">
+                    <Link to="/admin/oficinas/$id" params={{ id: String(workshop.id) }}>
+                      <ArrowRight className="size-4" />
+                      <span className="sr-only">Abrir oficina #{workshop.id}</span>
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => onEdit(workshop)}
+                    title="Editar"
+                    aria-label={`Editar oficina #${workshop.id}`}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => onDelete(workshop)}
+                    title="Excluir"
+                    aria-label={`Excluir oficina #${workshop.id}`}
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           );
@@ -156,9 +191,14 @@ export function WorkshopsPage() {
   const [toDate, setToDate] = useState('');
   const [page, setPage] = useState(1);
 
+  const [editing, setEditing] = useState<Workshop | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [pendingDeletion, setPendingDeletion] = useState<Workshop | null>(null);
+
   const directory = useDirectory();
   const companyId = company === ALL ? undefined : Number(company);
   const query = useWorkshops({ companyId, page });
+  const deleteWorkshop = useDeleteWorkshop();
 
   const workshops = useMemo(() => query.data?.workshops ?? [], [query.data]);
 
@@ -206,16 +246,47 @@ export function WorkshopsPage() {
 
   const errorMessage = query.isError ? query.error.message : null;
 
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (workshop: Workshop) => {
+    setEditing(workshop);
+    setFormOpen(true);
+  };
+
+  const confirmDeletion = () => {
+    if (pendingDeletion === null) return;
+
+    deleteWorkshop.mutate(pendingDeletion.id, {
+      onSuccess: () => {
+        toast.success('Oficina excluída.', { id: 'workshop-delete' });
+        setPendingDeletion(null);
+      },
+      onError: (error) => {
+        toast.error(error.message, { id: 'workshop-delete' });
+      },
+    });
+  };
+
   const tableProps = {
     pending: query.isPending,
     errorMessage,
     companyName: directory.companyName,
     facilitatorName: directory.facilitatorName,
+    onEdit: openEdit,
+    onDelete: setPendingDeletion,
   };
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeading title="Oficinas" subtitle="Oficinas de todas as empresas." />
+      <PageHeading title="Oficinas" subtitle="Oficinas de todas as empresas.">
+        <Button size="lg" onClick={openCreate}>
+          <Plus className="size-4" />
+          Nova oficina
+        </Button>
+      </PageHeading>
 
       <Card>
         <CardHeader className="border-b">
@@ -352,6 +423,43 @@ export function WorkshopsPage() {
           </div>
         </CardFooter>
       </Card>
+
+      <WorkshopFormDialog open={formOpen} onOpenChange={setFormOpen} workshop={editing} />
+
+      <Dialog
+        open={pendingDeletion !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeletion(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir oficina</DialogTitle>
+            <DialogDescription>
+              {`A oficina #${pendingDeletion?.id ?? ''} será removida permanentemente. Esta ação não pode ser desfeita.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setPendingDeletion(null)}
+              disabled={deleteWorkshop.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              size="lg"
+              onClick={confirmDeletion}
+              disabled={deleteWorkshop.isPending}
+            >
+              {deleteWorkshop.isPending ? 'Excluindo…' : 'Excluir'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
