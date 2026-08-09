@@ -1,109 +1,146 @@
-import { CalendarClock, Plus, Presentation, Ticket } from 'lucide-react';
-import { AwaitingApiRow, StatCard } from '@/presentation/components/dashboard/panels';
+import { CalendarCheck, CalendarClock, Plus, Sprout } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { StatCard } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
-import { Alert, AlertDescription, AlertTitle } from '@/presentation/components/ui/alert';
 import { Button } from '@/presentation/components/ui/button';
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/presentation/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/presentation/components/ui/table';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/presentation/components/ui/dialog';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
-
-const monthlyQuota: number | null = null;
+import { WorkshopCard } from '@/presentation/pages/facilitador/WorkshopCard';
+import { WorkshopFormDialog } from '@/presentation/pages/facilitador/WorkshopFormDialog';
+import {
+  isPastWorkshop,
+  removeMockWorkshop,
+  useMockWorkshops,
+  type FacilitatorWorkshop,
+} from '@/presentation/pages/facilitador/mockWorkshops';
 
 export function FacilitadorDashboardPage() {
   const user = useCurrentUser();
+  const workshops = useMockWorkshops();
 
-  const canCreateWorkshop = monthlyQuota !== null && monthlyQuota > 0;
-  const blockedReason =
-    monthlyQuota === null
-      ? 'Cota indisponível — este módulo ainda não tem endpoint na API.'
-      : 'A cota de oficinas da sua empresa acabou neste mês.';
+  const [editing, setEditing] = useState<FacilitatorWorkshop | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [pendingDeletion, setPendingDeletion] = useState<FacilitatorWorkshop | null>(null);
+
+  const upcoming = useMemo(
+    () => workshops.filter((workshop) => !isPastWorkshop(workshop)),
+    [workshops],
+  );
+
+  const past = useMemo(
+    () => workshops.filter((workshop) => isPastWorkshop(workshop)),
+    [workshops],
+  );
+
+  const ordered = useMemo(
+    () =>
+      [...workshops].sort(
+        (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime(),
+      ),
+    [workshops],
+  );
+
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (workshop: FacilitatorWorkshop) => {
+    setEditing(workshop);
+    setFormOpen(true);
+  };
+
+  const confirmDeletion = () => {
+    if (pendingDeletion === null) return;
+
+    removeMockWorkshop(pendingDeletion.id);
+    toast.success('Oficina excluída.', { id: 'facilitador-workshop-delete' });
+    setPendingDeletion(null);
+  };
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeading title="Painel do Facilitador" subtitle={`Bem-vindo, ${user?.name ?? ''}.`}>
-        <Button
-          size="lg"
-          disabled={!canCreateWorkshop}
-          title={canCreateWorkshop ? undefined : blockedReason}
-        >
+        <Button size="lg" onClick={openCreate}>
           <Plus className="size-4" />
           Nova oficina
         </Button>
       </PageHeading>
 
-      {!canCreateWorkshop && (
-        <Alert>
-          <Ticket />
-          <AlertTitle>Nova oficina indisponível</AlertTitle>
-          <AlertDescription>{blockedReason}</AlertDescription>
-        </Alert>
-      )}
-
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Minhas oficinas" value="—" icon={Presentation} />
-        <StatCard label="Próximas" value="—" icon={CalendarClock} />
-        <StatCard label="Cota disponível no mês" value="—" icon={Ticket} />
+        <StatCard label="Minhas oficinas" value={String(workshops.length)} icon={Sprout} />
+        <StatCard label="Próximas" value={String(upcoming.length)} icon={CalendarClock} />
+        <StatCard label="Realizadas" value={String(past.length)} icon={CalendarCheck} />
       </div>
 
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2">
-            <Presentation className="size-4 text-primary" />
-            Minhas oficinas
-          </CardTitle>
-          <CardDescription>Encontros que você facilita.</CardDescription>
-          <CardAction>
-            <Button variant="outline" size="sm" disabled title="Tela ainda não implementada">
-              Ver todas
+      <div className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">Minhas oficinas</h2>
+          <span className="text-xs text-muted-foreground">
+            {workshops.length === 0
+              ? 'Nenhuma oficina'
+              : `${workshops.length} no total, ${upcoming.length} agendada(s)`}
+          </span>
+        </div>
+
+        {workshops.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border px-4 py-14 text-center">
+            <p className="text-sm text-muted-foreground">
+              Você ainda não tem oficinas. Crie a primeira para começar.
+            </p>
+            <Button className="mt-4" onClick={openCreate}>
+              <Plus className="size-4" />
+              Nova oficina
             </Button>
-          </CardAction>
-        </CardHeader>
-
-        <CardContent className="px-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="pl-4">Data</TableHead>
-                <TableHead>Título</TableHead>
-                <TableHead>Check-ins</TableHead>
-                <TableHead className="pr-4">Avaliação</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <AwaitingApiRow colSpan={4} />
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2">
-            <CalendarClock className="size-4 text-primary" />
-            Próximas oficinas agendadas
-          </CardTitle>
-          <CardDescription>Aviso dos encontros mais próximos.</CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-            Sem dados — este módulo ainda não tem endpoint na API.
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {ordered.map((workshop) => (
+              <WorkshopCard
+                key={workshop.id}
+                workshop={workshop}
+                onEdit={openEdit}
+                onDelete={setPendingDeletion}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <WorkshopFormDialog open={formOpen} onOpenChange={setFormOpen} workshop={editing} />
+
+      <Dialog
+        open={pendingDeletion !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeletion(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir oficina</DialogTitle>
+            <DialogDescription>
+              {`A oficina #${pendingDeletion?.id ?? ''} será removida. Esta ação não pode ser desfeita.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button variant="outline" size="lg" onClick={() => setPendingDeletion(null)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" size="lg" onClick={confirmDeletion}>
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

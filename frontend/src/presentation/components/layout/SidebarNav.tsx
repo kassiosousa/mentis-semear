@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import {
   Building2,
-  CalendarPlus,
   CircleHelp,
   LayoutDashboard,
   LogOut,
@@ -39,8 +38,6 @@ const ADMIN_ITEMS: NavItem[] = [
   { label: 'Oficinas', icon: Presentation },
 ];
 
-const FACILITADOR_ITEMS: NavItem[] = [{ label: 'Nova oficina', icon: CalendarPlus }];
-
 function menuItemsFor(type: UserType): NavItem[] {
   const home: NavItem = {
     label: 'Painel',
@@ -50,7 +47,7 @@ function menuItemsFor(type: UserType): NavItem[] {
   };
 
   if (type === 'admin') return [home, ...ADMIN_ITEMS, SEEDS];
-  if (type === 'facilitador') return [home, ...FACILITADOR_ITEMS, SEEDS];
+  if (type === 'facilitador') return [home];
 
   return [home, SEEDS];
 }
