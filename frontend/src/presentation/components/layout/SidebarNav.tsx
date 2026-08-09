@@ -4,7 +4,6 @@ import {
   CircleHelp,
   LayoutDashboard,
   LogOut,
-  Presentation,
   Settings,
   Sprout,
   Users,
@@ -30,12 +29,10 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const SEEDS: NavItem = { label: 'Sementes', icon: Sprout, to: '/sementes' };
-
 const ADMIN_ITEMS: NavItem[] = [
   { label: 'Usuários', icon: Users, to: '/admin/usuarios' },
   { label: 'Empresas', icon: Building2, to: '/admin/empresas' },
-  { label: 'Oficinas', icon: Presentation },
+  { label: 'Oficinas', icon: Sprout, to: '/admin/oficinas' },
 ];
 
 function menuItemsFor(type: UserType): NavItem[] {
@@ -46,10 +43,9 @@ function menuItemsFor(type: UserType): NavItem[] {
     exact: true,
   };
 
-  if (type === 'admin') return [home, ...ADMIN_ITEMS, SEEDS];
-  if (type === 'facilitador') return [home];
+  if (type === 'admin') return [home, ...ADMIN_ITEMS];
 
-  return [home, SEEDS];
+  return [home];
 }
 
 function groupsFor(type: UserType): NavGroup[] {
