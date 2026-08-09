@@ -18,9 +18,16 @@ import {
 import { HttpAuthRepository } from '@/infrastructure/auth/HttpAuthRepository';
 import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
 import { createApiClient } from '@/infrastructure/http/createApiClient';
+import {
+  FindWorkshop,
+  ListWorkshopAssessments,
+  ListWorkshopCheckIns,
+  ListWorkshops,
+} from '@/application/workshop/useCases/ManageWorkshops';
 import { HttpCompanyRepository } from '@/infrastructure/company/HttpCompanyRepository';
 import { HttpSeedRepository } from '@/infrastructure/seed/HttpSeedRepository';
 import { HttpUserRepository } from '@/infrastructure/user/HttpUserRepository';
+import { HttpWorkshopRepository } from '@/infrastructure/workshop/HttpWorkshopRepository';
 import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
 
 const sessions = new BrowserSessionStorage();
@@ -38,6 +45,7 @@ const authRepository = new HttpAuthRepository(http);
 const seedRepository = new HttpSeedRepository(http);
 const userRepository = new HttpUserRepository(http);
 const companyRepository = new HttpCompanyRepository(http);
+const workshopRepository = new HttpWorkshopRepository(http);
 
 export const container = {
   sessions,
@@ -55,6 +63,12 @@ export const container = {
     create: new CreateUser(userRepository),
     update: new UpdateUser(userRepository),
     remove: new DeleteUser(userRepository),
+  },
+  workshops: {
+    list: new ListWorkshops(workshopRepository),
+    find: new FindWorkshop(workshopRepository),
+    checkIns: new ListWorkshopCheckIns(workshopRepository),
+    assessments: new ListWorkshopAssessments(workshopRepository),
   },
   companies: {
     list: new ListCompanies(companyRepository),
