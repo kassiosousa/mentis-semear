@@ -63,15 +63,14 @@ final class WorkshopController extends Controller
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ['company_id', 'datetime', 'address', 'checkin_link', 'assessment_link'],
+                required: ['company_id', 'datetime', 'address'],
                 properties: [
                     new OA\Property(property: 'company_id', type: 'integer', example: 1),
                     new OA\Property(property: 'user_facilitator_id', type: 'string', format: 'uuid', nullable: true),
                     new OA\Property(property: 'datetime', type: 'string', format: 'date-time', example: '2026-09-01 14:00:00'),
                     new OA\Property(property: 'address', type: 'string', example: 'Auditório - Matriz'),
-                    new OA\Property(property: 'checkin_link', type: 'string', example: 'https://mentis.kassiosousa.com.br/checkin/abc'),
-                    new OA\Property(property: 'assessment_link', type: 'string', example: 'https://mentis.kassiosousa.com.br/avaliacao/abc'),
                 ],
+                // token, checkin_link e assessment_link são gerados no backend, não enviados aqui.
             ),
         ),
         responses: [
@@ -159,9 +158,8 @@ final class WorkshopController extends Controller
                     new OA\Property(property: 'user_facilitator_id', type: 'string', format: 'uuid', nullable: true),
                     new OA\Property(property: 'datetime', type: 'string', format: 'date-time'),
                     new OA\Property(property: 'address', type: 'string'),
-                    new OA\Property(property: 'checkin_link', type: 'string'),
-                    new OA\Property(property: 'assessment_link', type: 'string'),
                 ],
+                // checkin_link/assessment_link não são editáveis (derivam do token).
             ),
         ),
         responses: [
