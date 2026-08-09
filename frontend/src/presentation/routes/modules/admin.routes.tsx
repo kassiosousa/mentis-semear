@@ -12,6 +12,26 @@ export const adminDashboardRoute = createRoute({
   ),
 });
 
+export const adminWorkshopsRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/oficinas',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/WorkshopsPage'),
+    'WorkshopsPage',
+  ),
+});
+
+export const workshopDetailRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/oficinas/$id',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/WorkshopDetailPage'),
+    'WorkshopDetailPage',
+  ),
+});
+
 export const adminCompaniesRoute = createRoute({
   getParentRoute: () => protectedRoute,
   path: '/admin/empresas',

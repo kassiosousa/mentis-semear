@@ -36,7 +36,7 @@ const SEEDS: NavItem = { label: 'Sementes', icon: Sprout, to: '/sementes' };
 const ADMIN_ITEMS: NavItem[] = [
   { label: 'Usuários', icon: Users, to: '/admin/usuarios' },
   { label: 'Empresas', icon: Building2, to: '/admin/empresas' },
-  { label: 'Oficinas', icon: Presentation },
+  { label: 'Oficinas', icon: Presentation, to: '/admin/oficinas' },
 ];
 
 const FACILITADOR_ITEMS: NavItem[] = [{ label: 'Nova oficina', icon: CalendarPlus }];

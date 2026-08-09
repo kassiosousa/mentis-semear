@@ -54,7 +54,12 @@ const SHORTCUTS: Shortcut[] = [
     icon: Building2,
     to: '/admin/empresas',
   },
-  { label: 'Oficinas', description: 'Agenda e histórico', icon: Presentation },
+  {
+    label: 'Oficinas',
+    description: 'Agenda e histórico',
+    icon: Presentation,
+    to: '/admin/oficinas',
+  },
 ];
 
 export function AdminDashboardPage() {
