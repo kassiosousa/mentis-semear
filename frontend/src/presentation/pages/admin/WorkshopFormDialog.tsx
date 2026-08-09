@@ -5,6 +5,7 @@ import { ValidationError } from '@/domain/shared/errors/AppError';
 import type { Workshop } from '@/domain/workshop/entities/Workshop';
 import type { WorkshopInput } from '@/domain/workshop/repositories/WorkshopRepository';
 import { Button } from '@/presentation/components/ui/button';
+import { DateTimePicker } from '@/presentation/components/ui/date-time-picker';
 import {
   Dialog,
   DialogContent,
@@ -228,13 +229,11 @@ export function WorkshopFormDialog({ open, onOpenChange, workshop }: WorkshopFor
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="workshop-datetime">Data e hora</Label>
-            <Input
+            <DateTimePicker
               id="workshop-datetime"
-              type="datetime-local"
               value={values.datetime}
-              onChange={(event) => setField('datetime', event.target.value)}
-              aria-invalid={errors.datetime !== undefined}
-              className="h-10"
+              onChange={(next) => setField('datetime', next)}
+              invalid={errors.datetime !== undefined}
             />
             {errors.datetime !== undefined && (
               <p className="text-xs text-destructive">{errors.datetime}</p>
