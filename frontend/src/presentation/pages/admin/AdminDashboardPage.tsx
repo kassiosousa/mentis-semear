@@ -5,7 +5,7 @@ import {
   CalendarCheck,
   CalendarClock,
   HeartHandshake,
-  Presentation,
+  Sprout,
   ShieldCheck,
   Users,
 } from 'lucide-react';
@@ -57,7 +57,7 @@ const SHORTCUTS: Shortcut[] = [
   {
     label: 'Oficinas',
     description: 'Agenda e histórico',
-    icon: Presentation,
+    icon: Sprout,
     to: '/admin/oficinas',
   },
 ];
@@ -72,7 +72,7 @@ export function AdminDashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Empresas" value="—" icon={Building2} />
         <StatCard label="Usuários" value="—" icon={Users} />
-        <StatCard label="Oficinas" value="—" icon={Presentation} />
+        <StatCard label="Oficinas" value="—" icon={Sprout} />
         <StatCard label="Pessoas alcançadas" value="—" icon={HeartHandshake} />
       </div>
 

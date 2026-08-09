@@ -7,28 +7,25 @@ import {
   ListCompanies,
   UpdateCompany,
 } from '@/application/company/useCases/ManageCompanies';
-import { CreateSeed } from '@/application/seed/useCases/CreateSeed';
-import { ListSeeds } from '@/application/seed/useCases/ListSeeds';
 import {
   CreateUser,
   DeleteUser,
   ListUsers,
   UpdateUser,
 } from '@/application/user/useCases/ManageUsers';
-import { HttpAuthRepository } from '@/infrastructure/auth/HttpAuthRepository';
-import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
-import { createApiClient } from '@/infrastructure/http/createApiClient';
 import {
   FindWorkshop,
   ListWorkshopAssessments,
   ListWorkshopCheckIns,
   ListWorkshops,
 } from '@/application/workshop/useCases/ManageWorkshops';
+import { HttpAuthRepository } from '@/infrastructure/auth/HttpAuthRepository';
 import { HttpCompanyRepository } from '@/infrastructure/company/HttpCompanyRepository';
-import { HttpSeedRepository } from '@/infrastructure/seed/HttpSeedRepository';
+import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
+import { createApiClient } from '@/infrastructure/http/createApiClient';
+import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
 import { HttpUserRepository } from '@/infrastructure/user/HttpUserRepository';
 import { HttpWorkshopRepository } from '@/infrastructure/workshop/HttpWorkshopRepository';
-import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
 
 const sessions = new BrowserSessionStorage();
 
@@ -42,7 +39,6 @@ const apiClient = createApiClient({
 const http = new AxiosHttpClient(apiClient);
 
 const authRepository = new HttpAuthRepository(http);
-const seedRepository = new HttpSeedRepository(http);
 const userRepository = new HttpUserRepository(http);
 const companyRepository = new HttpCompanyRepository(http);
 const workshopRepository = new HttpWorkshopRepository(http);
@@ -53,10 +49,6 @@ export const container = {
     signIn: new SignIn(authRepository, sessions),
     signOut: new SignOut(authRepository, sessions),
     restoreSession: new RestoreSession(authRepository, sessions),
-  },
-  seeds: {
-    list: new ListSeeds(seedRepository),
-    create: new CreateSeed(seedRepository),
   },
   users: {
     list: new ListUsers(userRepository),
