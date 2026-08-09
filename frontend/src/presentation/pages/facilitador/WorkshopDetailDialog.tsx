@@ -1,6 +1,5 @@
 import { Building2, CalendarClock, MapPin, Pencil, Star, UserRound, Users } from 'lucide-react';
 import type { ComponentType, ReactNode } from 'react';
-import { Badge } from '@/presentation/components/ui/badge';
 import { Button } from '@/presentation/components/ui/button';
 import {
   Dialog,
@@ -13,10 +12,10 @@ import {
 import { useCurrentUser } from '@/presentation/hooks/useSession';
 import {
   companyNameOf,
-  isPastWorkshop,
   type FacilitatorWorkshop,
 } from '@/presentation/pages/facilitador/mockWorkshops';
 import { WorkshopLinkRow } from '@/presentation/pages/facilitador/WorkshopLinkRow';
+import { WorkshopStatusBadge } from '@/presentation/pages/facilitador/WorkshopStatusBadge';
 
 function formatDateTime(iso: string): string {
   const date = new Date(iso);
@@ -73,11 +72,7 @@ export function WorkshopDetailDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Oficina #{workshop?.id ?? ''}
-            {workshop !== null && (
-              <Badge variant={isPastWorkshop(workshop) ? 'secondary' : 'default'}>
-                {isPastWorkshop(workshop) ? 'Realizada' : 'Agendada'}
-              </Badge>
-            )}
+            {workshop !== null && <WorkshopStatusBadge workshop={workshop} />}
           </DialogTitle>
           <DialogDescription>Dados do encontro e links de participação.</DialogDescription>
         </DialogHeader>

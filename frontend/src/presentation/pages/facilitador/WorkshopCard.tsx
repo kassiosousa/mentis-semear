@@ -1,5 +1,4 @@
 import { Building2, CalendarClock, MapPin, Pencil, Star, Trash2, Users } from 'lucide-react';
-import { Badge } from '@/presentation/components/ui/badge';
 import { Button } from '@/presentation/components/ui/button';
 import {
   Card,
@@ -11,10 +10,10 @@ import {
 } from '@/presentation/components/ui/card';
 import {
   companyNameOf,
-  isPastWorkshop,
   type FacilitatorWorkshop,
 } from '@/presentation/pages/facilitador/mockWorkshops';
 import { WorkshopLinkRow } from '@/presentation/pages/facilitador/WorkshopLinkRow';
+import { WorkshopStatusBadge } from '@/presentation/pages/facilitador/WorkshopStatusBadge';
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
@@ -45,14 +44,12 @@ export function WorkshopCard({
   onDelete,
   onShowQr,
 }: WorkshopCardProps) {
-  const past = isPastWorkshop(workshop);
-
   return (
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-base">Oficina #{workshop.id}</CardTitle>
         <CardAction>
-          <Badge variant={past ? 'secondary' : 'default'}>{past ? 'Realizada' : 'Agendada'}</Badge>
+          <WorkshopStatusBadge workshop={workshop} />
         </CardAction>
       </CardHeader>
 
