@@ -1,4 +1,4 @@
-import { CalendarClock, Plus, Presentation, Ticket } from 'lucide-react';
+import { CalendarClock, Plus, Sprout, Ticket } from 'lucide-react';
 import { AwaitingApiRow, StatCard } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { Alert, AlertDescription, AlertTitle } from '@/presentation/components/ui/alert';
@@ -53,7 +53,7 @@ export function FacilitadorDashboardPage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Minhas oficinas" value="—" icon={Presentation} />
+        <StatCard label="Minhas oficinas" value="—" icon={Sprout} />
         <StatCard label="Próximas" value="—" icon={CalendarClock} />
         <StatCard label="Cota disponível no mês" value="—" icon={Ticket} />
       </div>
@@ -61,7 +61,7 @@ export function FacilitadorDashboardPage() {
       <Card>
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2">
-            <Presentation className="size-4 text-primary" />
+            <Sprout className="size-4 text-primary" />
             Minhas oficinas
           </CardTitle>
           <CardDescription>Encontros que você facilita.</CardDescription>

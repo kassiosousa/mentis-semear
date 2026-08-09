@@ -1,4 +1,4 @@
-import { CalendarClock, Presentation, Sprout } from 'lucide-react';
+import { CalendarClock, Sprout } from 'lucide-react';
 import { AwaitingApiBlock, StatCard } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import {
@@ -17,10 +17,9 @@ export function DashboardPage() {
     <div className="flex flex-col gap-6">
       <PageHeading title="Painel" subtitle={`Bem-vindo, ${user?.name ?? ''}.`} />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard label="Oficinas participadas" value="—" icon={Presentation} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatCard label="Oficinas participadas" value="—" icon={Sprout} />
         <StatCard label="Próximos encontros" value="—" icon={CalendarClock} />
-        <StatCard label="Sementes plantadas" value="—" icon={Sprout} />
       </div>
 
       <Card>
