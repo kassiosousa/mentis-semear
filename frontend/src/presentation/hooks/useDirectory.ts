@@ -2,9 +2,13 @@ import { useMemo } from 'react';
 import { useCompanies } from '@/presentation/hooks/useCompanies';
 import { useUsers } from '@/presentation/hooks/useUsers';
 
-export function useDirectory() {
+interface DirectoryOptions {
+  facilitators?: boolean;
+}
+
+export function useDirectory({ facilitators: withFacilitators = true }: DirectoryOptions = {}) {
   const companiesQuery = useCompanies({ page: 1 });
-  const facilitatorsQuery = useUsers({ type: 'facilitador', page: 1 });
+  const facilitatorsQuery = useUsers({ type: 'facilitador', page: 1 }, withFacilitators);
 
   const companies = useMemo(
     () => companiesQuery.data?.companies ?? [],

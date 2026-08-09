@@ -1,8 +1,8 @@
+import { isPast, type Workshop } from '@/domain/workshop/entities/Workshop';
 import { Badge } from '@/presentation/components/ui/badge';
-import { isPastWorkshop, type FacilitatorWorkshop } from '@/presentation/pages/facilitador/mockWorkshops';
 
-export function WorkshopStatusBadge({ workshop }: { workshop: FacilitatorWorkshop }) {
-  if (isPastWorkshop(workshop)) {
+export function WorkshopStatusBadge({ workshop }: { workshop: Workshop }) {
+  if (isPast(workshop)) {
     return <Badge variant="secondary">Realizada</Badge>;
   }
 
