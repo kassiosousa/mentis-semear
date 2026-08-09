@@ -2398,6 +2398,9 @@
                     },
                     "422": {
                         "description": "Falha de validação"
+                    },
+                    "500": {
+                        "description": "Não foi possível gerar um token único para o workshop"
                     }
                 },
                 "security": [
@@ -2577,6 +2580,67 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/public/workshops/{token}": {
+            "get": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Dados públicos do workshop pelo token (sem autenticação)",
+                "description": "Usado pela página pública de check-in/avaliação para resolver o workshop a partir do token do link. Retorna apenas dados do evento — nunca participantes ou dados pessoais.",
+                "operationId": "6fbd4821e0919339951178faee9e6f0a",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Token público do workshop (presente nos links de check-in/avaliação)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "aB3xK9pQ2mL"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados públicos do evento",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "datetime": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2026-09-01T14:00:00Z"
+                                                },
+                                                "address": {
+                                                    "type": "string",
+                                                    "example": "Auditório - Matriz"
+                                                },
+                                                "company": {
+                                                    "type": "string",
+                                                    "example": "ACME Ltda"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Token inválido"
+                    }
+                }
             }
         }
     },
@@ -2866,6 +2930,11 @@
                         "description": "OpenAPI schema only — never instantiated.",
                         "type": "integer",
                         "example": 1
+                    },
+                    "token": {
+                        "description": "Token público (usado nos links de check-in/avaliação)",
+                        "type": "string",
+                        "example": "aB3xK9pQ2mL"
                     },
                     "company_id": {
                         "type": "integer",

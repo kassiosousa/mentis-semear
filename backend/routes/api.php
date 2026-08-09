@@ -17,6 +17,8 @@ Route::get('/health', fn () => response()->json(['status' => 'ok', 'service' => 
 
 // Endpoints públicos (participantes, sem autenticação) — throttle contra abuso.
 Route::prefix('public')->middleware('throttle:60,1')->group(function (): void {
+    // Resolve o workshop pelo token do link (ex.: /checkin/abc) — só dados públicos do evento.
+    Route::get('/workshops/{workshop:token}', [WorkshopController::class, 'publicShow']);
     Route::post('/check-ins', [CheckInController::class, 'publicStore']);
     Route::post('/assessments', [AssessmentController::class, 'publicStore']);
 });

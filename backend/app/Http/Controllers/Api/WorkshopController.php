@@ -79,14 +79,22 @@ final class WorkshopController extends Controller
             new OA\Response(response: 401, description: 'Não autenticado'),
             new OA\Response(response: 403, description: 'Acesso restrito ao perfil'),
             new OA\Response(response: 422, description: 'Falha de validação'),
+            new OA\Response(response: 500, description: 'Não foi possível gerar um token único para o workshop'),
         ],
     )]
     public function store(StoreWorkshopRequest $request): JsonResponse
     {
-        $workshop = Workshop::create([
-            ...$request->validated(),
-            'user_creator_id' => auth('api')->id(),
-        ]);
+        try {
+            $workshop = Workshop::createWithUniqueToken([
+                ...$request->validated(),
+                'user_creator_id' => auth('api')->id(),
+            ]);
+        } catch (\RuntimeException) {
+            // Colisões de token esgotaram as tentativas — nada foi persistido.
+            return response()->json([
+                'message' => 'Não foi possível criar o workshop: falha ao gerar um token único. Tente novamente.',
+            ], 500);
+        }
 
         return response()->json(['data' => $workshop], 201);
     }
@@ -107,6 +115,35 @@ final class WorkshopController extends Controller
     public function show(Workshop $workshop): JsonResponse
     {
         return response()->json(['data' => $workshop]);
+    }
+
+    #[OA\Get(
+        path: '/api/public/workshops/{token}',
+        summary: 'Dados públicos do workshop pelo token (sem autenticação)',
+        description: 'Usado pela página pública de check-in/avaliação para resolver o workshop a partir do token do link. Retorna apenas dados do evento — nunca participantes ou dados pessoais.',
+        tags: ['Público'],
+        parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Token público do workshop (presente nos links de check-in/avaliação)', schema: new OA\Schema(type: 'string', example: 'aB3xK9pQ2mL'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Dados públicos do evento', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'data', type: 'object', properties: [
+                    new OA\Property(property: 'id', type: 'integer', example: 1),
+                    new OA\Property(property: 'datetime', type: 'string', format: 'date-time', example: '2026-09-01T14:00:00Z'),
+                    new OA\Property(property: 'address', type: 'string', example: 'Auditório - Matriz'),
+                    new OA\Property(property: 'company', type: 'string', example: 'ACME Ltda'),
+                ]),
+            ])),
+            new OA\Response(response: 404, description: 'Token inválido'),
+        ],
+    )]
+    public function publicShow(Workshop $workshop): JsonResponse
+    {
+        // Somente dados do evento — nada de check-ins/dados pessoais.
+        return response()->json(['data' => [
+            'id' => $workshop->id,
+            'datetime' => $workshop->datetime,
+            'address' => $workshop->address,
+            'company' => $workshop->company->name,
+        ]]);
     }
 
     #[OA\Put(
