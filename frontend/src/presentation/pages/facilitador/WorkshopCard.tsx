@@ -1,4 +1,4 @@
-import { Building2, CalendarClock, ExternalLink, MapPin, Pencil, Star, Trash2, Users } from 'lucide-react';
+import { Building2, CalendarClock, MapPin, Pencil, Star, Trash2, Users } from 'lucide-react';
 import { Badge } from '@/presentation/components/ui/badge';
 import { Button } from '@/presentation/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import {
   isPastWorkshop,
   type FacilitatorWorkshop,
 } from '@/presentation/pages/facilitador/mockWorkshops';
+import { WorkshopLinkRow } from '@/presentation/pages/facilitador/WorkshopLinkRow';
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
@@ -31,11 +32,19 @@ function formatTime(iso: string): string {
 
 interface WorkshopCardProps {
   workshop: FacilitatorWorkshop;
+  onOpen: (workshop: FacilitatorWorkshop) => void;
   onEdit: (workshop: FacilitatorWorkshop) => void;
   onDelete: (workshop: FacilitatorWorkshop) => void;
+  onShowQr: (label: string, url: string, workshopId: number) => void;
 }
 
-export function WorkshopCard({ workshop, onEdit, onDelete }: WorkshopCardProps) {
+export function WorkshopCard({
+  workshop,
+  onOpen,
+  onEdit,
+  onDelete,
+  onShowQr,
+}: WorkshopCardProps) {
   const past = isPastWorkshop(workshop);
 
   return (
@@ -82,48 +91,48 @@ export function WorkshopCard({ workshop, onEdit, onDelete }: WorkshopCardProps) 
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-3 text-xs">
-          <a
-            href={workshop.checkinLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 text-primary underline underline-offset-2"
-          >
-            <ExternalLink className="size-3" />
-            Check-in
-          </a>
-          <a
-            href={workshop.assessmentLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 text-primary underline underline-offset-2"
-          >
-            <ExternalLink className="size-3" />
-            Avaliação
-          </a>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3">
+          <WorkshopLinkRow
+            compact
+            label="Check-in"
+            url={workshop.checkinLink}
+            onShowQr={() => onShowQr('Check-in', workshop.checkinLink, workshop.id)}
+          />
+          <WorkshopLinkRow
+            compact
+            label="Avaliação"
+            url={workshop.assessmentLink}
+            onShowQr={() => onShowQr('Avaliação', workshop.assessmentLink, workshop.id)}
+          />
         </div>
       </CardContent>
 
-      <CardFooter className="justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEdit(workshop)}
-          aria-label={`Editar oficina #${workshop.id}`}
-        >
-          <Pencil className="size-4" />
-          Editar
+      <CardFooter className="justify-between gap-1">
+        <Button variant="outline" size="sm" onClick={() => onOpen(workshop)}>
+          Ver detalhes
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(workshop)}
-          aria-label={`Excluir oficina #${workshop.id}`}
-          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Trash2 className="size-4" />
-          Excluir
-        </Button>
+
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onEdit(workshop)}
+            title="Editar"
+            aria-label={`Editar oficina #${workshop.id}`}
+          >
+            <Pencil className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onDelete(workshop)}
+            title="Excluir"
+            aria-label={`Excluir oficina #${workshop.id}`}
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );

@@ -12,8 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/presentation/components/ui/dialog';
+import { QrCodeDialog, type QrTarget } from '@/presentation/components/ui/qr-code-dialog';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
 import { WorkshopCard } from '@/presentation/pages/facilitador/WorkshopCard';
+import { WorkshopDetailDialog } from '@/presentation/pages/facilitador/WorkshopDetailDialog';
 import { WorkshopFormDialog } from '@/presentation/pages/facilitador/WorkshopFormDialog';
 import {
   isPastWorkshop,
@@ -29,6 +31,8 @@ export function FacilitadorDashboardPage() {
   const [editing, setEditing] = useState<FacilitatorWorkshop | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [pendingDeletion, setPendingDeletion] = useState<FacilitatorWorkshop | null>(null);
+  const [detail, setDetail] = useState<FacilitatorWorkshop | null>(null);
+  const [qrTarget, setQrTarget] = useState<QrTarget | null>(null);
 
   const upcoming = useMemo(
     () => workshops.filter((workshop) => !isPastWorkshop(workshop)),
@@ -54,8 +58,18 @@ export function FacilitadorDashboardPage() {
   };
 
   const openEdit = (workshop: FacilitatorWorkshop) => {
+    setDetail(null);
     setEditing(workshop);
     setFormOpen(true);
+  };
+
+  const showQr = (label: string, url: string, workshopId: number) => {
+    setQrTarget({
+      title: `QR Code — ${label}`,
+      description: `Oficina #${workshopId}. Aponte a câmera para acessar o formulário.`,
+      url,
+      fileName: `oficina-${workshopId}-${label.toLowerCase().replace(/\W+/g, '-')}`,
+    });
   };
 
   const confirmDeletion = () => {
@@ -107,13 +121,31 @@ export function FacilitadorDashboardPage() {
               <WorkshopCard
                 key={workshop.id}
                 workshop={workshop}
+                onOpen={setDetail}
                 onEdit={openEdit}
                 onDelete={setPendingDeletion}
+                onShowQr={showQr}
               />
             ))}
           </div>
         )}
       </div>
+
+      <WorkshopDetailDialog
+        workshop={detail}
+        onOpenChange={(open) => {
+          if (!open) setDetail(null);
+        }}
+        onEdit={openEdit}
+        onShowQr={showQr}
+      />
+
+      <QrCodeDialog
+        target={qrTarget}
+        onOpenChange={(open) => {
+          if (!open) setQrTarget(null);
+        }}
+      />
 
       <WorkshopFormDialog open={formOpen} onOpenChange={setFormOpen} workshop={editing} />
 
