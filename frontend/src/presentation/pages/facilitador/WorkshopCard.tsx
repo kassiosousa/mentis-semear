@@ -1,4 +1,5 @@
-import { Building2, CalendarClock, MapPin, Pencil, Trash2 } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { ArrowRight, Building2, CalendarClock, MapPin } from 'lucide-react';
 import type { Workshop } from '@/domain/workshop/entities/Workshop';
 import { Button } from '@/presentation/components/ui/button';
 import {
@@ -10,7 +11,6 @@ import {
   CardTitle,
 } from '@/presentation/components/ui/card';
 import { AssessmentSummary, CheckInCount } from '@/presentation/pages/admin/WorkshopMetrics';
-import { WorkshopLinkRow } from '@/presentation/pages/facilitador/WorkshopLinkRow';
 import { WorkshopStatusBadge } from '@/presentation/pages/facilitador/WorkshopStatusBadge';
 
 function formatDate(iso: string): string {
@@ -30,22 +30,9 @@ function formatTime(iso: string): string {
 interface WorkshopCardProps {
   workshop: Workshop;
   companyName: string;
-  onOpen: (workshop: Workshop) => void;
-  onEdit: (workshop: Workshop) => void;
-  onDelete: (workshop: Workshop) => void;
-  onShowQr: (label: string, url: string, workshopId: number) => void;
 }
 
-export function WorkshopCard({
-  workshop,
-  companyName,
-  onOpen,
-  onEdit,
-  onDelete,
-  onShowQr,
-}: WorkshopCardProps) {
-  const hasLinks = workshop.checkinLink !== null || workshop.assessmentLink !== null;
-
+export function WorkshopCard({ workshop, companyName }: WorkshopCardProps) {
   return (
     <Card className="h-full">
       <CardHeader>
@@ -77,55 +64,15 @@ export function WorkshopCard({
           <CheckInCount workshopId={workshop.id} />
           <AssessmentSummary workshopId={workshop.id} />
         </div>
-
-        {hasLinks && (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3">
-            {workshop.checkinLink !== null && (
-              <WorkshopLinkRow
-                compact
-                label="Check-in"
-                url={workshop.checkinLink}
-                onShowQr={() => onShowQr('Check-in', workshop.checkinLink ?? '', workshop.id)}
-              />
-            )}
-            {workshop.assessmentLink !== null && (
-              <WorkshopLinkRow
-                compact
-                label="Avaliação"
-                url={workshop.assessmentLink}
-                onShowQr={() => onShowQr('Avaliação', workshop.assessmentLink ?? '', workshop.id)}
-              />
-            )}
-          </div>
-        )}
       </CardContent>
 
-      <CardFooter className="justify-between gap-1">
-        <Button variant="outline" size="sm" onClick={() => onOpen(workshop)}>
-          Ver detalhes
+      <CardFooter className="justify-end">
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/facilitador/oficinas/$id" params={{ id: String(workshop.id) }}>
+            Ver mais
+            <ArrowRight className="size-4" />
+          </Link>
         </Button>
-
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onEdit(workshop)}
-            title="Editar"
-            aria-label={`Editar oficina #${workshop.id}`}
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onDelete(workshop)}
-            title="Excluir"
-            aria-label={`Excluir oficina #${workshop.id}`}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
       </CardFooter>
     </Card>
   );
