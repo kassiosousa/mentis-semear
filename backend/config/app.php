@@ -55,6 +55,13 @@ return [
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
+    | URL base do frontend (SPA) usada para montar os links públicos de
+    | participação (check-in / avaliação). Em produção front e API ficam no
+    | mesmo domínio, então cai no APP_URL; em dev o front roda noutra porta.
+    */
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

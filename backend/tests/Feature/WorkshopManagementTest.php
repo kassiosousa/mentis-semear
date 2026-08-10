@@ -100,7 +100,7 @@ final class WorkshopManagementTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $company = $this->company();
-        $base = rtrim((string) config('app.url'), '/');
+        $base = rtrim((string) config('app.frontend_url'), '/');
 
         // Payload SEM checkin_link/assessment_link — criação deve funcionar.
         $response = $this->withToken($this->tokenFor($admin))
