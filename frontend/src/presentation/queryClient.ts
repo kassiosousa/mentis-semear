@@ -18,6 +18,7 @@ export function createQueryClient(): QueryClient {
     queryCache: new QueryCache({
       onError: (error, query) => {
         if (error instanceof UnauthorizedError) return;
+        if (query.meta?.silentError === true) return;
 
         toast.error(error.message, {
           id: `query:${JSON.stringify(query.queryKey)}`,
