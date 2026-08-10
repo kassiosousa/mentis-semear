@@ -43,10 +43,33 @@ final class DiaryManagementTest extends TestCase
         $this->getJson('/api/diaries')->assertUnauthorized();
     }
 
-    public function test_facilitador_cannot_list_diaries(): void
+    public function test_facilitador_has_full_crud_on_diaries(): void
     {
-        $token = $this->tokenFor(User::factory()->create(['type' => UserType::Facilitador]));
-        $this->withToken($token)->getJson('/api/diaries')->assertForbidden();
+        $facilitador = User::factory()->create(['type' => UserType::Facilitador]);
+        $token = $this->tokenFor($facilitador);
+        $workshop = $this->workshop();
+
+        // Listar.
+        $this->withToken($token)->getJson('/api/diaries')->assertOk();
+
+        // Criar (o facilitador vira o criador).
+        $created = $this->withToken($token)
+            ->postJson('/api/diaries', $this->payload($workshop))
+            ->assertCreated()
+            ->assertJsonPath('data.user_creator_id', $facilitador->id);
+        $diaryId = $created->json('data.id');
+
+        // Detalhar.
+        $this->withToken($token)->getJson("/api/diaries/{$diaryId}")->assertOk();
+
+        // Editar.
+        $this->withToken($token)
+            ->putJson("/api/diaries/{$diaryId}", ['title' => 'Editado pelo facilitador'])
+            ->assertOk()
+            ->assertJsonPath('data.title', 'Editado pelo facilitador');
+
+        // Deletar.
+        $this->withToken($token)->deleteJson("/api/diaries/{$diaryId}")->assertNoContent();
     }
 
     public function test_usuario_can_create_a_diary_and_becomes_the_creator(): void
