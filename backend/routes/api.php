@@ -42,10 +42,16 @@ Route::middleware(['auth:api', 'type:admin'])->group(function (): void {
     Route::get('logs/{log}', [LogController::class, 'show']);
 });
 
+// Workshops — leitura (listar/detalhar) liberada também ao facilitador.
+Route::middleware(['auth:api', 'type:admin,usuario,facilitador'])->group(function (): void {
+    Route::apiResource('workshops', WorkshopController::class)->only(['index', 'show']);
+});
+
 // Domínio operacional — admin e usuário padrão.
 Route::middleware(['auth:api', 'type:admin,usuario'])->group(function (): void {
     Route::apiResource('companies', CompanyController::class);
-    Route::apiResource('workshops', WorkshopController::class);
+    // Escrita de workshop (criar/editar/deletar) fica restrita a admin/usuário.
+    Route::apiResource('workshops', WorkshopController::class)->except(['index', 'show']);
     Route::apiResource('check-ins', CheckInController::class)->parameters(['check-ins' => 'checkIn']);
     Route::apiResource('assessments', AssessmentController::class);
     Route::apiResource('diaries', DiaryController::class);

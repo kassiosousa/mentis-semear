@@ -43,10 +43,22 @@ final class WorkshopManagementTest extends TestCase
         $this->getJson('/api/workshops')->assertUnauthorized();
     }
 
-    public function test_facilitador_cannot_list_workshops(): void
+    public function test_facilitador_can_read_but_not_write_workshops(): void
     {
+        $admin = User::factory()->admin()->create();
+        $company = $this->company();
+        $workshop = Workshop::create([...$this->payload($company), 'user_creator_id' => $admin->id]);
+
         $token = $this->tokenFor(User::factory()->create(['type' => UserType::Facilitador]));
-        $this->withToken($token)->getJson('/api/workshops')->assertForbidden();
+
+        // Leitura liberada: listar e detalhar.
+        $this->withToken($token)->getJson('/api/workshops')->assertOk();
+        $this->withToken($token)->getJson("/api/workshops/{$workshop->id}")->assertOk();
+
+        // Escrita bloqueada: criar, editar e deletar → 403.
+        $this->withToken($token)->postJson('/api/workshops', $this->payload($company))->assertForbidden();
+        $this->withToken($token)->putJson("/api/workshops/{$workshop->id}", ['address' => 'X'])->assertForbidden();
+        $this->withToken($token)->deleteJson("/api/workshops/{$workshop->id}")->assertForbidden();
     }
 
     public function test_usuario_padrao_can_create_a_workshop(): void
