@@ -40,10 +40,33 @@ final class DiaryEvidenceManagementTest extends TestCase
         $this->getJson('/api/diary-evidences')->assertUnauthorized();
     }
 
-    public function test_facilitador_cannot_list_evidences(): void
+    public function test_facilitador_has_full_crud_on_evidences(): void
     {
-        $token = $this->tokenFor(User::factory()->create(['type' => UserType::Facilitador]));
-        $this->withToken($token)->getJson('/api/diary-evidences')->assertForbidden();
+        $facilitador = User::factory()->create(['type' => UserType::Facilitador]);
+        $token = $this->tokenFor($facilitador);
+        $diary = $this->diary($facilitador);
+
+        // Listar.
+        $this->withToken($token)->getJson('/api/diary-evidences')->assertOk();
+
+        // Criar (o facilitador vira o criador).
+        $id = $this->withToken($token)
+            ->postJson('/api/diary-evidences', ['diary_id' => $diary->id, 'link' => 'https://ex.com/foto.jpg'])
+            ->assertCreated()
+            ->assertJsonPath('data.user_creator_id', $facilitador->id)
+            ->json('data.id');
+
+        // Detalhar.
+        $this->withToken($token)->getJson("/api/diary-evidences/{$id}")->assertOk();
+
+        // Editar.
+        $this->withToken($token)
+            ->putJson("/api/diary-evidences/{$id}", ['link' => 'https://ex.com/nova.jpg'])
+            ->assertOk()
+            ->assertJsonPath('data.link', 'https://ex.com/nova.jpg');
+
+        // Deletar.
+        $this->withToken($token)->deleteJson("/api/diary-evidences/{$id}")->assertNoContent();
     }
 
     public function test_user_can_create_evidence_and_becomes_creator(): void
