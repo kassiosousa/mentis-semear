@@ -16,14 +16,13 @@ final class StoreWorkshopRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        // user_creator_id não é aceito aqui — é definido como o usuário autenticado.
+        // user_creator_id não é aceito aqui — é o usuário autenticado.
+        // checkin_link/assessment_link também não: são gerados no backend a partir do token.
         return [
             'company_id' => ['required', 'integer', 'exists:companies,id'],
             'user_facilitator_id' => ['nullable', 'string', 'exists:users,id'],
             'datetime' => ['required', 'date'],
             'address' => ['required', 'string', 'max:255'],
-            'checkin_link' => ['required', 'string', 'max:255'],
-            'assessment_link' => ['required', 'string', 'max:255'],
         ];
     }
 }

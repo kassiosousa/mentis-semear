@@ -2337,9 +2337,7 @@
                                 "required": [
                                     "company_id",
                                     "datetime",
-                                    "address",
-                                    "checkin_link",
-                                    "assessment_link"
+                                    "address"
                                 ],
                                 "properties": {
                                     "company_id": {
@@ -2359,14 +2357,6 @@
                                     "address": {
                                         "type": "string",
                                         "example": "Auditório - Matriz"
-                                    },
-                                    "checkin_link": {
-                                        "type": "string",
-                                        "example": "https://mentis.kassiosousa.com.br/checkin/abc"
-                                    },
-                                    "assessment_link": {
-                                        "type": "string",
-                                        "example": "https://mentis.kassiosousa.com.br/avaliacao/abc"
                                     }
                                 },
                                 "type": "object"
@@ -2493,12 +2483,6 @@
                                         "format": "date-time"
                                     },
                                     "address": {
-                                        "type": "string"
-                                    },
-                                    "checkin_link": {
-                                        "type": "string"
-                                    },
-                                    "assessment_link": {
                                         "type": "string"
                                     }
                                 },

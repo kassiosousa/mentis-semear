@@ -29,13 +29,12 @@ final class WorkshopManagementTest extends TestCase
     /** @return array<string, mixed> */
     private function payload(Company $company, ?User $facilitator = null): array
     {
+        // Sem checkin_link/assessment_link: são gerados no backend a partir do token.
         return [
             'company_id' => $company->id,
             'user_facilitator_id' => $facilitator?->id,
             'datetime' => '2026-09-01 14:00:00',
             'address' => 'Auditório',
-            'checkin_link' => 'https://ex.com/checkin/abc',
-            'assessment_link' => 'https://ex.com/aval/abc',
         ];
     }
 
@@ -44,10 +43,22 @@ final class WorkshopManagementTest extends TestCase
         $this->getJson('/api/workshops')->assertUnauthorized();
     }
 
-    public function test_facilitador_cannot_list_workshops(): void
+    public function test_facilitador_can_read_but_not_write_workshops(): void
     {
+        $admin = User::factory()->admin()->create();
+        $company = $this->company();
+        $workshop = Workshop::create([...$this->payload($company), 'user_creator_id' => $admin->id]);
+
         $token = $this->tokenFor(User::factory()->create(['type' => UserType::Facilitador]));
-        $this->withToken($token)->getJson('/api/workshops')->assertForbidden();
+
+        // Leitura liberada: listar e detalhar.
+        $this->withToken($token)->getJson('/api/workshops')->assertOk();
+        $this->withToken($token)->getJson("/api/workshops/{$workshop->id}")->assertOk();
+
+        // Escrita bloqueada: criar, editar e deletar → 403.
+        $this->withToken($token)->postJson('/api/workshops', $this->payload($company))->assertForbidden();
+        $this->withToken($token)->putJson("/api/workshops/{$workshop->id}", ['address' => 'X'])->assertForbidden();
+        $this->withToken($token)->deleteJson("/api/workshops/{$workshop->id}")->assertForbidden();
     }
 
     public function test_usuario_padrao_can_create_a_workshop(): void
@@ -83,6 +94,39 @@ final class WorkshopManagementTest extends TestCase
             ->assertJsonPath('data.company_id', $company->id)
             ->assertJsonPath('data.user_creator_id', $admin->id)          // creator = usuário autenticado
             ->assertJsonPath('data.user_facilitator_id', $facilitator->id);
+    }
+
+    public function test_links_are_auto_generated_and_not_required_on_creation(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $company = $this->company();
+        $base = rtrim((string) config('app.frontend_url'), '/');
+
+        // Payload SEM checkin_link/assessment_link — criação deve funcionar.
+        $response = $this->withToken($this->tokenFor($admin))
+            ->postJson('/api/workshops', $this->payload($company))
+            ->assertCreated();
+
+        $token = $response->json('data.token');
+        $this->assertNotEmpty($token);
+        $response
+            ->assertJsonPath('data.checkin_link', "{$base}/checkin/{$token}")
+            ->assertJsonPath('data.assessment_link', "{$base}/avaliacao/{$token}");
+    }
+
+    public function test_links_sent_on_creation_are_ignored(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $company = $this->company();
+
+        // Ainda que enviados, os links não são aceitos — o backend gera os seus.
+        $payload = [...$this->payload($company), 'checkin_link' => 'https://malicioso/x', 'assessment_link' => 'https://malicioso/y'];
+
+        $this->withToken($this->tokenFor($admin))
+            ->postJson('/api/workshops', $payload)
+            ->assertCreated()
+            ->assertJsonMissing(['checkin_link' => 'https://malicioso/x'])
+            ->assertJsonMissing(['assessment_link' => 'https://malicioso/y']);
     }
 
     public function test_create_rejects_a_non_existent_company(): void

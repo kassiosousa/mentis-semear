@@ -1,66 +1,66 @@
-import { Link } from '@tanstack/react-router';
+// import { Link } from '@tanstack/react-router';
 import {
-  ArrowRight,
+  // ArrowRight,
   Building2,
   CalendarCheck,
   CalendarClock,
   HeartHandshake,
   Sprout,
-  ShieldCheck,
+  // ShieldCheck,
   Users,
 } from 'lucide-react';
-import type { ComponentType } from 'react';
+// import type { ComponentType } from 'react';
 import {
   AwaitingApiBlock,
-  AwaitingApiRow,
+  // AwaitingApiRow,
   StatCard,
 } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
-import { Badge } from '@/presentation/components/ui/badge';
+// import { Badge } from '@/presentation/components/ui/badge';
 import {
   Card,
-  CardAction,
+  // CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/presentation/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/presentation/components/ui/table';
+// import {
+//   Table,
+//   TableBody,
+//   TableHead,
+//   TableHeader,
+//   TableRow,
+// } from '@/presentation/components/ui/table';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
 
-interface Shortcut {
-  label: string;
-  description: string;
-  icon: ComponentType<{ className?: string }>;
-  to?: string;
-}
+// interface Shortcut {
+//   label: string;
+//   description: string;
+//   icon: ComponentType<{ className?: string }>;
+//   to?: string;
+// }
 
-const SHORTCUTS: Shortcut[] = [
-  {
-    label: 'Usuários',
-    description: 'Cadastros, perfis e aprovações',
-    icon: Users,
-    to: '/admin/usuarios',
-  },
-  {
-    label: 'Empresas',
-    description: 'Organizações parceiras',
-    icon: Building2,
-    to: '/admin/empresas',
-  },
-  {
-    label: 'Oficinas',
-    description: 'Agenda e histórico',
-    icon: Sprout,
-    to: '/admin/oficinas',
-  },
-];
+// const SHORTCUTS: Shortcut[] = [
+//   {
+//     label: 'Usuários',
+//     description: 'Cadastros, perfis e aprovações',
+//     icon: Users,
+//     to: '/admin/usuarios',
+//   },
+//   {
+//     label: 'Empresas',
+//     description: 'Organizações parceiras',
+//     icon: Building2,
+//     to: '/admin/empresas',
+//   },
+//   {
+//     label: 'Oficinas',
+//     description: 'Agenda e histórico',
+//     icon: Sprout,
+//     to: '/admin/oficinas',
+//   },
+// ];
 
 export function AdminDashboardPage() {
   const user = useCurrentUser();
@@ -76,7 +76,7 @@ export function AdminDashboardPage() {
         <StatCard label="Pessoas alcançadas" value="—" icon={HeartHandshake} />
       </div>
 
-      <Card>
+      {/* <Card>
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2">
             <ShieldCheck className="size-4 text-primary" />
@@ -104,7 +104,7 @@ export function AdminDashboardPage() {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -118,7 +118,7 @@ export function AdminDashboardPage() {
 
           <CardContent>
             <AwaitingApiBlock>
-              Sem dados — este módulo ainda não tem endpoint na API.
+              Sem dados - Em breve.
             </AwaitingApiBlock>
           </CardContent>
         </Card>
@@ -134,13 +134,13 @@ export function AdminDashboardPage() {
 
           <CardContent>
             <AwaitingApiBlock>
-              Sem dados — este módulo ainda não tem endpoint na API.
+              Sem dados - Em breve.
             </AwaitingApiBlock>
           </CardContent>
         </Card>
       </div>
 
-      <div>
+      {/* <div>
         <h2 className="mb-3 text-sm font-medium text-muted-foreground">Atalhos</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -185,7 +185,7 @@ export function AdminDashboardPage() {
             );
           })}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

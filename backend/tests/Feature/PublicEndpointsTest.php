@@ -19,9 +19,10 @@ final class PublicEndpointsTest extends TestCase
         $creator = User::factory()->create();
         $company = Company::create(['name' => 'ACME', 'address' => 'R. 1', 'email' => 'a@ex.com']);
 
+        // checkin_link/assessment_link são gerados no backend a partir do token.
         return Workshop::create([
             'company_id' => $company->id, 'user_creator_id' => $creator->id, 'user_facilitator_id' => $creator->id,
-            'datetime' => now(), 'address' => 'L', 'checkin_link' => 'c', 'assessment_link' => 'a',
+            'datetime' => now(), 'address' => 'L',
         ]);
     }
 

@@ -4,13 +4,12 @@ import {
   Building2,
   CalendarDays,
   ClipboardList,
-  ExternalLink,
   MapPin,
   Star,
   UserRound,
   Users,
 } from 'lucide-react';
-import type { ComponentType, ReactNode } from 'react';
+import { useState, type ComponentType, type ReactNode } from 'react';
 import { averageScore } from '@/domain/workshop/entities/Workshop';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { Badge } from '@/presentation/components/ui/badge';
@@ -22,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/presentation/components/ui/card';
+import { QrCodeDialog, type QrTarget } from '@/presentation/components/ui/qr-code-dialog';
 import { Skeleton } from '@/presentation/components/ui/skeleton';
 import {
   Table,
@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { WorkshopLinkRow } from '@/presentation/components/workshop/WorkshopLinkRow';
 import { useDirectory } from '@/presentation/hooks/useDirectory';
 import {
   useWorkshop,
@@ -88,6 +89,17 @@ function Field({
 export function WorkshopDetailPage() {
   const { id } = workshopDetailRoute.useParams();
   const workshopId = Number(id);
+
+  const [qrTarget, setQrTarget] = useState<QrTarget | null>(null);
+
+  const showQr = (label: string, url: string) => {
+    setQrTarget({
+      title: `QR Code — ${label}`,
+      description: `Oficina #${workshopId}. Aponte a câmera para acessar o formulário.`,
+      url,
+      fileName: `oficina-${workshopId}-${label.toLowerCase().replace(/\W+/g, '-')}`,
+    });
+  };
 
   const directory = useDirectory();
   const workshop = useWorkshop(workshopId);
@@ -158,43 +170,38 @@ export function WorkshopDetailPage() {
                 {workshop.data.address}
               </Field>
 
-              <Field icon={UserRound} label="Criado por">
-                {directory.facilitatorName(workshop.data.creatorId) ?? '—'}
-              </Field>
-
               <Field icon={CalendarDays} label="Cadastrada em">
                 {formatDateTime(workshop.data.createdAt)}
               </Field>
+            </div>
+          )}
 
-              <Field icon={ExternalLink} label="Link de check-in">
-                {workshop.data.checkinLink === null ? (
-                  '—'
-                ) : (
-                  <a
-                    href={workshop.data.checkinLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary underline underline-offset-2"
-                  >
-                    Abrir formulário
-                  </a>
-                )}
-              </Field>
+          {workshop.isSuccess && (
+            <div className="mt-5 flex flex-col gap-2">
+              <p className="text-xs font-medium text-muted-foreground">Links de participação</p>
 
-              <Field icon={ExternalLink} label="Link de avaliação">
-                {workshop.data.assessmentLink === null ? (
-                  '—'
-                ) : (
-                  <a
-                    href={workshop.data.assessmentLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary underline underline-offset-2"
-                  >
-                    Abrir formulário
-                  </a>
-                )}
-              </Field>
+              {workshop.data.checkinLink === null && workshop.data.assessmentLink === null ? (
+                <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+                  A API ainda não retornou os links desta oficina.
+                </p>
+              ) : (
+                <>
+                  {workshop.data.checkinLink !== null && (
+                    <WorkshopLinkRow
+                      label="Check-in"
+                      url={workshop.data.checkinLink}
+                      onShowQr={() => showQr('Check-in', workshop.data.checkinLink ?? '')}
+                    />
+                  )}
+                  {workshop.data.assessmentLink !== null && (
+                    <WorkshopLinkRow
+                      label="Avaliação"
+                      url={workshop.data.assessmentLink}
+                      onShowQr={() => showQr('Avaliação', workshop.data.assessmentLink ?? '')}
+                    />
+                  )}
+                </>
+              )}
             </div>
           )}
         </CardContent>
@@ -354,6 +361,13 @@ export function WorkshopDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      <QrCodeDialog
+        target={qrTarget}
+        onOpenChange={(open) => {
+          if (!open) setQrTarget(null);
+        }}
+      />
     </div>
   );
 }
