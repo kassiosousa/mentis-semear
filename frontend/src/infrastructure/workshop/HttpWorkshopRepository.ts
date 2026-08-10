@@ -95,8 +95,6 @@ function toBody(input: WorkshopInput) {
     user_facilitator_id: input.facilitatorId,
     datetime: input.datetime,
     address: input.address,
-    checkin_link: input.checkinLink,
-    assessment_link: input.assessmentLink,
   };
 }
 

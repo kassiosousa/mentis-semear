@@ -32,8 +32,6 @@ const schema = z.object({
   companyId: z.string().min(1, 'Selecione a empresa.'),
   datetime: z.string().min(1, 'Informe a data e a hora.'),
   address: z.string().min(1, 'Informe o local.'),
-  checkinLink: z.url('Informe uma URL válida.'),
-  assessmentLink: z.url('Informe uma URL válida.'),
 });
 
 interface FormValues {
@@ -41,8 +39,6 @@ interface FormValues {
   facilitatorId: string;
   datetime: string;
   address: string;
-  checkinLink: string;
-  assessmentLink: string;
 }
 
 const EMPTY: FormValues = {
@@ -50,8 +46,6 @@ const EMPTY: FormValues = {
   facilitatorId: NO_FACILITATOR,
   datetime: '',
   address: '',
-  checkinLink: '',
-  assessmentLink: '',
 };
 
 function toLocalInput(iso: string): string {
@@ -96,8 +90,6 @@ export function WorkshopFormDialog({ open, onOpenChange, workshop }: WorkshopFor
             facilitatorId: workshop.facilitatorId ?? NO_FACILITATOR,
             datetime: toLocalInput(workshop.datetime),
             address: workshop.address,
-            checkinLink: workshop.checkinLink ?? '',
-            assessmentLink: workshop.assessmentLink ?? '',
           },
     );
     setErrors({});
@@ -131,8 +123,6 @@ export function WorkshopFormDialog({ open, onOpenChange, workshop }: WorkshopFor
       companyId: values.companyId,
       datetime: values.datetime,
       address: values.address.trim(),
-      checkinLink: values.checkinLink.trim(),
-      assessmentLink: values.assessmentLink.trim(),
     };
 
     const parsed = schema.safeParse(candidate);
@@ -154,8 +144,6 @@ export function WorkshopFormDialog({ open, onOpenChange, workshop }: WorkshopFor
       facilitatorId: values.facilitatorId === NO_FACILITATOR ? null : values.facilitatorId,
       datetime: toIso(candidate.datetime),
       address: candidate.address,
-      checkinLink: candidate.checkinLink,
-      assessmentLink: candidate.assessmentLink,
     };
 
     if (workshop === null) {
@@ -255,37 +243,6 @@ export function WorkshopFormDialog({ open, onOpenChange, workshop }: WorkshopFor
             )}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="workshop-checkin">Link de check-in</Label>
-            <Input
-              id="workshop-checkin"
-              type="url"
-              value={values.checkinLink}
-              onChange={(event) => setField('checkinLink', event.target.value)}
-              aria-invalid={errors.checkinLink !== undefined}
-              placeholder="https://..."
-              className="h-10"
-            />
-            {errors.checkinLink !== undefined && (
-              <p className="text-xs text-destructive">{errors.checkinLink}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="workshop-assessment">Link de avaliação</Label>
-            <Input
-              id="workshop-assessment"
-              type="url"
-              value={values.assessmentLink}
-              onChange={(event) => setField('assessmentLink', event.target.value)}
-              aria-invalid={errors.assessmentLink !== undefined}
-              placeholder="https://..."
-              className="h-10"
-            />
-            {errors.assessmentLink !== undefined && (
-              <p className="text-xs text-destructive">{errors.assessmentLink}</p>
-            )}
-          </div>
 
           <DialogFooter>
             <Button
