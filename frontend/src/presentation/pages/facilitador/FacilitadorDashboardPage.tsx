@@ -1,109 +1,128 @@
-import { CalendarClock, Plus, Sprout, Ticket } from 'lucide-react';
-import { AwaitingApiRow, StatCard } from '@/presentation/components/dashboard/panels';
+import { CalendarCheck, CalendarClock, ChevronLeft, ChevronRight, Sprout } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { isPast } from '@/domain/workshop/entities/Workshop';
+import { StatCard } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
-import { Alert, AlertDescription, AlertTitle } from '@/presentation/components/ui/alert';
 import { Button } from '@/presentation/components/ui/button';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/presentation/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/presentation/components/ui/table';
+import { Skeleton } from '@/presentation/components/ui/skeleton';
+import { useDirectory } from '@/presentation/hooks/useDirectory';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
-
-const monthlyQuota: number | null = null;
+import { useWorkshops } from '@/presentation/hooks/useWorkshops';
+import { WorkshopCard } from '@/presentation/pages/facilitador/WorkshopCard';
 
 export function FacilitadorDashboardPage() {
   const user = useCurrentUser();
+  const [page, setPage] = useState(1);
 
-  const canCreateWorkshop = monthlyQuota !== null && monthlyQuota > 0;
-  const blockedReason =
-    monthlyQuota === null
-      ? 'Cota indisponível — este módulo ainda não tem endpoint na API.'
-      : 'A cota de oficinas da sua empresa acabou neste mês.';
+  const directory = useDirectory({ facilitators: false });
+  const query = useWorkshops({ page });
+
+  const mine = useMemo(() => {
+    const all = query.data?.workshops ?? [];
+    if (user === null) return [];
+
+    return all
+      .filter((workshop) => workshop.facilitatorId === user.id)
+      .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
+  }, [query.data, user]);
+
+  const upcoming = useMemo(() => mine.filter((workshop) => !isPast(workshop)), [mine]);
+  const past = useMemo(() => mine.filter((workshop) => isPast(workshop)), [mine]);
+
+  const perPage = query.data?.perPage ?? 0;
+  const total = query.data?.total ?? 0;
+  const currentPage = query.data?.currentPage ?? page;
+  const lastPage = perPage > 0 ? Math.max(1, Math.ceil(total / perPage)) : 1;
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeading title="Painel do Facilitador" subtitle={`Bem-vindo, ${user?.name ?? ''}.`}>
-        <Button
-          size="lg"
-          disabled={!canCreateWorkshop}
-          title={canCreateWorkshop ? undefined : blockedReason}
-        >
-          <Plus className="size-4" />
-          Nova oficina
-        </Button>
-      </PageHeading>
-
-      {!canCreateWorkshop && (
-        <Alert>
-          <Ticket />
-          <AlertTitle>Nova oficina indisponível</AlertTitle>
-          <AlertDescription>{blockedReason}</AlertDescription>
-        </Alert>
-      )}
+      <PageHeading title="Painel do Facilitador" subtitle={`Bem-vindo, ${user?.name ?? ''}.`} />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Minhas oficinas" value="—" icon={Sprout} />
-        <StatCard label="Próximas" value="—" icon={CalendarClock} />
-        <StatCard label="Cota disponível no mês" value="—" icon={Ticket} />
+        <StatCard
+          label="Minhas oficinas"
+          value={query.isPending ? '—' : String(mine.length)}
+          icon={Sprout}
+        />
+        <StatCard
+          label="Próximas"
+          value={query.isPending ? '—' : String(upcoming.length)}
+          icon={CalendarClock}
+        />
+        <StatCard
+          label="Realizadas"
+          value={query.isPending ? '—' : String(past.length)}
+          icon={CalendarCheck}
+        />
       </div>
 
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2">
-            <Sprout className="size-4 text-primary" />
-            Minhas oficinas
-          </CardTitle>
-          <CardDescription>Encontros que você facilita.</CardDescription>
-          <CardAction>
-            <Button variant="outline" size="sm" disabled title="Tela ainda não implementada">
-              Ver todas
-            </Button>
-          </CardAction>
-        </CardHeader>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="text-sm font-medium text-muted-foreground">Minhas oficinas</h2>
+          {lastPage > 1 && (
+            <span className="text-xs text-muted-foreground">
+              Página {currentPage} de {lastPage}
+            </span>
+          )}
+        </div>
 
-        <CardContent className="px-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="pl-4">Data</TableHead>
-                <TableHead>Título</TableHead>
-                <TableHead>Check-ins</TableHead>
-                <TableHead className="pr-4">Avaliação</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <AwaitingApiRow colSpan={4} />
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2">
-            <CalendarClock className="size-4 text-primary" />
-            Próximas oficinas agendadas
-          </CardTitle>
-          <CardDescription>Aviso dos encontros mais próximos.</CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-            Sem dados — este módulo ainda não tem endpoint na API.
+        {query.isPending && (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-64 w-full rounded-xl" />
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {query.isError && (
+          <div className="rounded-xl border border-dashed border-destructive/40 px-4 py-14 text-center">
+            <p className="text-sm text-destructive">{query.error.message}</p>
+          </div>
+        )}
+
+        {query.isSuccess && mine.length === 0 && (
+          <div className="rounded-xl border border-dashed border-border px-4 py-14 text-center">
+            <p className="text-sm text-muted-foreground">
+              Nenhuma oficina atribuída a você nesta página.
+            </p>
+          </div>
+        )}
+
+        {mine.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {mine.map((workshop) => (
+              <WorkshopCard
+                key={workshop.id}
+                workshop={workshop}
+                companyName={directory.companyName(workshop.companyId)}
+              />
+            ))}
+          </div>
+        )}
+
+        {lastPage > 1 && (
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+              disabled={currentPage <= 1 || query.isFetching}
+            >
+              <ChevronLeft className="size-4" />
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((value) => value + 1)}
+              disabled={currentPage >= lastPage || query.isFetching}
+            >
+              Próxima
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

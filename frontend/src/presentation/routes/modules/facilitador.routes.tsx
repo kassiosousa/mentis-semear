@@ -11,3 +11,13 @@ export const facilitadorDashboardRoute = createRoute({
     'FacilitadorDashboardPage',
   ),
 });
+
+export const facilitadorWorkshopRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/facilitador/oficinas/$id',
+  beforeLoad: requireType('facilitador'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/facilitador/WorkshopDetailPage'),
+    'WorkshopDetailPage',
+  ),
+});

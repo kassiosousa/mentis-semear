@@ -12,11 +12,12 @@ export const userKeys = {
   list: (filters: UserFilters) => [...userKeys.all, 'list', filters] as const,
 };
 
-export function useUsers(filters: UserFilters) {
+export function useUsers(filters: UserFilters, enabled = true) {
   return useQuery<UserPage>({
     queryKey: userKeys.list(filters),
     queryFn: () => container.users.list.execute(filters),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

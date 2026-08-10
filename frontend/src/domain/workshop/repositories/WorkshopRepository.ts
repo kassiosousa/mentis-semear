@@ -17,8 +17,6 @@ export interface WorkshopInput {
   facilitatorId: string | null;
   datetime: string;
   address: string;
-  checkinLink: string;
-  assessmentLink: string;
 }
 
 export interface WorkshopRepository {
