@@ -11,6 +11,13 @@ export interface Workshop {
   updatedAt: string | null;
 }
 
+export interface PublicWorkshop {
+  id: number;
+  datetime: string;
+  address: string;
+  company: string;
+}
+
 export interface CheckIn {
   id: number;
   workshopId: number;

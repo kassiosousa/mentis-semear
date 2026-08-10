@@ -34,6 +34,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/presentation/components/ui/tooltip';
 import { useDirectory } from '@/presentation/hooks/useDirectory';
 import { useDeleteWorkshop, useWorkshops } from '@/presentation/hooks/useWorkshops';
 import { AssessmentSummary, CheckInCount } from '@/presentation/pages/admin/WorkshopMetrics';
@@ -149,12 +154,17 @@ function WorkshopTable({
               </TableCell>
               <TableCell className="pr-4">
                 <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="icon-sm" asChild title="Abrir detalhe">
-                    <Link to="/admin/oficinas/$id" params={{ id: String(workshop.id) }}>
-                      <ArrowRight className="size-4" />
-                      <span className="sr-only">Abrir oficina #{workshop.id}</span>
-                    </Link>
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon-sm" asChild>
+                        <Link to="/admin/oficinas/$id" params={{ id: String(workshop.id) }}>
+                          <ArrowRight className="size-4" />
+                          <span className="sr-only">Abrir oficina #{workshop.id}</span>
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Ver mais detalhes</TooltipContent>
+                  </Tooltip>
                   <Button
                     variant="ghost"
                     size="icon-sm"
