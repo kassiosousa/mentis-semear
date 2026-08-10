@@ -158,6 +158,10 @@ export function WorkshopDetailPage() {
                 {workshop.data.address}
               </Field>
 
+              <Field icon={UserRound} label="Criado por">
+                {directory.facilitatorName(workshop.data.creatorId) ?? '—'}
+              </Field>
+
               <Field icon={CalendarDays} label="Cadastrada em">
                 {formatDateTime(workshop.data.createdAt)}
               </Field>
