@@ -27,6 +27,11 @@ import {
   ListWorkshops,
   UpdateWorkshop,
 } from '@/application/workshop/useCases/ManageWorkshops';
+import {
+  FindPublicWorkshop,
+  RegisterAssessment,
+  RegisterCheckIn,
+} from '@/application/workshop/useCases/PublicWorkshopAccess';
 import { HttpAuthRepository } from '@/infrastructure/auth/HttpAuthRepository';
 import { HttpCompanyRepository } from '@/infrastructure/company/HttpCompanyRepository';
 import { HttpDiaryRepository } from '@/infrastructure/diary/HttpDiaryRepository';
@@ -34,6 +39,7 @@ import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
 import { createApiClient } from '@/infrastructure/http/createApiClient';
 import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
 import { HttpUserRepository } from '@/infrastructure/user/HttpUserRepository';
+import { HttpPublicWorkshopRepository } from '@/infrastructure/workshop/HttpPublicWorkshopRepository';
 import { HttpWorkshopRepository } from '@/infrastructure/workshop/HttpWorkshopRepository';
 
 const sessions = new BrowserSessionStorage();
@@ -51,6 +57,7 @@ const authRepository = new HttpAuthRepository(http);
 const userRepository = new HttpUserRepository(http);
 const companyRepository = new HttpCompanyRepository(http);
 const workshopRepository = new HttpWorkshopRepository(http);
+const publicWorkshopRepository = new HttpPublicWorkshopRepository(http);
 const diaryRepository = new HttpDiaryRepository(http);
 
 export const container = {
@@ -74,6 +81,11 @@ export const container = {
     remove: new DeleteWorkshop(workshopRepository),
     checkIns: new ListWorkshopCheckIns(workshopRepository),
     assessments: new ListWorkshopAssessments(workshopRepository),
+  },
+  publicWorkshops: {
+    findByToken: new FindPublicWorkshop(publicWorkshopRepository),
+    checkIn: new RegisterCheckIn(publicWorkshopRepository),
+    assess: new RegisterAssessment(publicWorkshopRepository),
   },
   diaries: {
     findByWorkshop: new FindWorkshopDiary(diaryRepository),

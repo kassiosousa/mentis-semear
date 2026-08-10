@@ -38,7 +38,6 @@ import {
   useWorkshopAssessments,
   useWorkshopCheckIns,
 } from '@/presentation/hooks/useWorkshops';
-import { WorkshopLinkActions } from '@/presentation/pages/admin/WorkshopLinkActions';
 import { workshopDetailRoute } from '@/presentation/routes/modules/admin.routes';
 
 const CHECKIN_COLUMNS = 7;
@@ -154,32 +153,26 @@ export function WorkshopDetailPage() {
           {workshop.isError && <p className="text-sm text-destructive">{workshop.error.message}</p>}
 
           {workshop.isSuccess && (
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                <Field icon={CalendarDays} label="Data e hora">
-                  {formatDateTime(workshop.data.datetime)}
-                </Field>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <Field icon={CalendarDays} label="Data e hora">
+                {formatDateTime(workshop.data.datetime)}
+              </Field>
 
-                <Field icon={Building2} label="Empresa">
-                  {directory.companyName(workshop.data.companyId)}
-                </Field>
+              <Field icon={Building2} label="Empresa">
+                {directory.companyName(workshop.data.companyId)}
+              </Field>
 
-                <Field icon={UserRound} label="Aplicador">
-                  {directory.facilitatorName(workshop.data.facilitatorId) ?? 'Não atribuído'}
-                </Field>
+              <Field icon={UserRound} label="Aplicador">
+                {directory.facilitatorName(workshop.data.facilitatorId) ?? 'Não atribuído'}
+              </Field>
 
               <Field icon={MapPin} label="Local">
                 {workshop.data.address}
               </Field>
 
-              <Field icon={UserRound} label="Criado por">
-                {directory.facilitatorName(workshop.data.creatorId) ?? '—'}
-              </Field>
-
               <Field icon={CalendarDays} label="Cadastrada em">
                 {formatDateTime(workshop.data.createdAt)}
               </Field>
-
             </div>
           )}
 

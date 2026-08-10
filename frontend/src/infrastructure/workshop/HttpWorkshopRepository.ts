@@ -21,7 +21,7 @@ interface WorkshopApiModel {
   updated_at?: string | null;
 }
 
-interface CheckInApiModel {
+export interface CheckInApiModel {
   id: number;
   workshop_id: number;
   name: string;
@@ -37,7 +37,7 @@ interface CheckInApiModel {
   created_at?: string | null;
 }
 
-interface AssessmentApiModel {
+export interface AssessmentApiModel {
   id: number;
   workshop_id: number;
   score: number;
@@ -71,7 +71,7 @@ function toWorkshop(model: WorkshopApiModel): Workshop {
   };
 }
 
-function toCheckIn(model: CheckInApiModel): CheckIn {
+export function toCheckIn(model: CheckInApiModel): CheckIn {
   return {
     id: model.id,
     workshopId: model.workshop_id,
@@ -98,7 +98,7 @@ function toBody(input: WorkshopInput) {
   };
 }
 
-function toAssessment(model: AssessmentApiModel): Assessment {
+export function toAssessment(model: AssessmentApiModel): Assessment {
   return {
     id: model.id,
     workshopId: model.workshop_id,
