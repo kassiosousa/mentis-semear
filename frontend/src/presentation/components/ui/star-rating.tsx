@@ -83,13 +83,13 @@ function StarRating({
           onMouseEnter={() => setPreview(score)}
           onFocus={() => setPreview(score)}
           onBlur={() => setPreview(null)}
-          className="rounded-md p-0.5 outline-none transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 enabled:hover:scale-110 disabled:pointer-events-none"
+          className="rounded-md p-0.5 outline-none transition-transform focus-visible:ring-3 focus-visible:ring-gold/50 enabled:hover:scale-110 disabled:pointer-events-none"
         >
           <Star
             className={cn(
               "size-6 transition-colors sm:size-7",
               score <= active
-                ? "fill-primary text-primary"
+                ? "fill-gold text-gold"
                 : "fill-muted text-muted-foreground/40"
             )}
           />

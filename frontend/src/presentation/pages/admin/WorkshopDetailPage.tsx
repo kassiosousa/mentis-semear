@@ -4,7 +4,6 @@ import {
   Building2,
   CalendarDays,
   ClipboardList,
-  ExternalLink,
   MapPin,
   Star,
   UserRound,
@@ -37,6 +36,7 @@ import {
   useWorkshopAssessments,
   useWorkshopCheckIns,
 } from '@/presentation/hooks/useWorkshops';
+import { WorkshopLinkActions } from '@/presentation/pages/admin/WorkshopLinkActions';
 import { workshopDetailRoute } from '@/presentation/routes/modules/admin.routes';
 
 const CHECKIN_COLUMNS = 7;
@@ -141,56 +141,42 @@ export function WorkshopDetailPage() {
           {workshop.isError && <p className="text-sm text-destructive">{workshop.error.message}</p>}
 
           {workshop.isSuccess && (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              <Field icon={CalendarDays} label="Data e hora">
-                {formatDateTime(workshop.data.datetime)}
-              </Field>
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <Field icon={CalendarDays} label="Data e hora">
+                  {formatDateTime(workshop.data.datetime)}
+                </Field>
 
-              <Field icon={Building2} label="Empresa">
-                {directory.companyName(workshop.data.companyId)}
-              </Field>
+                <Field icon={Building2} label="Empresa">
+                  {directory.companyName(workshop.data.companyId)}
+                </Field>
 
-              <Field icon={UserRound} label="Aplicador">
-                {directory.facilitatorName(workshop.data.facilitatorId) ?? 'Não atribuído'}
-              </Field>
+                <Field icon={UserRound} label="Aplicador">
+                  {directory.facilitatorName(workshop.data.facilitatorId) ?? 'Não atribuído'}
+                </Field>
 
-              <Field icon={MapPin} label="Local">
-                {workshop.data.address}
-              </Field>
+                <Field icon={MapPin} label="Local">
+                  {workshop.data.address}
+                </Field>
 
-              <Field icon={CalendarDays} label="Cadastrada em">
-                {formatDateTime(workshop.data.createdAt)}
-              </Field>
+                <Field icon={CalendarDays} label="Cadastrada em">
+                  {formatDateTime(workshop.data.createdAt)}
+                </Field>
+              </div>
 
-              <Field icon={ExternalLink} label="Link de check-in">
-                {workshop.data.checkinLink === null ? (
-                  '—'
-                ) : (
-                  <a
-                    href={workshop.data.checkinLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary underline underline-offset-2"
-                  >
-                    Abrir formulário
-                  </a>
-                )}
-              </Field>
+              <div className="grid gap-4 border-t border-border pt-6 xl:grid-cols-2">
+                <WorkshopLinkActions
+                  label="Link de check-in"
+                  description="Formulário de presença dos participantes."
+                  url={workshop.data.checkinLink}
+                />
 
-              <Field icon={ExternalLink} label="Link de avaliação">
-                {workshop.data.assessmentLink === null ? (
-                  '—'
-                ) : (
-                  <a
-                    href={workshop.data.assessmentLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary underline underline-offset-2"
-                  >
-                    Abrir formulário
-                  </a>
-                )}
-              </Field>
+                <WorkshopLinkActions
+                  label="Link de avaliação"
+                  description="Pesquisa de satisfação da oficina."
+                  url={workshop.data.assessmentLink}
+                />
+              </div>
             </div>
           )}
         </CardContent>

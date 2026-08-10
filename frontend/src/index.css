@@ -22,6 +22,8 @@
     --color-secondary-500: var(--secondary-500);
     --color-secondary-700: var(--secondary-700);
 
+    --color-gold: var(--gold);
+
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -76,6 +78,8 @@
     --secondary-500: #1E7A4B;
     --secondary-700: #155C38;
 
+    --gold: #E0A312;
+
     --background: var(--surface);
     --foreground: var(--body);
     --card: var(--surface);
@@ -123,6 +127,8 @@
     --primary-700: #39751F;
     --secondary-500: #2E9C62;
     --secondary-700: #155C38;
+
+    --gold: #F5C13D;
 
     --background: var(--surface);
     --foreground: var(--body);
