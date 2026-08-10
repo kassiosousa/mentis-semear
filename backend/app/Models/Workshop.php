@@ -57,7 +57,8 @@ class Workshop extends Model
 
     private static function publicLink(string $path, string $token): string
     {
-        return rtrim((string) config('app.url'), '/')."/{$path}/{$token}";
+        // Aponta para o frontend (SPA), não para a API — em dev rodam em portas diferentes.
+        return rtrim((string) config('app.frontend_url'), '/')."/{$path}/{$token}";
     }
 
     /**

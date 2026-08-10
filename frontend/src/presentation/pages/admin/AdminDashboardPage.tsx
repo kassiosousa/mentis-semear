@@ -76,7 +76,7 @@ export function AdminDashboardPage() {
         <StatCard label="Pessoas alcançadas" value="—" icon={HeartHandshake} />
       </div>
 
-      <Card>
+      {/* <Card>
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2">
             <ShieldCheck className="size-4 text-primary" />
@@ -104,7 +104,7 @@ export function AdminDashboardPage() {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -118,7 +118,7 @@ export function AdminDashboardPage() {
 
           <CardContent>
             <AwaitingApiBlock>
-              Sem dados — este módulo ainda não tem endpoint na API.
+              Sem dados - Em breve.
             </AwaitingApiBlock>
           </CardContent>
         </Card>
@@ -134,13 +134,13 @@ export function AdminDashboardPage() {
 
           <CardContent>
             <AwaitingApiBlock>
-              Sem dados — este módulo ainda não tem endpoint na API.
+              Sem dados - Em breve.
             </AwaitingApiBlock>
           </CardContent>
         </Card>
       </div>
 
-      <div>
+      {/* <div>
         <h2 className="mb-3 text-sm font-medium text-muted-foreground">Atalhos</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -185,7 +185,7 @@ export function AdminDashboardPage() {
             );
           })}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
