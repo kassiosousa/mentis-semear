@@ -1,4 +1,5 @@
-import { Building2, CalendarClock, MapPin, Pencil, Star, Trash2, Users } from 'lucide-react';
+import { Building2, CalendarClock, MapPin, Pencil, Trash2 } from 'lucide-react';
+import type { Workshop } from '@/domain/workshop/entities/Workshop';
 import { Button } from '@/presentation/components/ui/button';
 import {
   Card,
@@ -8,10 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/presentation/components/ui/card';
-import {
-  companyNameOf,
-  type FacilitatorWorkshop,
-} from '@/presentation/pages/facilitador/mockWorkshops';
+import { AssessmentSummary, CheckInCount } from '@/presentation/pages/admin/WorkshopMetrics';
 import { WorkshopLinkRow } from '@/presentation/pages/facilitador/WorkshopLinkRow';
 import { WorkshopStatusBadge } from '@/presentation/pages/facilitador/WorkshopStatusBadge';
 
@@ -30,20 +28,24 @@ function formatTime(iso: string): string {
 }
 
 interface WorkshopCardProps {
-  workshop: FacilitatorWorkshop;
-  onOpen: (workshop: FacilitatorWorkshop) => void;
-  onEdit: (workshop: FacilitatorWorkshop) => void;
-  onDelete: (workshop: FacilitatorWorkshop) => void;
+  workshop: Workshop;
+  companyName: string;
+  onOpen: (workshop: Workshop) => void;
+  onEdit: (workshop: Workshop) => void;
+  onDelete: (workshop: Workshop) => void;
   onShowQr: (label: string, url: string, workshopId: number) => void;
 }
 
 export function WorkshopCard({
   workshop,
+  companyName,
   onOpen,
   onEdit,
   onDelete,
   onShowQr,
 }: WorkshopCardProps) {
+  const hasLinks = workshop.checkinLink !== null || workshop.assessmentLink !== null;
+
   return (
     <Card className="h-full">
       <CardHeader>
@@ -63,7 +65,7 @@ export function WorkshopCard({
 
         <p className="flex items-center gap-2 text-muted-foreground">
           <Building2 className="size-4 shrink-0" />
-          <span className="truncate">{companyNameOf(workshop.companyId)}</span>
+          <span className="truncate">{companyName}</span>
         </p>
 
         <p className="flex items-center gap-2 text-muted-foreground">
@@ -71,37 +73,31 @@ export function WorkshopCard({
           <span className="truncate">{workshop.address}</span>
         </p>
 
-        <div className="mt-1 flex flex-wrap gap-4 border-t border-border pt-3">
-          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums">
-            <Users className="size-4 text-muted-foreground" />
-            {workshop.checkInsCount}
-            <span className="text-xs text-muted-foreground">check-ins</span>
-          </span>
+        <div className="mt-1 flex flex-wrap items-center gap-4 border-t border-border pt-3 text-sm">
+          <CheckInCount workshopId={workshop.id} />
+          <AssessmentSummary workshopId={workshop.id} />
+        </div>
 
-          <span className="inline-flex items-center gap-1.5 text-sm tabular-nums">
-            <Star className="size-4 text-primary" />
-            {workshop.averageScore === null ? (
-              <span className="text-xs text-muted-foreground">Sem avaliação</span>
-            ) : (
-              workshop.averageScore.toFixed(1)
+        {hasLinks && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3">
+            {workshop.checkinLink !== null && (
+              <WorkshopLinkRow
+                compact
+                label="Check-in"
+                url={workshop.checkinLink}
+                onShowQr={() => onShowQr('Check-in', workshop.checkinLink ?? '', workshop.id)}
+              />
             )}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3">
-          <WorkshopLinkRow
-            compact
-            label="Check-in"
-            url={workshop.checkinLink}
-            onShowQr={() => onShowQr('Check-in', workshop.checkinLink, workshop.id)}
-          />
-          <WorkshopLinkRow
-            compact
-            label="Avaliação"
-            url={workshop.assessmentLink}
-            onShowQr={() => onShowQr('Avaliação', workshop.assessmentLink, workshop.id)}
-          />
-        </div>
+            {workshop.assessmentLink !== null && (
+              <WorkshopLinkRow
+                compact
+                label="Avaliação"
+                url={workshop.assessmentLink}
+                onShowQr={() => onShowQr('Avaliação', workshop.assessmentLink ?? '', workshop.id)}
+              />
+            )}
+          </div>
+        )}
       </CardContent>
 
       <CardFooter className="justify-between gap-1">
