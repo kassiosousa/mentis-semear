@@ -1,66 +1,66 @@
-import { Link } from '@tanstack/react-router';
+// import { Link } from '@tanstack/react-router';
 import {
-  ArrowRight,
+  // ArrowRight,
   Building2,
   CalendarCheck,
   CalendarClock,
   HeartHandshake,
   Sprout,
-  ShieldCheck,
+  // ShieldCheck,
   Users,
 } from 'lucide-react';
-import type { ComponentType } from 'react';
+// import type { ComponentType } from 'react';
 import {
   AwaitingApiBlock,
-  AwaitingApiRow,
+  // AwaitingApiRow,
   StatCard,
 } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
-import { Badge } from '@/presentation/components/ui/badge';
+// import { Badge } from '@/presentation/components/ui/badge';
 import {
   Card,
-  CardAction,
+  // CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/presentation/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/presentation/components/ui/table';
+// import {
+//   Table,
+//   TableBody,
+//   TableHead,
+//   TableHeader,
+//   TableRow,
+// } from '@/presentation/components/ui/table';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
 
-interface Shortcut {
-  label: string;
-  description: string;
-  icon: ComponentType<{ className?: string }>;
-  to?: string;
-}
+// interface Shortcut {
+//   label: string;
+//   description: string;
+//   icon: ComponentType<{ className?: string }>;
+//   to?: string;
+// }
 
-const SHORTCUTS: Shortcut[] = [
-  {
-    label: 'Usuários',
-    description: 'Cadastros, perfis e aprovações',
-    icon: Users,
-    to: '/admin/usuarios',
-  },
-  {
-    label: 'Empresas',
-    description: 'Organizações parceiras',
-    icon: Building2,
-    to: '/admin/empresas',
-  },
-  {
-    label: 'Oficinas',
-    description: 'Agenda e histórico',
-    icon: Sprout,
-    to: '/admin/oficinas',
-  },
-];
+// const SHORTCUTS: Shortcut[] = [
+//   {
+//     label: 'Usuários',
+//     description: 'Cadastros, perfis e aprovações',
+//     icon: Users,
+//     to: '/admin/usuarios',
+//   },
+//   {
+//     label: 'Empresas',
+//     description: 'Organizações parceiras',
+//     icon: Building2,
+//     to: '/admin/empresas',
+//   },
+//   {
+//     label: 'Oficinas',
+//     description: 'Agenda e histórico',
+//     icon: Sprout,
+//     to: '/admin/oficinas',
+//   },
+// ];
 
 export function AdminDashboardPage() {
   const user = useCurrentUser();
