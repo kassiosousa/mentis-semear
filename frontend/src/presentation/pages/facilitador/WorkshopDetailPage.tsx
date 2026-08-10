@@ -21,7 +21,7 @@ import {
   useWorkshopCheckIns,
 } from '@/presentation/hooks/useWorkshops';
 import { DiarySection } from '@/presentation/pages/facilitador/DiarySection';
-import { WorkshopLinkRow } from '@/presentation/pages/facilitador/WorkshopLinkRow';
+import { WorkshopLinkRow } from '@/presentation/components/workshop/WorkshopLinkRow';
 import { WorkshopStatusBadge } from '@/presentation/pages/facilitador/WorkshopStatusBadge';
 import { facilitadorWorkshopRoute } from '@/presentation/routes/modules/facilitador.routes';
 
