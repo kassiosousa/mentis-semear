@@ -30,4 +30,10 @@ class Sector extends Model
     {
         return $this->hasMany(CheckIn::class);
     }
+
+    /** Registros do termômetro emocional deste setor. */
+    public function moodEntries(): HasMany
+    {
+        return $this->hasMany(MoodEntry::class);
+    }
 }

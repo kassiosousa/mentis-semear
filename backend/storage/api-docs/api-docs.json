@@ -1094,6 +1094,9 @@
                     },
                     "422": {
                         "description": "Falha de validação"
+                    },
+                    "500": {
+                        "description": "Não foi possível gerar um token único para a empresa"
                     }
                 },
                 "security": [
@@ -1101,6 +1104,75 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/public/companies/{token}": {
+            "get": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Dados públicos da empresa pelo token (sem autenticação)",
+                "description": "Usado pela página pública do termômetro emocional para carregar a empresa e a lista de setores. Retorna apenas dados públicos — nunca participantes ou respostas.",
+                "operationId": "231469805f352441755db7cf463f07b3",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Token público da empresa (do link do termômetro)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "aB3xK9pQ2mL"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados públicos da empresa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "ACME Ltda"
+                                                },
+                                                "sectors": {
+                                                    "description": "Setores para o participante escolher",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Tecnologia da Informação"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Token inválido"
+                    }
+                }
             }
         },
         "/api/companies/{company}": {
@@ -1942,6 +2014,325 @@
                     },
                     "403": {
                         "description": "Acesso restrito (não admin)"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/public/mood-entries": {
+            "post": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Registra o termômetro emocional (público, anônimo)",
+                "operationId": "919d353a39be003f4cfc0f62395fa9a7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "company_id",
+                                    "sector_id",
+                                    "mood"
+                                ],
+                                "properties": {
+                                    "company_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "sector_id": {
+                                        "description": "Setor da empresa (obrigatório)",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "mood": {
+                                        "description": "1 = muito mal … 5 = muito bem",
+                                        "type": "integer",
+                                        "example": 4,
+                                        "maximum": 5,
+                                        "minimum": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MoodEntry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Falha de validação (setor fora da empresa, humor fora de 1–5, etc.)"
+                    }
+                }
+            }
+        },
+        "/api/mood-entries": {
+            "get": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Lista registros do termômetro (paginado)",
+                "description": "Admin vê todos (filtro por empresa); usuário \"empresa\" vê apenas os da própria empresa.",
+                "operationId": "2c43a2a7ce106a1b4aba9e79a137d847",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "Filtra por empresa (apenas admin)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sector_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MoodEntry"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/mood-entries/summary": {
+            "get": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Resumo agregado do termômetro (total, média, distribuição, por setor)",
+                "operationId": "f5e3e477a0998f240fc236892ace2e50",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "Filtra por empresa (apenas admin)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sector_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resumo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 42
+                                                },
+                                                "average": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 3.71,
+                                                    "nullable": true
+                                                },
+                                                "distribution": {
+                                                    "type": "object",
+                                                    "example": {
+                                                        "1": 2,
+                                                        "2": 5,
+                                                        "3": 10,
+                                                        "4": 15,
+                                                        "5": 10
+                                                    }
+                                                },
+                                                "by_sector": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "sector_id": {
+                                                                "type": "integer",
+                                                                "example": 1,
+                                                                "nullable": true
+                                                            },
+                                                            "sector": {
+                                                                "type": "string",
+                                                                "example": "TI",
+                                                                "nullable": true
+                                                            },
+                                                            "total": {
+                                                                "type": "integer",
+                                                                "example": 20
+                                                            },
+                                                            "average": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 4.1
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/mood-entries/{moodEntry}": {
+            "get": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Detalha um registro do termômetro",
+                "operationId": "519b3689a822219766396278bca65208",
+                "parameters": [
+                    {
+                        "name": "moodEntry",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Registro",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MoodEntry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Registro de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Remove um registro do termômetro",
+                "operationId": "43d4c656594d7841eb6292655949f8f3",
+                "parameters": [
+                    {
+                        "name": "moodEntry",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removido"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Registro de outra empresa"
                     },
                     "404": {
                         "description": "Não encontrado"
@@ -3083,6 +3474,11 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "token": {
+                        "description": "Token público (usado no link do termômetro)",
+                        "type": "string",
+                        "example": "aB3xK9pQ2mL"
+                    },
                     "name": {
                         "type": "string",
                         "example": "ACME Ltda"
@@ -3095,6 +3491,11 @@
                         "type": "string",
                         "format": "email",
                         "example": "contato@acme.com"
+                    },
+                    "thermometer_link": {
+                        "description": "Link público do termômetro emocional (derivado do token)",
+                        "type": "string",
+                        "example": "https://mentis.kassiosousa.com.br/termometro/aB3xK9pQ2mL"
                     },
                     "created_at": {
                         "type": "string",
@@ -3192,6 +3593,40 @@
                         "nullable": true
                     },
                     "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "MoodEntry": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "company_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "sector_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "mood": {
+                        "description": "1 = muito mal … 5 = muito bem",
+                        "type": "integer",
+                        "example": 4,
+                        "maximum": 5,
+                        "minimum": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
                         "type": "string",
                         "format": "date-time"
                     }
@@ -3363,6 +3798,10 @@
         {
             "name": "Logs",
             "description": "Logs"
+        },
+        {
+            "name": "MoodEntries",
+            "description": "MoodEntries"
         },
         {
             "name": "Sectors",
