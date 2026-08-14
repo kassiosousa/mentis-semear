@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Company;
+use App\Models\Sector;
 use App\Models\User;
 use App\Models\Workshop;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +31,7 @@ final class PublicEndpointsTest extends TestCase
     private function checkInPayload(Workshop $w, string $cpf = '12345678901'): array
     {
         return [
-            'workshop_id' => $w->id, 'name' => 'Participante', 'position' => 'Analista', 'sector' => 'TI',
+            'workshop_id' => $w->id, 'name' => 'Participante', 'position' => 'Analista',
             'lgpd_read' => true, 'cpf' => $cpf, 'birthday' => '1990-01-01', 'gender' => 'M', 'celphone' => '11999999999',
         ];
     }
@@ -97,5 +98,17 @@ final class PublicEndpointsTest extends TestCase
     public function test_public_workshop_lookup_returns_404_for_unknown_token(): void
     {
         $this->getJson('/api/public/workshops/inexistente')->assertNotFound();
+    }
+
+    public function test_public_workshop_lookup_lists_the_company_sectors(): void
+    {
+        $workshop = $this->workshop();
+        Sector::create(['company_id' => $workshop->company_id, 'name' => 'TI']);
+        Sector::create(['company_id' => $workshop->company_id, 'name' => 'RH']);
+
+        $this->getJson("/api/public/workshops/{$workshop->token}")
+            ->assertOk()
+            ->assertJsonCount(2, 'data.sectors')
+            ->assertJsonPath('data.sectors.0.name', 'RH'); // ordenado por nome
     }
 }

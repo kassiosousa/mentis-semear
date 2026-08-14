@@ -19,7 +19,8 @@ class CheckIn extends Model
         'workshop_id',
         'name',
         'position',
-        'sector',
+        'sector',      // texto livre legado (opcional, retrocompatível)
+        'sector_id',   // setor gerenciado da empresa (opcional)
         'lgpd_read',
         'lgpd_consent_at',
         'cpf',
@@ -42,5 +43,14 @@ class CheckIn extends Model
     public function workshop(): BelongsTo
     {
         return $this->belongsTo(Workshop::class);
+    }
+
+    /**
+     * Setor gerenciado da empresa (opcional).
+     * Nome `managedSector` para não colidir com a coluna legada `sector` (texto).
+     */
+    public function managedSector(): BelongsTo
+    {
+        return $this->belongsTo(Sector::class, 'sector_id');
     }
 }

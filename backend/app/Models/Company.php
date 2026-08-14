@@ -20,4 +20,10 @@ class Company extends Model
     {
         return $this->hasMany(Workshop::class);
     }
+
+    /** Sectors (departments) managed by this company. */
+    public function sectors(): HasMany
+    {
+        return $this->hasMany(Sector::class);
+    }
 }

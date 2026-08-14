@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\DiaryEvidenceController;
 use App\Http\Controllers\Api\LogController;
+use App\Http\Controllers\Api\SectorController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WorkshopController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,11 @@ Route::middleware(['auth:api', 'type:admin,usuario,facilitador'])->group(functio
     Route::apiResource('workshops', WorkshopController::class)->only(['index', 'show']);
     Route::apiResource('diaries', DiaryController::class);
     Route::apiResource('diary-evidences', DiaryEvidenceController::class)->parameters(['diary-evidences' => 'diaryEvidence']);
+});
+
+// Setores — gerenciados por admin (todas as empresas) e por usuário "empresa" (só a sua).
+Route::middleware(['auth:api', 'type:admin,empresa'])->group(function (): void {
+    Route::apiResource('sectors', SectorController::class);
 });
 
 // Domínio operacional — admin e usuário padrão.

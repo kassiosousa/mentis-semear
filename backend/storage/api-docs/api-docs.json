@@ -592,7 +592,6 @@
                                     "workshop_id",
                                     "name",
                                     "position",
-                                    "sector",
                                     "lgpd_read",
                                     "cpf",
                                     "birthday",
@@ -613,8 +612,16 @@
                                         "example": "Analista"
                                     },
                                     "sector": {
+                                        "description": "Texto livre legado (opcional)",
                                         "type": "string",
-                                        "example": "TI"
+                                        "example": "TI",
+                                        "nullable": true
+                                    },
+                                    "sector_id": {
+                                        "description": "Setor da empresa (null = Sem setor definido)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     },
                                     "lgpd_read": {
                                         "type": "boolean",
@@ -697,7 +704,6 @@
                                     "workshop_id",
                                     "name",
                                     "position",
-                                    "sector",
                                     "lgpd_read",
                                     "cpf",
                                     "birthday",
@@ -718,8 +724,16 @@
                                         "example": "Analista"
                                     },
                                     "sector": {
+                                        "description": "Texto livre legado (opcional)",
                                         "type": "string",
-                                        "example": "TI"
+                                        "example": "TI",
+                                        "nullable": true
+                                    },
+                                    "sector_id": {
+                                        "description": "Setor da empresa (null = Sem setor definido)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     },
                                     "lgpd_read": {
                                         "type": "boolean",
@@ -852,7 +866,12 @@
                                         "type": "string"
                                     },
                                     "sector": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "sector_id": {
+                                        "type": "integer",
+                                        "nullable": true
                                     },
                                     "lgpd_read": {
                                         "type": "boolean"
@@ -1935,6 +1954,279 @@
                 ]
             }
         },
+        "/api/sectors": {
+            "get": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Lista setores (paginado)",
+                "description": "Admin vê todos (com filtro opcional por empresa); usuário \"empresa\" vê apenas os da própria empresa.",
+                "operationId": "8f24bd0155ad42e193e044e4bd98d990",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "Filtra por empresa (apenas admin)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Sector"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Cria um setor",
+                "description": "Admin informa company_id; usuário \"empresa\" cria sempre para a própria empresa (company_id ignorado).",
+                "operationId": "f4bbed205f9a62292bde7d8eaa564dfe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "company_id": {
+                                        "description": "Obrigatório para admin; ignorado para usuário \"empresa\"",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Tecnologia da Informação"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Sector"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação (nome duplicado na empresa, etc.)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sectors/{sector}": {
+            "get": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Detalha um setor",
+                "operationId": "bf20c5ac9e22f77237079fe548c95f90",
+                "parameters": [
+                    {
+                        "name": "sector",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Setor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Sector"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Setor de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Atualiza um setor (apenas o nome)",
+                "operationId": "407b40ad20a47f6e4e46e2599d2c59c0",
+                "parameters": [
+                    {
+                        "name": "sector",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Recursos Humanos"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Sector"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Setor de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Remove um setor (check-ins vinculados ficam sem setor)",
+                "operationId": "8094088afa14ee08b3b119ea250ebe5e",
+                "parameters": [
+                    {
+                        "name": "sector",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removido"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Setor de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -2045,6 +2337,12 @@
                                             "facilitador",
                                             "empresa"
                                         ]
+                                    },
+                                    "company_id": {
+                                        "description": "Obrigatório quando type = empresa (empresa existente)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -2178,6 +2476,11 @@
                                             "facilitador",
                                             "empresa"
                                         ]
+                                    },
+                                    "company_id": {
+                                        "description": "Obrigatório quando type = empresa",
+                                        "type": "integer",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -2611,6 +2914,23 @@
                                                 "company": {
                                                     "type": "string",
                                                     "example": "ACME Ltda"
+                                                },
+                                                "sectors": {
+                                                    "description": "Setores da empresa para o participante escolher no check-in",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Tecnologia da Informação"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
                                                 }
                                             },
                                             "type": "object"
@@ -2703,8 +3023,16 @@
                         "example": "Analista"
                     },
                     "sector": {
+                        "description": "Texto livre legado (opcional, retrocompatível)",
                         "type": "string",
-                        "example": "TI"
+                        "example": "TI",
+                        "nullable": true
+                    },
+                    "sector_id": {
+                        "description": "Setor da empresa (null = Sem setor definido)",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
                     },
                     "lgpd_read": {
                         "type": "boolean",
@@ -2870,6 +3198,32 @@
                 },
                 "type": "object"
             },
+            "Sector": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "company_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Tecnologia da Informação"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "properties": {
                     "id": {
@@ -2891,6 +3245,12 @@
                             "facilitador",
                             "empresa"
                         ]
+                    },
+                    "company_id": {
+                        "description": "Empresa vinculada (obrigatório quando type = empresa)",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
                     },
                     "email": {
                         "type": "string",
@@ -3003,6 +3363,10 @@
         {
             "name": "Logs",
             "description": "Logs"
+        },
+        {
+            "name": "Sectors",
+            "description": "Sectors"
         },
         {
             "name": "Users",

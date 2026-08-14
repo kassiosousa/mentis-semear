@@ -124,9 +124,9 @@
     <h1>Mentis Semear — API de workshops</h1>
     <p class="lede">Monólito Laravel 13 (PHP 8.4) + MySQL, autenticação JWT, endpoints públicos para participantes e auditoria automática. Diagramas e requisitos atendidos abaixo.</p>
     <div class="stats">
-      <div class="stat"><div class="n">8</div><div class="l">entidades / tabelas</div></div>
-      <div class="stat"><div class="n">46</div><div class="l">rotas de API</div></div>
-      <div class="stat"><div class="n">66</div><div class="l">testes (156 asserts)</div></div>
+      <div class="stat"><div class="n">9</div><div class="l">entidades / tabelas</div></div>
+      <div class="stat"><div class="n">52</div><div class="l">rotas de API</div></div>
+      <div class="stat"><div class="n">86</div><div class="l">testes (231 asserts)</div></div>
       <div class="stat"><div class="n">4</div><div class="l">perfis de usuário</div></div>
     </div>
   </header>
@@ -141,19 +141,21 @@
         <ul class="checks">
           <li>JWT via guard <code>api</code>: <code>register</code>, <code>login</code>, <code>me</code>, <code>logout</code> (access token)</li>
           <li>Perfis por enum <code>UserType</code>: admin, usuario, facilitador, empresa</li>
-          <li>Gate por perfil (middleware <code>type</code>): <code>users</code> só admin; domínio para admin + usuário padrão</li>
+          <li>Gate por perfil (middleware <code>type</code>): <code>users</code>/logs só admin; domínio para admin + usuário; setores para admin + empresa</li>
+          <li>Ownership: usuário <code>empresa</code> (vinculado a uma empresa) só vê/gerencia os setores da própria empresa</li>
           <li><code>users.id</code> em <strong>UUID</strong> (v7); demais tabelas em <code>bigint</code></li>
           <li>Senha com hash bcrypt; nunca retornada</li>
         </ul>
       </div>
 
       <div class="card">
-        <h3>Entidades &amp; CRUD <span class="tag">7 recursos</span></h3>
+        <h3>Entidades &amp; CRUD <span class="tag">8 recursos</span></h3>
         <ul class="checks">
-          <li>CRUD RESTful: Users, Companies, Workshops, CheckIns, Assessments, Diaries, DiaryEvidences</li>
+          <li>CRUD RESTful: Users, Companies, <strong>Sectors</strong>, Workshops, CheckIns, Assessments, Diaries, DiaryEvidences</li>
           <li>Validação isolada em <code>FormRequest</code> (Store/Update parcial)</li>
-          <li>Regras de negócio: Diary <strong>1:1</strong> com workshop; CPF único por workshop; <code>score</code> 0–10; criador = usuário autenticado</li>
-          <li>Integridade referencial: FK bloqueia remoção → <code>409</code>; referência inexistente → <code>422</code></li>
+          <li>Regras de negócio: Diary <strong>1:1</strong> com workshop; CPF único por workshop; <code>score</code> 0–10; setor <strong>único por empresa</strong>; criador = usuário autenticado</li>
+          <li>Setor no check-in via <code>sector_id</code> (opcional; <code>null</code> = "sem setor"), validado contra a empresa do workshop; texto livre <code>sector</code> mantido (retrocompatível)</li>
+          <li>Integridade referencial: FK bloqueia remoção → <code>409</code>; referência inexistente → <code>422</code>; setor em <code>cascade</code> com a empresa</li>
           <li>Listagens paginadas com filtros</li>
         </ul>
       </div>
@@ -190,7 +192,7 @@
       <div class="card">
         <h3>Qualidade &amp; entrega <span class="tag">devops</span></h3>
         <ul class="checks">
-          <li><strong>66 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
+          <li><strong>86 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
           <li>Laravel Pint (formatação) + hooks de projeto</li>
           <li>Docker dev + prod; CI no GitHub Actions</li>
           <li>Deploy automático: push em <code>homolog</code> → VPS (rsync + compose via SSH)</li>
@@ -214,6 +216,9 @@ erDiagram
   USERS ||--o{ DIARY_EVIDENCES : "cria"
   USERS ||..o{ LOGS : "executa (solto)"
   COMPANIES ||--o{ WORKSHOPS : "hospeda"
+  COMPANIES ||--o{ SECTORS : "define"
+  COMPANIES ||--o{ USERS : "emprega (tipo empresa)"
+  SECTORS ||--o{ CHECK_INS : "classifica (opcional)"
   WORKSHOPS ||--o{ CHECK_INS : "recebe"
   WORKSHOPS ||--o{ ASSESSMENTS : "recebe"
   WORKSHOPS ||--|| DIARIES : "tem 1:1"
@@ -223,6 +228,7 @@ erDiagram
     char36 id PK
     string name
     string type "admin|usuario|facilitador|empresa"
+    bigint company_id FK "nullable (tipo empresa)"
     string email UK
     string password
   }
@@ -231,6 +237,11 @@ erDiagram
     string name
     string address
     string email
+  }
+  SECTORS {
+    bigint id PK
+    bigint company_id FK
+    string name "unico por empresa"
   }
   WORKSHOPS {
     bigint id PK
@@ -244,6 +255,7 @@ erDiagram
   CHECK_INS {
     bigint id PK
     bigint workshop_id FK
+    bigint sector_id FK "nullable"
     string name
     char11 cpf "unico por workshop"
     bool lgpd_read
@@ -305,6 +317,7 @@ classDiagram
     +string name
     +UserType type
     +string email
+    +company()
     +createdWorkshops()
     +facilitatedWorkshops()
     +diaries()
@@ -313,6 +326,14 @@ classDiagram
     +int id
     +string name
     +workshops()
+    +sectors()
+  }
+  class Sector {
+    +int id
+    +int company_id
+    +string name
+    +company()
+    +checkIns()
   }
   class Workshop {
     +int id
@@ -329,6 +350,7 @@ classDiagram
     +string cpf
     +bool lgpd_read
     +workshop()
+    +sector()
   }
   class Assessment {
     +int id
@@ -357,6 +379,9 @@ classDiagram
   User ..|> JWTSubject
   User --> UserType : type
   Company "1" --> "0..*" Workshop
+  Company "1" --> "0..*" Sector
+  Company "1" --> "0..*" User : empresa
+  Sector "1" --> "0..*" CheckIn
   User "1" --> "0..*" Workshop : creator / facilitator
   Workshop "1" --> "0..*" CheckIn
   Workshop "1" --> "0..*" Assessment
@@ -445,7 +470,7 @@ flowchart TB
   </section>
 
   <footer>
-    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (8 entidades, 46 rotas, 66 testes verdes).
+    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (9 entidades, 52 rotas, 86 testes verdes).
   </footer>
 </div>
 
