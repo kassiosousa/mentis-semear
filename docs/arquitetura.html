@@ -124,9 +124,9 @@
     <h1>Mentis Semear — API de workshops</h1>
     <p class="lede">Monólito Laravel 13 (PHP 8.4) + MySQL, autenticação JWT, endpoints públicos para participantes e auditoria automática. Diagramas e requisitos atendidos abaixo.</p>
     <div class="stats">
-      <div class="stat"><div class="n">9</div><div class="l">entidades / tabelas</div></div>
-      <div class="stat"><div class="n">52</div><div class="l">rotas de API</div></div>
-      <div class="stat"><div class="n">86</div><div class="l">testes (231 asserts)</div></div>
+      <div class="stat"><div class="n">10</div><div class="l">entidades / tabelas</div></div>
+      <div class="stat"><div class="n">58</div><div class="l">rotas de API</div></div>
+      <div class="stat"><div class="n">99</div><div class="l">testes (267 asserts)</div></div>
       <div class="stat"><div class="n">4</div><div class="l">perfis de usuário</div></div>
     </div>
   </header>
@@ -164,8 +164,10 @@
         <h3>Participantes (público) <span class="tag">sem login</span></h3>
         <ul class="checks">
           <li><code>POST /api/public/check-ins</code> — auto check-in do participante</li>
-          <li><code>POST /api/public/assessments</code> — avaliação anônima</li>
-          <li><code>throttle:60,1</code> contra abuso</li>
+          <li><code>POST /api/public/assessments</code> — avaliação anônima (satisfação 0–10 por workshop)</li>
+          <li><code>POST /api/public/mood-entries</code> — <strong>termômetro emocional</strong> por empresa (setor + humor 1–5, anônimo)</li>
+          <li>Links por token: workshop (<code>/checkin</code>, <code>/avaliacao</code>) e empresa (<code>/termometro</code>); lookup público resolve empresa + setores</li>
+          <li><code>throttle:60,1</code> contra abuso; resumo agregado do termômetro para admin/empresa</li>
           <li>Consentimento LGPD registrado com timestamp (<code>lgpd_consent_at</code>)</li>
         </ul>
       </div>
@@ -192,7 +194,7 @@
       <div class="card">
         <h3>Qualidade &amp; entrega <span class="tag">devops</span></h3>
         <ul class="checks">
-          <li><strong>86 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
+          <li><strong>99 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
           <li>Laravel Pint (formatação) + hooks de projeto</li>
           <li>Docker dev + prod; CI no GitHub Actions</li>
           <li>Deploy automático: push em <code>homolog</code> → VPS (rsync + compose via SSH)</li>
@@ -219,6 +221,8 @@ erDiagram
   COMPANIES ||--o{ SECTORS : "define"
   COMPANIES ||--o{ USERS : "emprega (tipo empresa)"
   SECTORS ||--o{ CHECK_INS : "classifica (opcional)"
+  COMPANIES ||--o{ MOOD_ENTRIES : "coleta (termometro)"
+  SECTORS ||--o{ MOOD_ENTRIES : "classifica"
   WORKSHOPS ||--o{ CHECK_INS : "recebe"
   WORKSHOPS ||--o{ ASSESSMENTS : "recebe"
   WORKSHOPS ||--|| DIARIES : "tem 1:1"
@@ -234,6 +238,7 @@ erDiagram
   }
   COMPANIES {
     bigint id PK
+    string token UK "link do termometro"
     string name
     string address
     string email
@@ -242,6 +247,12 @@ erDiagram
     bigint id PK
     bigint company_id FK
     string name "unico por empresa"
+  }
+  MOOD_ENTRIES {
+    bigint id PK
+    bigint company_id FK
+    bigint sector_id FK "nullable"
+    tinyint mood "1-5"
   }
   WORKSHOPS {
     bigint id PK
@@ -324,9 +335,12 @@ classDiagram
   }
   class Company {
     +int id
+    +string token
     +string name
+    +thermometer_link
     +workshops()
     +sectors()
+    +moodEntries()
   }
   class Sector {
     +int id
@@ -334,6 +348,15 @@ classDiagram
     +string name
     +company()
     +checkIns()
+    +moodEntries()
+  }
+  class MoodEntry {
+    +int id
+    +int company_id
+    +int sector_id
+    +int mood (1-5)
+    +company()
+    +sector()
   }
   class Workshop {
     +int id
@@ -381,7 +404,9 @@ classDiagram
   Company "1" --> "0..*" Workshop
   Company "1" --> "0..*" Sector
   Company "1" --> "0..*" User : empresa
+  Company "1" --> "0..*" MoodEntry
   Sector "1" --> "0..*" CheckIn
+  Sector "1" --> "0..*" MoodEntry
   User "1" --> "0..*" Workshop : creator / facilitator
   Workshop "1" --> "0..*" CheckIn
   Workshop "1" --> "0..*" Assessment
@@ -470,7 +495,7 @@ flowchart TB
   </section>
 
   <footer>
-    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (9 entidades, 52 rotas, 86 testes verdes).
+    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (10 entidades, 58 rotas, 99 testes verdes).
   </footer>
 </div>
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\DiaryEvidenceController;
 use App\Http\Controllers\Api\LogController;
+use App\Http\Controllers\Api\MoodEntryController;
 use App\Http\Controllers\Api\SectorController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WorkshopController;
@@ -22,6 +23,10 @@ Route::prefix('public')->middleware('throttle:60,1')->group(function (): void {
     Route::get('/workshops/{workshop:token}', [WorkshopController::class, 'publicShow']);
     Route::post('/check-ins', [CheckInController::class, 'publicStore']);
     Route::post('/assessments', [AssessmentController::class, 'publicStore']);
+
+    // Termômetro emocional: empresa pelo token (nome + setores) e registro anônimo.
+    Route::get('/companies/{company:token}', [CompanyController::class, 'publicShow']);
+    Route::post('/mood-entries', [MoodEntryController::class, 'publicStore']);
 });
 
 Route::prefix('auth')->group(function (): void {
@@ -50,9 +55,15 @@ Route::middleware(['auth:api', 'type:admin,usuario,facilitador'])->group(functio
     Route::apiResource('diary-evidences', DiaryEvidenceController::class)->parameters(['diary-evidences' => 'diaryEvidence']);
 });
 
-// Setores — gerenciados por admin (todas as empresas) e por usuário "empresa" (só a sua).
+// Setores + termômetro emocional — admin (todas as empresas) e usuário "empresa" (só a sua).
 Route::middleware(['auth:api', 'type:admin,empresa'])->group(function (): void {
     Route::apiResource('sectors', SectorController::class);
+
+    // Termômetro emocional (leitura/gestão) — 'summary' antes de '{moodEntry}'.
+    Route::get('mood-entries/summary', [MoodEntryController::class, 'summary']);
+    Route::get('mood-entries', [MoodEntryController::class, 'index']);
+    Route::get('mood-entries/{moodEntry}', [MoodEntryController::class, 'show']);
+    Route::delete('mood-entries/{moodEntry}', [MoodEntryController::class, 'destroy']);
 });
 
 // Domínio operacional — admin e usuário padrão.
