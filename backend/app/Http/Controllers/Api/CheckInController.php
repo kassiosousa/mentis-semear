@@ -51,12 +51,13 @@ final class CheckInController extends Controller
         security: [['bearerAuth' => []]],
         tags: ['CheckIns'],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
-            required: ['workshop_id', 'name', 'position', 'sector', 'lgpd_read', 'cpf', 'birthday', 'gender', 'celphone'],
+            required: ['workshop_id', 'name', 'position', 'lgpd_read', 'cpf', 'birthday', 'gender', 'celphone'],
             properties: [
                 new OA\Property(property: 'workshop_id', type: 'integer', example: 1),
                 new OA\Property(property: 'name', type: 'string', example: 'João Participante'),
                 new OA\Property(property: 'position', type: 'string', example: 'Analista'),
-                new OA\Property(property: 'sector', type: 'string', example: 'TI'),
+                new OA\Property(property: 'sector', type: 'string', nullable: true, example: 'TI', description: 'Texto livre legado (opcional)'),
+                new OA\Property(property: 'sector_id', type: 'integer', nullable: true, example: 1, description: 'Setor da empresa (null = Sem setor definido)'),
                 new OA\Property(property: 'lgpd_read', type: 'boolean', example: true),
                 new OA\Property(property: 'cpf', type: 'string', example: '12345678901'),
                 new OA\Property(property: 'birthday', type: 'string', format: 'date', example: '1990-05-20'),
@@ -88,12 +89,13 @@ final class CheckInController extends Controller
         summary: 'Check-in público de participante (sem autenticação)',
         tags: ['Público'],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
-            required: ['workshop_id', 'name', 'position', 'sector', 'lgpd_read', 'cpf', 'birthday', 'gender', 'celphone'],
+            required: ['workshop_id', 'name', 'position', 'lgpd_read', 'cpf', 'birthday', 'gender', 'celphone'],
             properties: [
                 new OA\Property(property: 'workshop_id', type: 'integer', example: 1),
                 new OA\Property(property: 'name', type: 'string', example: 'João Participante'),
                 new OA\Property(property: 'position', type: 'string', example: 'Analista'),
-                new OA\Property(property: 'sector', type: 'string', example: 'TI'),
+                new OA\Property(property: 'sector', type: 'string', nullable: true, example: 'TI', description: 'Texto livre legado (opcional)'),
+                new OA\Property(property: 'sector_id', type: 'integer', nullable: true, example: 1, description: 'Setor da empresa (null = Sem setor definido)'),
                 new OA\Property(property: 'lgpd_read', type: 'boolean', example: true),
                 new OA\Property(property: 'cpf', type: 'string', example: '12345678901'),
                 new OA\Property(property: 'birthday', type: 'string', format: 'date', example: '1990-05-20'),
@@ -144,7 +146,8 @@ final class CheckInController extends Controller
         requestBody: new OA\RequestBody(content: new OA\JsonContent(properties: [
             new OA\Property(property: 'name', type: 'string'),
             new OA\Property(property: 'position', type: 'string'),
-            new OA\Property(property: 'sector', type: 'string'),
+            new OA\Property(property: 'sector', type: 'string', nullable: true),
+            new OA\Property(property: 'sector_id', type: 'integer', nullable: true),
             new OA\Property(property: 'lgpd_read', type: 'boolean'),
             new OA\Property(property: 'cpf', type: 'string'),
             new OA\Property(property: 'birthday', type: 'string', format: 'date'),

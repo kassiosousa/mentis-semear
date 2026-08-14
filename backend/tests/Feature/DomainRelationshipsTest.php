@@ -41,7 +41,7 @@ final class DomainRelationshipsTest extends TestCase
         $workshop = $this->makeWorkshop($creator, $company);
 
         $checkIn = CheckIn::create([
-            'workshop_id' => $workshop->id, 'name' => 'Part', 'position' => 'Dev', 'sector' => 'TI',
+            'workshop_id' => $workshop->id, 'name' => 'Part', 'position' => 'Dev',
             'lgpd_read' => true, 'lgpd_consent_at' => now(), 'cpf' => '12345678901',
             'birthday' => '1990-01-01', 'gender' => 'M', 'celphone' => '11999999999',
         ]);
@@ -96,7 +96,7 @@ final class DomainRelationshipsTest extends TestCase
         $workshop = $this->makeWorkshop($creator, $company);
 
         $payload = [
-            'workshop_id' => $workshop->id, 'name' => 'P', 'position' => 'x', 'sector' => 'y',
+            'workshop_id' => $workshop->id, 'name' => 'P', 'position' => 'x',
             'cpf' => '12345678901', 'birthday' => '1990-01-01', 'gender' => 'M', 'celphone' => '119',
         ];
         CheckIn::create($payload);

@@ -68,11 +68,32 @@ final class UserManagementTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $user = User::factory()->create();
+        $company = Company::create(['name' => 'ACME', 'address' => 'R', 'email' => 'a@ex.com']);
 
+        // Virar "empresa" exige vincular uma empresa.
         $this->withToken($this->tokenFor($admin))
-            ->putJson("/api/users/{$user->id}", ['type' => 'empresa'])
+            ->putJson("/api/users/{$user->id}", ['type' => 'empresa', 'company_id' => $company->id])
             ->assertOk()
-            ->assertJsonPath('data.type', 'empresa');
+            ->assertJsonPath('data.type', 'empresa')
+            ->assertJsonPath('data.company_id', $company->id);
+    }
+
+    public function test_creating_an_empresa_user_requires_an_existing_company(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $token = $this->tokenFor($admin);
+
+        // Sem company_id -> 422.
+        $this->withToken($token)
+            ->postJson('/api/users', ['name' => 'Emp', 'email' => 'emp@ex.com', 'password' => 'senha1234', 'type' => 'empresa'])
+            ->assertStatus(422);
+
+        // Com empresa existente -> 201.
+        $company = Company::create(['name' => 'ACME', 'address' => 'R', 'email' => 'acme@ex.com']);
+        $this->withToken($token)
+            ->postJson('/api/users', ['name' => 'Emp', 'email' => 'emp@ex.com', 'password' => 'senha1234', 'type' => 'empresa', 'company_id' => $company->id])
+            ->assertCreated()
+            ->assertJsonPath('data.company_id', $company->id);
     }
 
     public function test_admin_can_delete_a_user(): void

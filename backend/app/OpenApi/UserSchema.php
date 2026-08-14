@@ -13,6 +13,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'id', type: 'string', format: 'uuid', example: '019fd761-bae3-716c-91d3-bb073c2e4c3f'),
         new OA\Property(property: 'name', type: 'string', example: 'Kassio'),
         new OA\Property(property: 'type', type: 'string', enum: ['admin', 'usuario', 'facilitador', 'empresa'], example: 'usuario'),
+        new OA\Property(property: 'company_id', type: 'integer', nullable: true, example: 1, description: 'Empresa vinculada (obrigatório quando type = empresa)'),
         new OA\Property(property: 'email', type: 'string', format: 'email', example: 'kassio@example.com'),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
