@@ -15,11 +15,12 @@ export interface AuthenticatedContext {
 
 export type RouteGuard = (args: GuardArgs) => Promise<AuthenticatedContext>;
 
-export type HomePath = '/admin' | '/facilitador' | '/';
+export type HomePath = '/admin' | '/facilitador' | '/empresa' | '/';
 
 export function homePathFor(type: UserType): HomePath {
   if (type === 'admin') return '/admin';
   if (type === 'facilitador') return '/facilitador';
+  if (type === 'empresa') return '/empresa';
 
   return '/';
 }

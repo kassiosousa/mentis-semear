@@ -9,6 +9,7 @@ export interface User {
   name: string;
   email: string;
   type: UserType;
+  companyId: number | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
