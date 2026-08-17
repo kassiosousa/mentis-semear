@@ -42,6 +42,26 @@ export const adminCompaniesRoute = createRoute({
   ),
 });
 
+export const adminSectorsRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/setores',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/SectorsPage'),
+    'SectorsPage',
+  ),
+});
+
+export const adminSectorDetailRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/setores/$id',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/SectorDetailPage'),
+    'SectorDetailPage',
+  ),
+});
+
 export const adminUsersRoute = createRoute({
   getParentRoute: () => protectedRoute,
   path: '/admin/usuarios',
