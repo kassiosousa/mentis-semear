@@ -12,6 +12,8 @@ import {
   FindWorkshopDiary,
   UpdateDiary,
 } from '@/application/diary/useCases/ManageDiaries';
+import { GetMoodSummary } from '@/application/mood/useCases/GetMoodSummary';
+import { FindSector, ListSectors } from '@/application/sector/useCases/ManageSectors';
 import {
   CreateUser,
   DeleteUser,
@@ -37,6 +39,8 @@ import { HttpCompanyRepository } from '@/infrastructure/company/HttpCompanyRepos
 import { HttpDiaryRepository } from '@/infrastructure/diary/HttpDiaryRepository';
 import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
 import { createApiClient } from '@/infrastructure/http/createApiClient';
+import { HttpMoodRepository } from '@/infrastructure/mood/HttpMoodRepository';
+import { HttpSectorRepository } from '@/infrastructure/sector/HttpSectorRepository';
 import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
 import { HttpUserRepository } from '@/infrastructure/user/HttpUserRepository';
 import { HttpPublicWorkshopRepository } from '@/infrastructure/workshop/HttpPublicWorkshopRepository';
@@ -59,6 +63,8 @@ const companyRepository = new HttpCompanyRepository(http);
 const workshopRepository = new HttpWorkshopRepository(http);
 const publicWorkshopRepository = new HttpPublicWorkshopRepository(http);
 const diaryRepository = new HttpDiaryRepository(http);
+const sectorRepository = new HttpSectorRepository(http);
+const moodRepository = new HttpMoodRepository(http);
 
 export const container = {
   sessions,
@@ -97,6 +103,13 @@ export const container = {
     create: new CreateCompany(companyRepository),
     update: new UpdateCompany(companyRepository),
     remove: new DeleteCompany(companyRepository),
+  },
+  sectors: {
+    list: new ListSectors(sectorRepository),
+    find: new FindSector(sectorRepository),
+  },
+  moods: {
+    summary: new GetMoodSummary(moodRepository),
   },
 } as const;
 

@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import {
   Card,
   CardDescription,
@@ -12,9 +12,10 @@ interface StatCardProps {
   value: string;
   hint?: string;
   icon: ComponentType<{ className?: string }>;
+  accessory?: ReactNode;
 }
 
-export function StatCard({ label, value, hint, icon: Icon }: StatCardProps) {
+export function StatCard({ label, value, hint, icon: Icon, accessory }: StatCardProps) {
   return (
     <Card size="sm">
       <CardHeader>
@@ -22,7 +23,10 @@ export function StatCard({ label, value, hint, icon: Icon }: StatCardProps) {
           <Icon className="size-4 text-primary" />
           {label}
         </CardDescription>
-        <CardTitle className="text-3xl font-semibold tabular-nums">{value}</CardTitle>
+        <CardTitle className="flex items-center justify-between gap-3 text-3xl font-semibold tabular-nums">
+          {value}
+          {accessory}
+        </CardTitle>
         {hint !== undefined && (
           <span className="text-xs text-muted-foreground">{hint}</span>
         )}
