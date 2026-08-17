@@ -168,7 +168,7 @@ export function SectorDetail({ sectorId, scope, companyName }: SectorDetailProps
                   </div>
                 </div>
 
-                <div>
+                <div className='self-start'>
                   <p className="text-xs text-muted-foreground">Respostas</p>
                   <p className="text-3xl font-semibold tabular-nums text-title sm:text-4xl">
                     {summary.total}
