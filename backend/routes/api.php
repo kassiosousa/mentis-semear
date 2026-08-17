@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\DiaryEvidenceController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\MoodEntryController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SectorController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WorkshopController;
@@ -73,4 +74,25 @@ Route::middleware(['auth:api', 'type:admin,usuario'])->group(function (): void {
     Route::apiResource('workshops', WorkshopController::class)->except(['index', 'show']);
     Route::apiResource('check-ins', CheckInController::class)->parameters(['check-ins' => 'checkIn']);
     Route::apiResource('assessments', AssessmentController::class);
+});
+
+// Relatórios (somente leitura): agregados + lista paginada; escopo por perfil.
+Route::middleware('auth:api')->prefix('reports')->group(function (): void {
+    // Workshops / participação / satisfação — admin, usuário e empresa (só a própria).
+    Route::middleware('type:admin,usuario,empresa')->group(function (): void {
+        Route::get('workshops', [ReportController::class, 'workshops']);
+        Route::get('check-ins', [ReportController::class, 'checkIns']);
+        Route::get('assessments', [ReportController::class, 'assessments']);
+    });
+
+    // Comparativo entre empresas — só admin e usuário (não expõe outras empresas).
+    Route::middleware('type:admin,usuario')->group(function (): void {
+        Route::get('companies-overview', [ReportController::class, 'companiesOverview']);
+    });
+
+    // Termômetro e painel da empresa — admin e empresa (só a própria).
+    Route::middleware('type:admin,empresa')->group(function (): void {
+        Route::get('mood', [ReportController::class, 'mood']);
+        Route::get('company/{company}', [ReportController::class, 'companyPanel']);
+    });
 });

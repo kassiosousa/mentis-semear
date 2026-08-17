@@ -125,8 +125,8 @@
     <p class="lede">Monólito Laravel 13 (PHP 8.4) + MySQL, autenticação JWT, endpoints públicos para participantes e auditoria automática. Diagramas e requisitos atendidos abaixo.</p>
     <div class="stats">
       <div class="stat"><div class="n">10</div><div class="l">entidades / tabelas</div></div>
-      <div class="stat"><div class="n">58</div><div class="l">rotas de API</div></div>
-      <div class="stat"><div class="n">99</div><div class="l">testes (267 asserts)</div></div>
+      <div class="stat"><div class="n">64</div><div class="l">rotas de API</div></div>
+      <div class="stat"><div class="n">109</div><div class="l">testes (314 asserts)</div></div>
       <div class="stat"><div class="n">4</div><div class="l">perfis de usuário</div></div>
     </div>
   </header>
@@ -192,9 +192,20 @@
       </div>
 
       <div class="card">
+        <h3>Relatórios &amp; analytics <span class="tag">6 relatórios</span></h3>
+        <ul class="checks">
+          <li><code>/reports/workshops</code> — filtros: empresa, período, hora, facilitador, avaliação, diário</li>
+          <li><code>/reports/mood</code> — termômetro por empresa/setor com tendência; <code>/reports/company/{id}</code> painel consolidado</li>
+          <li><code>/reports/companies-overview</code> — quantitativo (workshops + avaliação por empresa) p/ gráfico</li>
+          <li><code>/reports/check-ins</code> (demografia) e <code>/reports/assessments</code> (histograma 0–10 + NPS)</li>
+          <li>Saída <strong>agregada</strong> (gráfico) + <strong>lista paginada</strong>; escopo por perfil (empresa só a sua)</li>
+        </ul>
+      </div>
+
+      <div class="card">
         <h3>Qualidade &amp; entrega <span class="tag">devops</span></h3>
         <ul class="checks">
-          <li><strong>99 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
+          <li><strong>109 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
           <li>Laravel Pint (formatação) + hooks de projeto</li>
           <li>Docker dev + prod; CI no GitHub Actions</li>
           <li>Deploy automático: push em <code>homolog</code> → VPS (rsync + compose via SSH)</li>
@@ -495,7 +506,7 @@ flowchart TB
   </section>
 
   <footer>
-    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (10 entidades, 58 rotas, 99 testes verdes).
+    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (10 entidades, 64 rotas, 109 testes verdes).
   </footer>
 </div>
 
