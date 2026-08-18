@@ -1396,12 +1396,12 @@
                 "tags": [
                     "Diaries"
                 ],
-                "summary": "Cria o diário de um workshop (1 por workshop)",
+                "summary": "Cria o diário de um workshop (1 por workshop). Aceita até 2 arquivos (multipart)",
                 "operationId": "c7845a0e85d0863872c88bc8cbf6a41b",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "workshop_id",
@@ -1425,6 +1425,18 @@
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2026-09-01 16:00:00"
+                                    },
+                                    "file_1": {
+                                        "description": "Arquivo 1 (jpg/png/webp/pdf/doc/docx, até 5 MB)",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "file_2": {
+                                        "description": "Arquivo 2",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -1532,7 +1544,7 @@
                 ],
                 "requestBody": {
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "properties": {
                                     "title": {
@@ -1544,6 +1556,18 @@
                                     "datetime": {
                                         "type": "string",
                                         "format": "date-time"
+                                    },
+                                    "file_1": {
+                                        "description": "Substitui o arquivo 1",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "file_2": {
+                                        "description": "Substitui o arquivo 2",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -1617,6 +1641,56 @@
                     },
                     "409": {
                         "description": "Vínculo impede a remoção"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/diaries/{diary}/files/{slot}": {
+            "get": {
+                "tags": [
+                    "Diaries"
+                ],
+                "summary": "Baixa um arquivo do diário (slot 1 ou 2)",
+                "operationId": "0131336006fa201651964fb242ca7910",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "slot",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                1,
+                                2
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Conteúdo do arquivo (stream)"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Diário ou arquivo inexistente"
                     }
                 },
                 "security": [
@@ -2059,6 +2133,11 @@
                                         "example": 4,
                                         "maximum": 5,
                                         "minimum": 1
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Semana puxada, mas com bom clima no time",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -3977,6 +4056,26 @@
                         "type": "string",
                         "format": "date-time"
                     },
+                    "file_1": {
+                        "description": "Caminho do arquivo 1 no storage",
+                        "type": "string",
+                        "example": "diaries/abc123.pdf",
+                        "nullable": true
+                    },
+                    "file_2": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "file_1_url": {
+                        "description": "URL autenticada de download",
+                        "type": "string",
+                        "example": "https://.../api/diaries/1/files/1",
+                        "nullable": true
+                    },
+                    "file_2_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
@@ -4033,6 +4132,11 @@
                         "example": 4,
                         "maximum": 5,
                         "minimum": 1
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Semana puxada, mas com bom clima no time",
+                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",

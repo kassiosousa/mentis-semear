@@ -10,6 +10,8 @@ use App\Models\Diary;
 use App\Models\User;
 use App\Models\Workshop;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 final class DiaryManagementTest extends TestCase
@@ -102,6 +104,61 @@ final class DiaryManagementTest extends TestCase
         $this->withToken($this->tokenFor($admin))
             ->postJson('/api/diaries', ['workshop_id' => 999999, 'title' => 'x', 'description' => 'y', 'datetime' => now()->toDateTimeString()])
             ->assertStatus(422);
+    }
+
+    public function test_diary_accepts_two_file_uploads_and_serves_download(): void
+    {
+        Storage::fake('local');
+        $usuario = User::factory()->create();
+        $workshop = $this->workshop();
+        $token = $this->tokenFor($usuario);
+
+        $res = $this->withToken($token)->post('/api/diaries', [
+            ...$this->payload($workshop),
+            'file_1' => UploadedFile::fake()->create('relato.pdf', 100, 'application/pdf'),
+            'file_2' => UploadedFile::fake()->create('foto.png', 50, 'image/png'),
+        ])->assertCreated();
+
+        $diary = Diary::first();
+        $this->assertNotNull($diary->file_1);
+        $this->assertNotNull($diary->file_2);
+        Storage::disk('local')->assertExists($diary->file_1);
+        Storage::disk('local')->assertExists($diary->file_2);
+        $res->assertJsonPath('data.file_1_url', url("/api/diaries/{$diary->id}/files/1"));
+
+        // Download do slot 1 (rota autenticada).
+        $this->withToken($token)->get("/api/diaries/{$diary->id}/files/1")->assertOk();
+    }
+
+    public function test_diary_rejects_a_disallowed_file_type(): void
+    {
+        Storage::fake('local');
+        $usuario = User::factory()->create();
+        $workshop = $this->workshop();
+
+        $this->withToken($this->tokenFor($usuario))->post('/api/diaries', [
+            ...$this->payload($workshop),
+            'file_1' => UploadedFile::fake()->create('malware.exe', 10),
+        ])->assertStatus(422);
+    }
+
+    public function test_deleting_a_diary_removes_its_files(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+        $workshop = $this->workshop();
+        $token = $this->tokenFor($admin);
+
+        $this->withToken($token)->post('/api/diaries', [
+            ...$this->payload($workshop),
+            'file_1' => UploadedFile::fake()->create('a.pdf', 10, 'application/pdf'),
+        ])->assertCreated();
+
+        $path = Diary::first()->file_1;
+        Storage::disk('local')->assertExists($path);
+
+        $this->withToken($token)->deleteJson('/api/diaries/'.Diary::first()->id)->assertNoContent();
+        Storage::disk('local')->assertMissing($path);
     }
 
     public function test_admin_can_update_and_delete_a_diary(): void

@@ -20,6 +20,7 @@ class MoodEntry extends Model
         'company_id',
         'sector_id',
         'mood',
+        'description',
     ];
 
     /** @return array<string, string> */
