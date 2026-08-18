@@ -1,9 +1,13 @@
-import { ArrowLeft, Building2, CalendarDays, Layers, Smile } from 'lucide-react';
-import type { ComponentType, ReactNode } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { ArrowLeft, Building2, CalendarDays, Layers, Pencil, Smile, Trash2 } from 'lucide-react';
+import { useState, type ComponentType, type ReactNode } from 'react';
+import type { Company } from '@/domain/company/entities/Company';
 import { MOOD_SCORES, moodLabel, moodScoreFromAverage } from '@/domain/mood/entities/MoodSummary';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { MoodFace, MoodFaceBadge, MoodFaceScale } from '@/presentation/components/mood/MoodFace';
 import { moodBarClass } from '@/presentation/components/mood/moodTone';
+import { SectorDeleteDialog } from '@/presentation/components/sector/SectorDeleteDialog';
+import { SectorFormDialog } from '@/presentation/components/sector/SectorFormDialog';
 import { SectorsListLink, type SectorScope } from '@/presentation/components/sector/SectorLink';
 import { Button } from '@/presentation/components/ui/button';
 import {
@@ -21,6 +25,7 @@ interface SectorDetailProps {
   sectorId: number;
   scope: SectorScope;
   companyName?: (id: number) => string;
+  companies?: Company[];
 }
 
 function formatDateTime(value: string | null): string {
@@ -59,7 +64,11 @@ function Field({
   );
 }
 
-export function SectorDetail({ sectorId, scope, companyName }: SectorDetailProps) {
+export function SectorDetail({ sectorId, scope, companyName, companies }: SectorDetailProps) {
+  const navigate = useNavigate();
+  const [formOpen, setFormOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const sector = useSector(sectorId);
   const moods = useMoodSummary({ sectorId }, Number.isInteger(sectorId) && sectorId > 0);
 
@@ -69,6 +78,15 @@ export function SectorDetail({ sectorId, scope, companyName }: SectorDetailProps
       ? 0
       : Math.max(...MOOD_SCORES.map((score) => summary.distribution[score]), 0);
   const averageScore = moodScoreFromAverage(summary?.average);
+
+  const backToList = () => {
+    if (scope === 'admin') {
+      void navigate({ to: '/admin/setores' });
+      return;
+    }
+
+    void navigate({ to: '/empresa/setores' });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,7 +107,21 @@ export function SectorDetail({ sectorId, scope, companyName }: SectorDetailProps
                 ? (companyName?.(sector.data.companyId) ?? undefined)
                 : 'Setor da sua empresa.'
           }
-        />
+        >
+          {sector.isSuccess && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="lg" onClick={() => setFormOpen(true)}>
+                <Pencil className="size-4" />
+                Editar
+              </Button>
+
+              <Button variant="destructive" size="lg" onClick={() => setDeleting(true)}>
+                <Trash2 className="size-4" />
+                Excluir
+              </Button>
+            </div>
+          )}
+        </PageHeading>
       </div>
 
       <Card>
@@ -216,6 +248,22 @@ export function SectorDetail({ sectorId, scope, companyName }: SectorDetailProps
           )}
         </CardContent>
       </Card>
+
+      <SectorFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        sector={sector.data ?? null}
+        scope={scope}
+        companies={companies}
+      />
+
+      <SectorDeleteDialog
+        sector={deleting ? (sector.data ?? null) : null}
+        onOpenChange={(open) => {
+          if (!open) setDeleting(false);
+        }}
+        onDeleted={backToList}
+      />
     </div>
   );
 }
