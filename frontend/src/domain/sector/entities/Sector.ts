@@ -6,6 +6,11 @@ export interface Sector {
   updatedAt: string | null;
 }
 
+export interface SectorInput {
+  name: string;
+  companyId?: number;
+}
+
 export function matchesTerm(sector: Sector, term: string): boolean {
   const normalized = term.trim().toLowerCase();
 
