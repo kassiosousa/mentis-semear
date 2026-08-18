@@ -25,6 +25,7 @@ final class StoreMoodEntryRequest extends FormRequest
                 Rule::exists('sectors', 'id')->where(fn ($q) => $q->where('company_id', $this->input('company_id'))),
             ],
             'mood' => ['required', 'integer', 'between:1,5'],
+            'description' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

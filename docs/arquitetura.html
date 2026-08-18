@@ -125,8 +125,8 @@
     <p class="lede">Monólito Laravel 13 (PHP 8.4) + MySQL, autenticação JWT, endpoints públicos para participantes e auditoria automática. Diagramas e requisitos atendidos abaixo.</p>
     <div class="stats">
       <div class="stat"><div class="n">10</div><div class="l">entidades / tabelas</div></div>
-      <div class="stat"><div class="n">64</div><div class="l">rotas de API</div></div>
-      <div class="stat"><div class="n">109</div><div class="l">testes (314 asserts)</div></div>
+      <div class="stat"><div class="n">65</div><div class="l">rotas de API</div></div>
+      <div class="stat"><div class="n">113</div><div class="l">testes (329 asserts)</div></div>
       <div class="stat"><div class="n">4</div><div class="l">perfis de usuário</div></div>
     </div>
   </header>
@@ -155,6 +155,7 @@
           <li>Validação isolada em <code>FormRequest</code> (Store/Update parcial)</li>
           <li>Regras de negócio: Diary <strong>1:1</strong> com workshop; CPF único por workshop; <code>score</code> 0–10; setor <strong>único por empresa</strong>; criador = usuário autenticado</li>
           <li>Setor no check-in via <code>sector_id</code> (opcional; <code>null</code> = "sem setor"), validado contra a empresa do workshop; texto livre <code>sector</code> mantido (retrocompatível)</li>
+          <li>Diário com <strong>2 anexos</strong> (upload de arquivo → storage privado; download autenticado); termômetro com <strong>descrição</strong> livre</li>
           <li>Integridade referencial: FK bloqueia remoção → <code>409</code>; referência inexistente → <code>422</code>; setor em <code>cascade</code> com a empresa</li>
           <li>Listagens paginadas com filtros</li>
         </ul>
@@ -205,7 +206,7 @@
       <div class="card">
         <h3>Qualidade &amp; entrega <span class="tag">devops</span></h3>
         <ul class="checks">
-          <li><strong>109 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
+          <li><strong>113 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
           <li>Laravel Pint (formatação) + hooks de projeto</li>
           <li>Docker dev + prod; CI no GitHub Actions</li>
           <li>Deploy automático: push em <code>homolog</code> → VPS (rsync + compose via SSH)</li>
@@ -264,6 +265,7 @@ erDiagram
     bigint company_id FK
     bigint sector_id FK "nullable"
     tinyint mood "1-5"
+    text description "nullable"
   }
   WORKSHOPS {
     bigint id PK
@@ -297,6 +299,8 @@ erDiagram
     string title
     text description
     datetime datetime
+    string file_1 "anexo, nullable"
+    string file_2 "anexo, nullable"
   }
   DIARY_EVIDENCES {
     bigint id PK
@@ -506,7 +510,7 @@ flowchart TB
   </section>
 
   <footer>
-    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (10 entidades, 64 rotas, 109 testes verdes).
+    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (10 entidades, 65 rotas, 113 testes verdes).
   </footer>
 </div>
 

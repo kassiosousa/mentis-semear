@@ -50,6 +50,9 @@ services:
       AUTH_GUARD: api
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (php artisan jwt:secret --show)}
       JWT_TTL: ${JWT_TTL:-60}
+    volumes:
+      # Persiste uploads (ex.: arquivos do diário) entre deploys — o código é baked na imagem.
+      - storage-app:/var/www/html/storage/app
     depends_on:
       mysql:
         condition: service_healthy
@@ -81,3 +84,4 @@ networks:
 
 volumes:
   mysql-data:
+  storage-app:

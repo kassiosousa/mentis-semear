@@ -22,6 +22,9 @@ final class StoreDiaryRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'datetime' => ['required', 'date'],
+            // Até 2 arquivos opcionais (até 5 MB cada).
+            'file_1' => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx'],
+            'file_2' => ['nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx'],
         ];
     }
 }

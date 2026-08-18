@@ -53,6 +53,8 @@ Route::middleware(['auth:api', 'type:admin'])->group(function (): void {
 Route::middleware(['auth:api', 'type:admin,usuario,facilitador'])->group(function (): void {
     Route::apiResource('workshops', WorkshopController::class)->only(['index', 'show']);
     Route::apiResource('diaries', DiaryController::class);
+    // Download dos arquivos do diário (slot 1 ou 2).
+    Route::get('diaries/{diary}/files/{slot}', [DiaryController::class, 'downloadFile'])->whereIn('slot', ['1', '2']);
     Route::apiResource('diary-evidences', DiaryEvidenceController::class)->parameters(['diary-evidences' => 'diaryEvidence']);
 });
 

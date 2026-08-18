@@ -72,6 +72,16 @@ final class MoodEntryManagementTest extends TestCase
             ->assertJsonPath('data.sector_id', $s->id);
     }
 
+    public function test_public_mood_entry_accepts_a_description(): void
+    {
+        $c = $this->company();
+        $s = Sector::create(['company_id' => $c->id, 'name' => 'TI']);
+
+        $this->postJson('/api/public/mood-entries', ['company_id' => $c->id, 'sector_id' => $s->id, 'mood' => 4, 'description' => 'Semana puxada, mas bom clima'])
+            ->assertCreated()
+            ->assertJsonPath('data.description', 'Semana puxada, mas bom clima');
+    }
+
     public function test_public_mood_entry_requires_a_sector(): void
     {
         $c = $this->company();

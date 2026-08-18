@@ -21,6 +21,9 @@ final class UpdateDiaryRequest extends FormRequest
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'required', 'string'],
             'datetime' => ['sometimes', 'required', 'date'],
+            // Reenviar um arquivo substitui o anterior.
+            'file_1' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx'],
+            'file_2' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,pdf,doc,docx'],
         ];
     }
 }
