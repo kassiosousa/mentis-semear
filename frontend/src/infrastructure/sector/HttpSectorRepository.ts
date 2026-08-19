@@ -1,4 +1,4 @@
-import type { Sector } from '@/domain/sector/entities/Sector';
+import type { Sector, SectorInput } from '@/domain/sector/entities/Sector';
 import type {
   SectorFilters,
   SectorPage,
@@ -66,5 +66,24 @@ export class HttpSectorRepository implements SectorRepository {
     const payload = await this.http.get<unknown>(`/sectors/${id}`);
 
     return toEntity(unwrap<SectorApiModel>(payload));
+  }
+
+  async create(input: SectorInput): Promise<Sector> {
+    const payload = await this.http.post<unknown>('/sectors', {
+      company_id: input.companyId,
+      name: input.name,
+    });
+
+    return toEntity(unwrap<SectorApiModel>(payload));
+  }
+
+  async update(id: number, input: SectorInput): Promise<Sector> {
+    const payload = await this.http.put<unknown>(`/sectors/${id}`, { name: input.name });
+
+    return toEntity(unwrap<SectorApiModel>(payload));
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.http.delete<unknown>(`/sectors/${id}`);
   }
 }

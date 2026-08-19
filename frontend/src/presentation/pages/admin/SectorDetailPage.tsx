@@ -6,5 +6,12 @@ export function SectorDetailPage() {
   const { id } = adminSectorDetailRoute.useParams();
   const directory = useDirectory({ facilitators: false });
 
-  return <SectorDetail sectorId={Number(id)} scope="admin" companyName={directory.companyName} />;
+  return (
+    <SectorDetail
+      sectorId={Number(id)}
+      scope="admin"
+      companyName={directory.companyName}
+      companies={directory.companies}
+    />
+  );
 }

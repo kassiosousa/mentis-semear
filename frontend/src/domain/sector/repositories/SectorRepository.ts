@@ -1,4 +1,4 @@
-import type { Sector } from '@/domain/sector/entities/Sector';
+import type { Sector, SectorInput } from '@/domain/sector/entities/Sector';
 
 export interface SectorFilters {
   companyId?: number;
@@ -15,4 +15,7 @@ export interface SectorPage {
 export interface SectorRepository {
   list(filters?: SectorFilters): Promise<SectorPage>;
   find(id: number): Promise<Sector>;
+  create(input: SectorInput): Promise<Sector>;
+  update(id: number, input: SectorInput): Promise<Sector>;
+  remove(id: number): Promise<void>;
 }
