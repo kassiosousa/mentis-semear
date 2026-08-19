@@ -71,3 +71,13 @@ export const adminUsersRoute = createRoute({
     'UsersPage',
   ),
 });
+
+export const adminLogsRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/relatorios',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/LogsPage'),
+    'LogsPage',
+  ),
+});

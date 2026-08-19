@@ -12,6 +12,7 @@ import {
   FindWorkshopDiary,
   UpdateDiary,
 } from '@/application/diary/useCases/ManageDiaries';
+import { FindLog, ListLogs } from '@/application/log/useCases/ManageLogs';
 import { GetMoodSummary } from '@/application/mood/useCases/GetMoodSummary';
 import { FindSector, ListSectors } from '@/application/sector/useCases/ManageSectors';
 import {
@@ -39,6 +40,7 @@ import { HttpCompanyRepository } from '@/infrastructure/company/HttpCompanyRepos
 import { HttpDiaryRepository } from '@/infrastructure/diary/HttpDiaryRepository';
 import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
 import { createApiClient } from '@/infrastructure/http/createApiClient';
+import { HttpLogRepository } from '@/infrastructure/log/HttpLogRepository';
 import { HttpMoodRepository } from '@/infrastructure/mood/HttpMoodRepository';
 import { HttpSectorRepository } from '@/infrastructure/sector/HttpSectorRepository';
 import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
@@ -65,6 +67,7 @@ const publicWorkshopRepository = new HttpPublicWorkshopRepository(http);
 const diaryRepository = new HttpDiaryRepository(http);
 const sectorRepository = new HttpSectorRepository(http);
 const moodRepository = new HttpMoodRepository(http);
+const logRepository = new HttpLogRepository(http);
 
 export const container = {
   sessions,
@@ -110,6 +113,10 @@ export const container = {
   },
   moods: {
     summary: new GetMoodSummary(moodRepository),
+  },
+  logs: {
+    list: new ListLogs(logRepository),
+    find: new FindLog(logRepository),
   },
 } as const;
 

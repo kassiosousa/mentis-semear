@@ -5,6 +5,7 @@ import {
   Layers,
   LayoutDashboard,
   LogOut,
+  ScrollText,
   Settings,
   Sprout,
   Users,
@@ -39,6 +40,11 @@ const ADMIN_ITEMS: NavItem[] = [
 
 const EMPRESA_ITEMS: NavItem[] = [{ label: 'Setores', icon: Layers, to: '/empresa/setores' }];
 
+const LOGS_PATHS: Partial<Record<UserType, string>> = {
+  admin: '/admin/relatorios',
+  empresa: '/empresa/relatorios',
+};
+
 function menuItemsFor(type: UserType): NavItem[] {
   const home: NavItem = {
     label: 'Painel',
@@ -53,16 +59,22 @@ function menuItemsFor(type: UserType): NavItem[] {
   return [home];
 }
 
+function generalItemsFor(type: UserType): NavItem[] {
+  const logsPath = LOGS_PATHS[type];
+
+  return [
+    ...(logsPath === undefined
+      ? []
+      : [{ label: 'Logs', icon: ScrollText, to: logsPath } satisfies NavItem]),
+    { label: 'Configurações', icon: Settings },
+    { label: 'Ajuda', icon: CircleHelp },
+  ];
+}
+
 function groupsFor(type: UserType): NavGroup[] {
   return [
     { label: 'Menu', items: menuItemsFor(type) },
-    {
-      label: 'Geral',
-      items: [
-        { label: 'Configurações', icon: Settings },
-        { label: 'Ajuda', icon: CircleHelp },
-      ],
-    },
+    { label: 'Geral', items: generalItemsFor(type) },
   ];
 }
 

@@ -1,6 +1,7 @@
 import {
   adminCompaniesRoute,
   adminDashboardRoute,
+  adminLogsRoute,
   adminSectorDetailRoute,
   adminSectorsRoute,
   adminUsersRoute,
@@ -11,6 +12,7 @@ import { forbiddenRoute, loginRoute } from '@/presentation/routes/modules/auth.r
 import { dashboardRoute } from '@/presentation/routes/modules/dashboard.routes';
 import {
   empresaDashboardRoute,
+  empresaLogsRoute,
   empresaSectorDetailRoute,
   empresaSectorsRoute,
 } from '@/presentation/routes/modules/empresa.routes';
@@ -36,9 +38,11 @@ export const routeTree = rootRoute.addChildren([
     adminSectorDetailRoute,
     adminWorkshopsRoute,
     workshopDetailRoute,
+    adminLogsRoute,
     empresaDashboardRoute,
     empresaSectorsRoute,
     empresaSectorDetailRoute,
+    empresaLogsRoute,
     facilitadorDashboardRoute,
     facilitadorWorkshopRoute,
   ]),
