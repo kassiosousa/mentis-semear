@@ -28,7 +28,7 @@ import { formatShortDate } from '@/presentation/components/report/reportFormat';
 
 const WORKSHOP_OPTIONS_LIMIT = 100;
 
-const DEFAULT_PRIMARY: readonly ReportFilterField[] = ['period'];
+const DEFAULT_PRIMARY: readonly ReportFilterField[] = ['company', 'sector'];
 
 interface ReportFilterBarProps {
   scope: ReportScope;
@@ -315,7 +315,7 @@ export function ReportFilterBar({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-md">
+        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-xl">
           {primaryFields.map((field) => (
             <Fragment key={field}>{renderField(field)}</Fragment>
           ))}

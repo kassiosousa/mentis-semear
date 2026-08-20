@@ -96,7 +96,6 @@ export function CompanyPanelReportTab({
               companyId={companyId}
               facilitatorId={facilitatorId}
               fields={FIELDS}
-              primary={FIELDS}
               value={filters}
               onChange={onFilterChange}
               onClear={onClear}
