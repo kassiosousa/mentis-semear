@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import {
   Building2,
+  ChartColumn,
   CircleHelp,
   Layers,
   LayoutDashboard,
@@ -39,6 +40,12 @@ const ADMIN_ITEMS: NavItem[] = [
 
 const EMPRESA_ITEMS: NavItem[] = [{ label: 'Setores', icon: Layers, to: '/empresa/setores' }];
 
+const REPORTS_PATHS: Partial<Record<UserType, string>> = {
+  admin: '/admin/relatorios',
+  empresa: '/empresa/relatorios',
+  facilitador: '/facilitador/relatorios',
+};
+
 function menuItemsFor(type: UserType): NavItem[] {
   const home: NavItem = {
     label: 'Painel',
@@ -53,16 +60,22 @@ function menuItemsFor(type: UserType): NavItem[] {
   return [home];
 }
 
+function generalItemsFor(type: UserType): NavItem[] {
+  const reportsPath = REPORTS_PATHS[type];
+
+  return [
+    ...(reportsPath === undefined
+      ? []
+      : [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath } satisfies NavItem]),
+    { label: 'Configurações', icon: Settings },
+    { label: 'Ajuda', icon: CircleHelp },
+  ];
+}
+
 function groupsFor(type: UserType): NavGroup[] {
   return [
     { label: 'Menu', items: menuItemsFor(type) },
-    {
-      label: 'Geral',
-      items: [
-        { label: 'Configurações', icon: Settings },
-        { label: 'Ajuda', icon: CircleHelp },
-      ],
-    },
+    { label: 'Geral', items: generalItemsFor(type) },
   ];
 }
 

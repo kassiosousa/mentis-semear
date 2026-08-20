@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/presentation/components/ui/card';
+import { Skeleton } from '@/presentation/components/ui/skeleton';
 import { TableCell, TableRow } from '@/presentation/components/ui/table';
 
 interface StatCardProps {
@@ -13,9 +14,17 @@ interface StatCardProps {
   hint?: string;
   icon: ComponentType<{ className?: string }>;
   accessory?: ReactNode;
+  loading?: boolean;
 }
 
-export function StatCard({ label, value, hint, icon: Icon, accessory }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  accessory,
+  loading = false,
+}: StatCardProps) {
   return (
     <Card size="sm">
       <CardHeader>
@@ -24,7 +33,7 @@ export function StatCard({ label, value, hint, icon: Icon, accessory }: StatCard
           {label}
         </CardDescription>
         <CardTitle className="flex items-center justify-between gap-3 text-3xl font-semibold tabular-nums">
-          {value}
+          {loading ? <Skeleton className="h-8 w-24" /> : value}
           {accessory}
         </CardTitle>
         {hint !== undefined && (
