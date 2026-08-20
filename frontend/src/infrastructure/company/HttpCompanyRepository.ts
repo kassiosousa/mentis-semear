@@ -70,6 +70,12 @@ export class HttpCompanyRepository implements CompanyRepository {
     };
   }
 
+  async find(id: number): Promise<Company> {
+    const payload = await this.http.get<unknown>(`/companies/${id}`);
+
+    return toEntity(unwrap<CompanyApiModel>(payload));
+  }
+
   async create(input: CompanyInput): Promise<Company> {
     const payload = await this.http.post<unknown>('/companies', input);
 

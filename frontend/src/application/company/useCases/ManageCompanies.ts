@@ -13,6 +13,14 @@ export class ListCompanies {
   }
 }
 
+export class FindCompany {
+  constructor(private readonly companies: CompanyRepository) {}
+
+  execute(id: number): Promise<Company> {
+    return this.companies.find(id);
+  }
+}
+
 export class CreateCompany {
   constructor(private readonly companies: CompanyRepository) {}
 

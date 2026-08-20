@@ -4,6 +4,7 @@ import { SignOut } from '@/application/auth/useCases/SignOut';
 import {
   CreateCompany,
   DeleteCompany,
+  FindCompany,
   ListCompanies,
   UpdateCompany,
 } from '@/application/company/useCases/ManageCompanies';
@@ -112,6 +113,7 @@ export const container = {
   },
   companies: {
     list: new ListCompanies(companyRepository),
+    find: new FindCompany(companyRepository),
     create: new CreateCompany(companyRepository),
     update: new UpdateCompany(companyRepository),
     remove: new DeleteCompany(companyRepository),

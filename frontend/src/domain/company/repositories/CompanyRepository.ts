@@ -14,6 +14,7 @@ export interface CompanyPage {
 
 export interface CompanyRepository {
   list(filters?: CompanyFilters): Promise<CompanyPage>;
+  find(id: number): Promise<Company>;
   create(input: CompanyInput): Promise<Company>;
   update(id: number, input: CompanyInput): Promise<Company>;
   remove(id: number): Promise<void>;
