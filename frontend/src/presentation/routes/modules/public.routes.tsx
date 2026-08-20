@@ -18,3 +18,12 @@ export const assessmentRoute = createRoute({
     'AssessmentPage',
   ),
 });
+
+export const thermometerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/termometro/$token',
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/public/ThermometerPage'),
+    'ThermometerPage',
+  ),
+});

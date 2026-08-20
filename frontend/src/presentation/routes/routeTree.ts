@@ -18,7 +18,11 @@ import {
   facilitadorDashboardRoute,
   facilitadorWorkshopRoute,
 } from '@/presentation/routes/modules/facilitador.routes';
-import { assessmentRoute, checkInRoute } from '@/presentation/routes/modules/public.routes';
+import {
+  assessmentRoute,
+  checkInRoute,
+  thermometerRoute,
+} from '@/presentation/routes/modules/public.routes';
 import { protectedRoute } from '@/presentation/routes/protectedRoute';
 import { rootRoute } from '@/presentation/routes/rootRoute';
 
@@ -27,6 +31,7 @@ export const routeTree = rootRoute.addChildren([
   forbiddenRoute,
   checkInRoute,
   assessmentRoute,
+  thermometerRoute,
   protectedRoute.addChildren([
     dashboardRoute,
     adminDashboardRoute,
