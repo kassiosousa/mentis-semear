@@ -12,6 +12,8 @@ interface CompanyApiModel {
   name: string;
   address: string;
   email: string;
+  token?: string | null;
+  thermometer_link?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -29,6 +31,8 @@ function toEntity(model: CompanyApiModel): Company {
     name: model.name,
     address: model.address,
     email: model.email,
+    token: model.token ?? null,
+    thermometerLink: model.thermometer_link ?? null,
     createdAt: model.created_at ?? null,
     updatedAt: model.updated_at ?? null,
   };

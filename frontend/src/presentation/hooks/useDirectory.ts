@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { thermometerLinkOf } from '@/domain/company/entities/Company';
 import { useCompanies } from '@/presentation/hooks/useCompanies';
 import { useUsers } from '@/presentation/hooks/useUsers';
 
@@ -20,6 +21,17 @@ export function useDirectory({ facilitators: withFacilitators = true }: Director
     [facilitatorsQuery.data],
   );
 
+  const thermometerById = useMemo(
+    () =>
+      new Map(
+        companies.map((company) => [
+          company.id,
+          thermometerLinkOf(company, window.location.origin),
+        ]),
+      ),
+    [companies],
+  );
+
   const companyById = useMemo(
     () => new Map(companies.map((company) => [company.id, company.name])),
     [companies],
@@ -34,6 +46,7 @@ export function useDirectory({ facilitators: withFacilitators = true }: Director
     companies,
     facilitators,
     companyName: (id: number) => companyById.get(id) ?? `Empresa #${id}`,
+    thermometerLink: (id: number) => thermometerById.get(id) ?? null,
     facilitatorName: (id: string | null) =>
       id === null ? null : (facilitatorById.get(id) ?? `#${id.slice(0, 8)}`),
   };
