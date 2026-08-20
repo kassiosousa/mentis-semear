@@ -17,6 +17,28 @@ interface UsersApiPage {
   total?: number;
 }
 
+function toCreateBody(input: CreateUserInput) {
+  return {
+    name: input.name,
+    email: input.email,
+    password: input.password,
+    type: input.type,
+    company_id: input.companyId ?? null,
+  };
+}
+
+function toUpdateBody(input: UpdateUserInput) {
+  const body: Record<string, unknown> = {};
+
+  if (input.name !== undefined) body.name = input.name;
+  if (input.email !== undefined) body.email = input.email;
+  if (input.password !== undefined) body.password = input.password;
+  if (input.type !== undefined) body.type = input.type;
+  if (input.companyId !== undefined) body.company_id = input.companyId;
+
+  return body;
+}
+
 export class HttpUserRepository implements UserRepository {
   constructor(private readonly http: HttpClient) {}
 
@@ -45,13 +67,13 @@ export class HttpUserRepository implements UserRepository {
   }
 
   async create(input: CreateUserInput): Promise<User> {
-    const payload = await this.http.post<unknown>('/users', input);
+    const payload = await this.http.post<unknown>('/users', toCreateBody(input));
 
     return toUser(unwrap<UserApiModel>(payload));
   }
 
   async update(id: string, input: UpdateUserInput): Promise<User> {
-    const payload = await this.http.put<unknown>(`/users/${id}`, input);
+    const payload = await this.http.put<unknown>(`/users/${id}`, toUpdateBody(input));
 
     return toUser(unwrap<UserApiModel>(payload));
   }

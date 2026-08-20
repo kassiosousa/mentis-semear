@@ -41,8 +41,12 @@ export async function requireAuth({
 export async function requireGuest({ context }: GuardArgs): Promise<void> {
   const session = await context.container.auth.restoreSession.execute();
 
-  if (session !== null) {
-    throw redirect({ to: homePathFor(session.user.type) });
+  if (session === null) return;
+
+  const path = homePathFor(session.user.type);
+
+  if (path !== '/') {
+    throw redirect({ to: path });
   }
 }
 

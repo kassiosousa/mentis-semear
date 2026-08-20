@@ -9,6 +9,7 @@ import { Button } from '@/presentation/components/ui/button';
 import { Input } from '@/presentation/components/ui/input';
 import { Label } from '@/presentation/components/ui/label';
 import { container } from '@/presentation/container';
+import { homePathFor } from '@/presentation/routes/guards';
 import { loginRoute } from '@/presentation/routes/modules/auth.routes';
 
 const SIGN_IN_TOAST = 'sign-in';
@@ -23,11 +24,15 @@ export function SignInPage() {
 
   const signIn = useMutation({
     mutationFn: (credentials: Credentials) => container.auth.signIn.execute(credentials),
-    onSuccess: async () => {
+    onSuccess: async (session) => {
       toast.success('Login realizado com sucesso.', { id: SIGN_IN_TOAST });
 
+      const home = homePathFor(session.user.type);
+
+      if (home === '/') return;
+
       if (redirect === undefined) {
-        await navigate({ to: '/' });
+        await navigate({ to: home });
         return;
       }
 
@@ -49,8 +54,8 @@ export function SignInPage() {
   };
 
   return (
-    <div className="grid min-h-screen grid-rows-[auto_1fr] lg:grid-cols-2 lg:grid-rows-1">
-      <section className="relative isolate flex items-center overflow-hidden bg-linear-to-br from-primary-700 via-primary-500 to-secondary-700 px-8 py-16 lg:px-16 lg:py-0">
+    <div className="grid flex-1 grid-rows-[auto_1fr] lg:grid-cols-2 lg:grid-rows-1">
+      <section className="relative isolate flex flex-col items-start justify-center gap-10 overflow-hidden bg-linear-to-br from-primary-700 via-primary-500 to-secondary-700 px-8 py-16 lg:px-16 lg:py-0">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-32 -left-24 -z-10 size-80 rounded-full bg-white/15 blur-3xl"
@@ -58,6 +63,12 @@ export function SignInPage() {
         <div
           aria-hidden
           className="pointer-events-none absolute -right-24 -bottom-32 -z-10 size-96 rounded-full bg-secondary-700/50 blur-3xl"
+        />
+
+        <img
+          src="/assets/logo-sesi-branca.png"
+          alt="SESI"
+          className="h-10 w-auto select-none lg:h-12"
         />
 
         <div className="flex max-w-xl flex-col gap-4">

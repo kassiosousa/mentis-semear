@@ -171,7 +171,8 @@ export function AssessmentPage() {
 
               <div className="flex flex-col gap-2">
                 <Label htmlFor="assessment-suggestions">
-                  Sugestões <span className="text-muted-foreground">(opcional)</span>
+                  Comentário, sugestão ou observação:{' '}
+                  <span className="text-muted-foreground">(opcional)</span>
                 </Label>
                 <Textarea
                   id="assessment-suggestions"
