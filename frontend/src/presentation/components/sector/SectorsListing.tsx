@@ -1,9 +1,13 @@
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import type { Company } from '@/domain/company/entities/Company';
 import { moodOfSector } from '@/domain/mood/entities/MoodSummary';
+import type { Sector } from '@/domain/sector/entities/Sector';
 import { matchesTerm } from '@/domain/sector/entities/Sector';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { SectorCard } from '@/presentation/components/sector/SectorCard';
+import { SectorDeleteDialog } from '@/presentation/components/sector/SectorDeleteDialog';
+import { SectorFormDialog } from '@/presentation/components/sector/SectorFormDialog';
 import type { SectorScope } from '@/presentation/components/sector/SectorLink';
 import { Badge } from '@/presentation/components/ui/badge';
 import { Button } from '@/presentation/components/ui/button';
@@ -18,11 +22,20 @@ interface SectorsListingProps {
   scope: SectorScope;
   companyId?: number;
   companyName?: (id: number) => string;
+  companies?: Company[];
 }
 
-export function SectorsListing({ scope, companyId, companyName }: SectorsListingProps) {
+export function SectorsListing({
+  scope,
+  companyId,
+  companyName,
+  companies,
+}: SectorsListingProps) {
   const [term, setTerm] = useState('');
   const [page, setPage] = useState(1);
+  const [editing, setEditing] = useState<Sector | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [pendingDeletion, setPendingDeletion] = useState<Sector | null>(null);
 
   const query = useSectors({ companyId, page });
   const moods = useMoodSummary({ companyId });
@@ -41,6 +54,16 @@ export function SectorsListing({ scope, companyId, companyName }: SectorsListing
   const to = Math.min(currentPage * perPage, total);
   const filtering = term.trim() !== '';
 
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (sector: Sector) => {
+    setEditing(sector);
+    setFormOpen(true);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeading
@@ -51,9 +74,16 @@ export function SectorsListing({ scope, companyId, companyName }: SectorsListing
             : 'Setores cadastrados na sua empresa.'
         }
       >
-        <Badge variant="secondary" className="h-7 px-2.5">
-          {query.isPending ? '—' : `${total} no total`}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary" className="h-7 px-2.5">
+            {query.isPending ? '—' : `${total} no total`}
+          </Badge>
+
+          <Button size="lg" onClick={openCreate}>
+            <Plus className="size-4" />
+            Novo setor
+          </Button>
+        </div>
       </PageHeading>
 
       <Card>
@@ -110,6 +140,8 @@ export function SectorsListing({ scope, companyId, companyName }: SectorsListing
                   scope={scope}
                   companyName={companyName?.(sector.companyId)}
                   mood={moodOfSector(moods.data, sector.id)}
+                  onEdit={openEdit}
+                  onDelete={setPendingDeletion}
                 />
               ))}
             </div>
@@ -152,6 +184,21 @@ export function SectorsListing({ scope, companyId, companyName }: SectorsListing
           </div>
         </CardFooter>
       </Card>
+
+      <SectorFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        sector={editing}
+        scope={scope}
+        companies={companies}
+      />
+
+      <SectorDeleteDialog
+        sector={pendingDeletion}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeletion(null);
+        }}
+      />
     </div>
   );
 }

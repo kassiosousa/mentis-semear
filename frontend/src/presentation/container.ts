@@ -22,7 +22,13 @@ import {
   GetMoodReport,
   GetWorkshopsReport,
 } from '@/application/report/useCases/GetReports';
-import { FindSector, ListSectors } from '@/application/sector/useCases/ManageSectors';
+import {
+  CreateSector,
+  DeleteSector,
+  FindSector,
+  ListSectors,
+  UpdateSector,
+} from '@/application/sector/useCases/ManageSectors';
 import {
   CreateUser,
   DeleteUser,
@@ -120,6 +126,9 @@ export const container = {
   sectors: {
     list: new ListSectors(sectorRepository),
     find: new FindSector(sectorRepository),
+    create: new CreateSector(sectorRepository),
+    update: new UpdateSector(sectorRepository),
+    remove: new DeleteSector(sectorRepository),
   },
   moods: {
     summary: new GetMoodSummary(moodRepository),
