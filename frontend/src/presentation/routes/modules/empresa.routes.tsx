@@ -31,3 +31,13 @@ export const empresaSectorDetailRoute = createRoute({
     'SectorDetailPage',
   ),
 });
+
+export const empresaReportsRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/empresa/relatorios',
+  beforeLoad: requireType('empresa'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/empresa/ReportsPage'),
+    'ReportsPage',
+  ),
+});

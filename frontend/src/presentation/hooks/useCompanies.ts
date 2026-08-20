@@ -9,11 +9,12 @@ export const companyKeys = {
   detail: (id: number) => [...companyKeys.all, 'detail', id] as const,
 };
 
-export function useCompanies(filters: CompanyFilters) {
+export function useCompanies(filters: CompanyFilters, enabled = true) {
   return useQuery<CompanyPage>({
     queryKey: companyKeys.list(filters),
     queryFn: () => container.companies.list.execute(filters),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 
