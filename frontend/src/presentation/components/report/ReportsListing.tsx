@@ -78,7 +78,7 @@ const TABS: readonly ReportTabConfig[] = [
     value: 'painel',
     label: 'Painel da empresa',
     icon: LayoutDashboard,
-    scopes: ['admin', 'empresa'],
+    scopes: ['empresa'],
     component: CompanyPanelReportTab,
   },
 ];

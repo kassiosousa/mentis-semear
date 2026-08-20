@@ -1,5 +1,6 @@
 import {
   adminCompaniesRoute,
+  adminCompanyReportRoute,
   adminDashboardRoute,
   adminReportsRoute,
   adminSectorDetailRoute,
@@ -40,6 +41,7 @@ export const routeTree = rootRoute.addChildren([
     adminWorkshopsRoute,
     workshopDetailRoute,
     adminReportsRoute,
+    adminCompanyReportRoute,
     empresaDashboardRoute,
     empresaSectorsRoute,
     empresaSectorDetailRoute,

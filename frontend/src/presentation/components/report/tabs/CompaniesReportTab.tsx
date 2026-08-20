@@ -1,4 +1,5 @@
-import { Building2, CalendarRange, Star } from 'lucide-react';
+import { ArrowRight, Building2, CalendarRange, Star } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import type { CompaniesOverviewFilters } from '@/domain/report/repositories/ReportRepository';
 import { CHART_COLORS } from '@/presentation/components/report/chartColors';
@@ -19,6 +20,7 @@ import {
 } from '@/presentation/components/report/ReportPanel';
 import type { ReportTabProps } from '@/presentation/components/report/tabs/types';
 import { Badge } from '@/presentation/components/ui/badge';
+import { Button } from '@/presentation/components/ui/button';
 import {
   Table,
   TableBody,
@@ -30,7 +32,7 @@ import {
 import { useCompaniesOverviewReport } from '@/presentation/hooks/useReports';
 import { useReportPage } from '@/presentation/hooks/useReportPage';
 
-const COLUMNS = 4;
+const COLUMNS = 5;
 
 const FIELDS: ReportFilterField[] = ['period', 'time', 'perPage'];
 
@@ -133,7 +135,8 @@ export function CompaniesReportTab({
                 <TableHead className="pl-4">Empresa</TableHead>
                 <TableHead className="text-right">Oficinas</TableHead>
                 <TableHead className="text-right">Check-ins</TableHead>
-                <TableHead className="pr-4 text-right">Nota média</TableHead>
+                <TableHead className="text-right">Nota média</TableHead>
+                <TableHead className="pr-4 text-right">Painel</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -147,14 +150,22 @@ export function CompaniesReportTab({
 
               {rows.map((row) => (
                 <TableRow key={row.companyId}>
-                  <TableCell className="pl-4 font-medium">{row.company}</TableCell>
+                  <TableCell className="pl-4 font-medium">
+                    <Link
+                      to="/admin/relatorios/empresas/$id"
+                      params={{ id: String(row.companyId) }}
+                      className="rounded-sm underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      {row.company}
+                    </Link>
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatNumber(row.workshops)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatNumber(row.checkIns)}
                   </TableCell>
-                  <TableCell className="pr-4 text-right">
+                  <TableCell className="text-right">
                     {row.avgScore === null ? (
                       <span className="text-muted-foreground">—</span>
                     ) : (
@@ -162,6 +173,19 @@ export function CompaniesReportTab({
                         {formatDecimal(row.avgScore)}
                       </Badge>
                     )}
+                  </TableCell>
+                  <TableCell className="pr-4">
+                    <div className="flex justify-end">
+                      <Button variant="ghost" size="icon-sm" asChild>
+                        <Link
+                          to="/admin/relatorios/empresas/$id"
+                          params={{ id: String(row.companyId) }}
+                        >
+                          <ArrowRight className="size-4" />
+                          <span className="sr-only">{`Abrir painel de ${row.company}`}</span>
+                        </Link>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

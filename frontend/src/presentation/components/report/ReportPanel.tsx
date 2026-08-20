@@ -1,5 +1,6 @@
 import { ChartColumn, ChevronLeft, ChevronRight, ShieldAlert, Table2 } from 'lucide-react';
 import type { ComponentType, ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 import { ForbiddenError } from '@/domain/shared/errors/AppError';
 import { StatCard } from '@/presentation/components/dashboard/panels';
 import type { ReportView } from '@/presentation/components/report/reportFilters';
@@ -17,9 +18,16 @@ export interface ReportStat {
   icon: ComponentType<{ className?: string }>;
 }
 
+const STAT_GRID: Record<number, string> = {
+  1: 'sm:grid-cols-1',
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-3',
+  4: 'sm:grid-cols-2 lg:grid-cols-4',
+};
+
 export function ReportStatGrid({ items, loading }: { items: ReportStat[]; loading: boolean }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className={cn('grid gap-3', STAT_GRID[items.length] ?? 'sm:grid-cols-3')}>
       {items.map((item) => (
         <StatCard
           key={item.label}
@@ -84,7 +92,7 @@ function ChartSkeleton({ height = 260 }: { height?: number }) {
   );
 }
 
-function AccessAlert({ endpoint }: { endpoint: string }) {
+export function AccessAlert({ endpoint }: { endpoint: string }) {
   return (
     <Alert variant="destructive">
       <ShieldAlert />
