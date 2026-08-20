@@ -22,7 +22,7 @@ function formatDateTime(value: string): string {
 
 export function PublicShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-surface-primary">
+    <div className="flex flex-1 flex-col bg-surface-primary">
       <header className="relative isolate overflow-hidden bg-linear-to-br from-primary-700 via-primary-500 to-secondary-700 px-6 py-10">
         <div
           aria-hidden
