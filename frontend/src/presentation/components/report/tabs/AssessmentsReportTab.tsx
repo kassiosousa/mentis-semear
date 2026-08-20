@@ -1,6 +1,8 @@
 import { Gauge, MessageSquareQuote, Star } from 'lucide-react';
 import { useMemo } from 'react';
+import type { AssessmentReportRow } from '@/domain/report/entities/Report';
 import type { AssessmentReportFilters } from '@/domain/report/repositories/ReportRepository';
+import type { CsvColumn } from '@/lib/csv';
 import { ReportFilterBar } from '@/presentation/components/report/ReportFilterBar';
 import type { ReportFilterField } from '@/presentation/components/report/reportFilters';
 import { idOf, periodOf } from '@/presentation/components/report/reportFilters';
@@ -26,12 +28,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { loadAssessmentRows, useReportCsv } from '@/presentation/hooks/useReportCsv';
 import { useAssessmentsReport } from '@/presentation/hooks/useReports';
 import { useReportPage } from '@/presentation/hooks/useReportPage';
 
 const COLUMNS = 4;
 
 const FIELDS: ReportFilterField[] = ['period', 'company', 'workshop', 'perPage'];
+
+const CSV_COLUMNS: CsvColumn<AssessmentReportRow>[] = [
+  { header: 'ID', value: (row) => row.id },
+  { header: 'Oficina', value: (row) => row.workshopId },
+  { header: 'Nota', value: (row) => row.score },
+  { header: 'Sugestões', value: (row) => row.suggestions },
+  { header: 'Data e hora', value: (row) => formatDateTime(row.createdAt) },
+];
 
 export function AssessmentsReportTab({
   scope,
@@ -53,6 +64,12 @@ export function AssessmentsReportTab({
 
   const summary = report.data?.summary;
   const rows = useMemo(() => report.data?.page.rows ?? [], [report.data]);
+
+  const csv = useReportCsv({
+    name: 'satisfacao',
+    columns: CSV_COLUMNS,
+    load: () => loadAssessmentRows(query),
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -81,6 +98,7 @@ export function AssessmentsReportTab({
         endpoint="/api/reports/assessments"
         loading={report.isPending}
         error={report.error}
+        csv={{ ...csv, disabled: rows.length === 0 }}
         filters={
           <ReportFilterBar
             scope={scope}

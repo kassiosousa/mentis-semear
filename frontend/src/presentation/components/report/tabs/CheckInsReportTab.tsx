@@ -1,6 +1,8 @@
 import { Layers, ShieldCheck, Users } from 'lucide-react';
 import { useMemo } from 'react';
+import type { CheckInReportRow } from '@/domain/report/entities/Report';
 import type { CheckInReportFilters } from '@/domain/report/repositories/ReportRepository';
+import type { CsvColumn } from '@/lib/csv';
 import { ReportFilterBar } from '@/presentation/components/report/ReportFilterBar';
 import type { ReportFilterField } from '@/presentation/components/report/reportFilters';
 import { idOf, periodOf } from '@/presentation/components/report/reportFilters';
@@ -25,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { loadCheckInRows, useReportCsv } from '@/presentation/hooks/useReportCsv';
 import { useCheckInsReport } from '@/presentation/hooks/useReports';
 import { useReportPage } from '@/presentation/hooks/useReportPage';
 
@@ -65,6 +68,22 @@ export function CheckInsReportTab({
     return sectorNames.get(sectorId) ?? `#${sectorId}`;
   };
 
+  const csvColumns: CsvColumn<CheckInReportRow>[] = [
+    { header: 'ID', value: (row) => row.id },
+    { header: 'Participante', value: (row) => row.name },
+    { header: 'Cargo', value: (row) => row.position },
+    { header: 'Setor', value: (row) => sectorLabel(row.sectorId) },
+    { header: 'Gênero', value: (row) => row.gender },
+    { header: 'Oficina', value: (row) => row.workshopId },
+    { header: 'Data e hora', value: (row) => formatDateTime(row.createdAt) },
+  ];
+
+  const csv = useReportCsv({
+    name: 'participacao',
+    columns: csvColumns,
+    load: () => loadCheckInRows(query),
+  });
+
   return (
     <div className="flex flex-col gap-4">
       <ReportStatGrid
@@ -88,6 +107,7 @@ export function CheckInsReportTab({
         endpoint="/api/reports/check-ins"
         loading={report.isPending}
         error={report.error}
+        csv={{ ...csv, disabled: rows.length === 0 }}
         filters={
           <ReportFilterBar
             scope={scope}

@@ -1,7 +1,9 @@
 import { HeartPulse, Layers, ThermometerSun } from 'lucide-react';
 import { useMemo } from 'react';
 import { moodLabel, moodScoreFromAverage } from '@/domain/mood/entities/MoodSummary';
+import type { MoodReportRow } from '@/domain/report/entities/Report';
 import type { MoodReportFilters } from '@/domain/report/repositories/ReportRepository';
+import type { CsvColumn } from '@/lib/csv';
 import { MoodFace } from '@/presentation/components/mood/MoodFace';
 import { ReportFilterBar } from '@/presentation/components/report/ReportFilterBar';
 import type { ReportFilterField } from '@/presentation/components/report/reportFilters';
@@ -26,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { loadMoodRows, useReportCsv } from '@/presentation/hooks/useReportCsv';
 import { useMoodReport } from '@/presentation/hooks/useReports';
 import { useReportPage } from '@/presentation/hooks/useReportPage';
 
@@ -67,6 +70,20 @@ export function MoodReportTab({
     return sectorNames.get(sectorId) ?? `#${sectorId}`;
   };
 
+  const csvColumns: CsvColumn<MoodReportRow>[] = [
+    { header: 'ID', value: (row) => row.id },
+    { header: 'Data e hora', value: (row) => formatDateTime(row.createdAt) },
+    { header: 'Setor', value: (row) => sectorLabel(row.sectorId) },
+    { header: 'Humor', value: (row) => row.mood },
+    { header: 'Descrição', value: (row) => moodLabel(moodScoreFromAverage(row.mood)) },
+  ];
+
+  const csv = useReportCsv({
+    name: 'termometro',
+    columns: csvColumns,
+    load: () => loadMoodRows(query),
+  });
+
   return (
     <div className="flex flex-col gap-4">
       <ReportStatGrid
@@ -91,6 +108,7 @@ export function MoodReportTab({
         endpoint="/api/reports/mood"
         loading={report.isPending}
         error={report.error}
+        csv={{ ...csv, disabled: rows.length === 0 }}
         filters={
           <ReportFilterBar
             scope={scope}

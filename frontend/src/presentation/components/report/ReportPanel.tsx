@@ -1,4 +1,12 @@
-import { ChartColumn, ChevronLeft, ChevronRight, ShieldAlert, Table2 } from 'lucide-react';
+import {
+  ChartColumn,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Loader2,
+  ShieldAlert,
+  Table2,
+} from 'lucide-react';
 import type { ComponentType, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ForbiddenError } from '@/domain/shared/errors/AppError';
@@ -158,6 +166,27 @@ export function ReportPagination({
   );
 }
 
+export interface ReportCsvAction {
+  run: () => void;
+  exporting: boolean;
+  disabled?: boolean;
+}
+
+export function ReportCsvButton({ run, exporting, disabled = false }: ReportCsvAction) {
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={run}
+      disabled={exporting || disabled}
+      className="h-9"
+    >
+      {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+      <span className="hidden sm:inline">{exporting ? 'Exportando…' : 'Exportar CSV'}</span>
+    </Button>
+  );
+}
+
 interface ReportPanelProps {
   endpoint: string;
   filters: ReactNode;
@@ -167,6 +196,7 @@ interface ReportPanelProps {
   chart?: ReactNode;
   view?: ReportView;
   onViewChange?: (view: ReportView) => void;
+  csv?: ReportCsvAction;
   pagination?: ReactNode;
 }
 
@@ -179,6 +209,7 @@ export function ReportPanel({
   chart,
   view,
   onViewChange,
+  csv,
   pagination,
 }: ReportPanelProps) {
   const forbidden = error instanceof ForbiddenError;
@@ -193,7 +224,13 @@ export function ReportPanel({
         <CardHeader className="border-b">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">{filters}</div>
-            {switchable && <ReportViewToggle value={view} onChange={onViewChange} />}
+
+            <div className="flex items-center gap-2">
+              {switchable && <ReportViewToggle value={view} onChange={onViewChange} />}
+              {csv !== undefined && (
+                <ReportCsvButton {...csv} disabled={csv.disabled === true || error !== null} />
+              )}
+            </div>
           </div>
         </CardHeader>
 

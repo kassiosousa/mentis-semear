@@ -1,5 +1,7 @@
 import { CalendarRange, HeartPulse, Star } from 'lucide-react';
 import { moodLabel, moodScoreFromAverage } from '@/domain/mood/entities/MoodSummary';
+import type { SectorMoodPoint } from '@/domain/report/entities/Report';
+import type { CsvColumn } from '@/lib/csv';
 import { MoodFace } from '@/presentation/components/mood/MoodFace';
 import { ReportFilterBar } from '@/presentation/components/report/ReportFilterBar';
 import type { ReportFilterField } from '@/presentation/components/report/reportFilters';
@@ -19,11 +21,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { useReportCsv } from '@/presentation/hooks/useReportCsv';
 import { useCompanyPanelReport } from '@/presentation/hooks/useReports';
 
 const COLUMNS = 3;
 
 const FIELDS: ReportFilterField[] = ['company'];
+
+const CSV_COLUMNS: CsvColumn<SectorMoodPoint>[] = [
+  { header: 'Setor', value: (row) => row.sector },
+  { header: 'Registros', value: (row) => row.total },
+  { header: 'Humor médio', value: (row) => row.average },
+  { header: 'Descrição', value: (row) => moodLabel(moodScoreFromAverage(row.average)) },
+];
 
 export function CompanyPanelReportTab({
   scope,
@@ -41,6 +51,12 @@ export function CompanyPanelReportTab({
 
   const moodScore = moodScoreFromAverage(panel?.mood.average ?? null);
   const sectors = panel?.mood.bySector ?? [];
+
+  const csv = useReportCsv({
+    name: `empresa-${panel?.company ?? target}`,
+    columns: CSV_COLUMNS,
+    load: async () => ({ rows: sectors, truncated: false }),
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -72,6 +88,7 @@ export function CompanyPanelReportTab({
         endpoint="/api/reports/company/{company}"
         loading={report.isPending && !waiting}
         error={report.error}
+        csv={{ ...csv, disabled: sectors.length === 0 }}
         filters={
           scope === 'admin' ? (
             <ReportFilterBar

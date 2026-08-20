@@ -1,11 +1,17 @@
 import { ArrowLeft, CalendarRange, HeartPulse, Layers, Star, Users } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { moodLabel, moodScoreFromAverage } from '@/domain/mood/entities/MoodSummary';
+import type { SectorMoodPoint } from '@/domain/report/entities/Report';
 import { ForbiddenError } from '@/domain/shared/errors/AppError';
+import type { CsvColumn } from '@/lib/csv';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { MoodFace, MoodFaceBadge } from '@/presentation/components/mood/MoodFace';
 import { moodBarClass } from '@/presentation/components/mood/moodTone';
-import { AccessAlert, ReportStatGrid } from '@/presentation/components/report/ReportPanel';
+import {
+  AccessAlert,
+  ReportCsvButton,
+  ReportStatGrid,
+} from '@/presentation/components/report/ReportPanel';
 import { formatDecimal, formatNumber } from '@/presentation/components/report/reportFormat';
 import { Button } from '@/presentation/components/ui/button';
 import {
@@ -24,9 +30,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { useReportCsv } from '@/presentation/hooks/useReportCsv';
 import { useCompanyPanelReport } from '@/presentation/hooks/useReports';
 
 const ENDPOINT = '/api/reports/company/{company}';
+
+const CSV_COLUMNS: CsvColumn<SectorMoodPoint>[] = [
+  { header: 'Setor', value: (row) => row.sector },
+  { header: 'Registros', value: (row) => row.total },
+  { header: 'Humor médio', value: (row) => row.average },
+  { header: 'Descrição', value: (row) => moodLabel(moodScoreFromAverage(row.average)) },
+];
 
 export function CompanyReportDetail({ companyId }: { companyId: number }) {
   const report = useCompanyPanelReport(companyId);
@@ -37,6 +51,13 @@ export function CompanyReportDetail({ companyId }: { companyId: number }) {
   const forbidden = report.error instanceof ForbiddenError;
 
   const peak = mood === undefined ? 0 : Math.max(...mood.distribution.map((it) => it.total), 0);
+  const sectors = mood?.bySector ?? [];
+
+  const csv = useReportCsv({
+    name: `empresa-${panel?.company ?? companyId}`,
+    columns: CSV_COLUMNS,
+    load: async () => ({ rows: sectors, truncated: false }),
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,7 +72,9 @@ export function CompanyReportDetail({ companyId }: { companyId: number }) {
         <PageHeading
           title={panel?.company ?? `Empresa #${companyId}`}
           subtitle="Painel consolidado de oficinas, alcance, satisfação e termômetro emocional."
-        />
+        >
+          <ReportCsvButton {...csv} disabled={sectors.length === 0} />
+        </PageHeading>
       </div>
 
       {forbidden && <AccessAlert endpoint={ENDPOINT} />}
@@ -189,7 +212,7 @@ export function CompanyReportDetail({ companyId }: { companyId: number }) {
                   </TableHeader>
 
                   <TableBody>
-                    {(mood?.bySector ?? []).length === 0 && (
+                    {sectors.length === 0 && (
                       <TableRow className="hover:bg-transparent">
                         <TableCell
                           colSpan={3}
@@ -200,7 +223,7 @@ export function CompanyReportDetail({ companyId }: { companyId: number }) {
                       </TableRow>
                     )}
 
-                    {(mood?.bySector ?? []).map((entry) => (
+                    {sectors.map((entry) => (
                       <TableRow key={entry.sectorId ?? entry.sector}>
                         <TableCell className="pl-4">{entry.sector}</TableCell>
                         <TableCell className="text-right tabular-nums">

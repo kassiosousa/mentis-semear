@@ -1,6 +1,8 @@
 import { CalendarRange, Star, Users } from 'lucide-react';
 import { useMemo } from 'react';
+import type { WorkshopReportRow } from '@/domain/report/entities/Report';
 import type { WorkshopReportFilters } from '@/domain/report/repositories/ReportRepository';
+import type { CsvColumn } from '@/lib/csv';
 import { ReportFilterBar } from '@/presentation/components/report/ReportFilterBar';
 import type { ReportFilterField } from '@/presentation/components/report/reportFilters';
 import {
@@ -32,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { loadWorkshopRows, useReportCsv } from '@/presentation/hooks/useReportCsv';
 import { useWorkshopsReport } from '@/presentation/hooks/useReports';
 import { useReportPage } from '@/presentation/hooks/useReportPage';
 
@@ -45,6 +48,17 @@ const FIELDS: ReportFilterField[] = [
   'score',
   'diary',
   'perPage',
+];
+
+const CSV_COLUMNS: CsvColumn<WorkshopReportRow>[] = [
+  { header: 'ID', value: (row) => row.id },
+  { header: 'Data e hora', value: (row) => formatDateTime(row.datetime) },
+  { header: 'Empresa', value: (row) => row.company },
+  { header: 'Facilitador', value: (row) => row.facilitator },
+  { header: 'Local', value: (row) => row.address },
+  { header: 'Check-ins', value: (row) => row.checkIns },
+  { header: 'Avaliações', value: (row) => row.assessments },
+  { header: 'Nota média', value: (row) => row.avgScore },
 ];
 
 export function WorkshopsReportTab({
@@ -71,6 +85,12 @@ export function WorkshopsReportTab({
 
   const summary = report.data?.summary;
   const rows = useMemo(() => report.data?.page.rows ?? [], [report.data]);
+
+  const csv = useReportCsv({
+    name: 'oficinas',
+    columns: CSV_COLUMNS,
+    load: () => loadWorkshopRows(query),
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -99,6 +119,7 @@ export function WorkshopsReportTab({
         endpoint="/api/reports/workshops"
         loading={report.isPending}
         error={report.error}
+        csv={{ ...csv, disabled: rows.length === 0 }}
         filters={
           <ReportFilterBar
             scope={scope}

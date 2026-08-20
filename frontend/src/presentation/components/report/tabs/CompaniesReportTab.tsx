@@ -1,7 +1,9 @@
 import { ArrowRight, Building2, CalendarRange, Star } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
+import type { CompanyOverviewRow } from '@/domain/report/entities/Report';
 import type { CompaniesOverviewFilters } from '@/domain/report/repositories/ReportRepository';
+import type { CsvColumn } from '@/lib/csv';
 import { CHART_COLORS } from '@/presentation/components/report/chartColors';
 import { ReportFilterBar } from '@/presentation/components/report/ReportFilterBar';
 import type { ChartDatum } from '@/presentation/components/report/ReportCharts';
@@ -29,12 +31,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { loadCompanyOverviewRows, useReportCsv } from '@/presentation/hooks/useReportCsv';
 import { useCompaniesOverviewReport } from '@/presentation/hooks/useReports';
 import { useReportPage } from '@/presentation/hooks/useReportPage';
 
 const COLUMNS = 5;
 
 const FIELDS: ReportFilterField[] = ['period', 'time', 'perPage'];
+
+const CSV_COLUMNS: CsvColumn<CompanyOverviewRow>[] = [
+  { header: 'ID', value: (row) => row.companyId },
+  { header: 'Empresa', value: (row) => row.company },
+  { header: 'Oficinas', value: (row) => row.workshops },
+  { header: 'Check-ins', value: (row) => row.checkIns },
+  { header: 'Nota média', value: (row) => row.avgScore },
+];
 
 export function CompaniesReportTab({
   scope,
@@ -56,6 +67,12 @@ export function CompaniesReportTab({
 
   const summary = report.data?.summary;
   const rows = useMemo(() => report.data?.page.rows ?? [], [report.data]);
+
+  const csv = useReportCsv({
+    name: 'empresas',
+    columns: CSV_COLUMNS,
+    load: () => loadCompanyOverviewRows(query),
+  });
 
   const volume = useMemo<ChartDatum[]>(
     () =>
@@ -105,6 +122,7 @@ export function CompaniesReportTab({
         onViewChange={setView}
         loading={report.isPending}
         error={report.error}
+        csv={{ ...csv, disabled: rows.length === 0 }}
         filters={
           <ReportFilterBar
             scope={scope}
