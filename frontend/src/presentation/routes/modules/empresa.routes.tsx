@@ -32,12 +32,12 @@ export const empresaSectorDetailRoute = createRoute({
   ),
 });
 
-export const empresaLogsRoute = createRoute({
+export const empresaReportsRoute = createRoute({
   getParentRoute: () => protectedRoute,
   path: '/empresa/relatorios',
   beforeLoad: requireType('empresa'),
   component: lazyRouteComponent(
-    () => import('@/presentation/pages/empresa/LogsPage'),
-    'LogsPage',
+    () => import('@/presentation/pages/empresa/ReportsPage'),
+    'ReportsPage',
   ),
 });

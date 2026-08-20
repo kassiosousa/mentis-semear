@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import {
   Building2,
+  ChartColumn,
   CircleHelp,
   Layers,
   LayoutDashboard,
   LogOut,
-  ScrollText,
   Settings,
   Sprout,
   Users,
@@ -40,9 +40,10 @@ const ADMIN_ITEMS: NavItem[] = [
 
 const EMPRESA_ITEMS: NavItem[] = [{ label: 'Setores', icon: Layers, to: '/empresa/setores' }];
 
-const LOGS_PATHS: Partial<Record<UserType, string>> = {
+const REPORTS_PATHS: Partial<Record<UserType, string>> = {
   admin: '/admin/relatorios',
   empresa: '/empresa/relatorios',
+  facilitador: '/facilitador/relatorios',
 };
 
 function menuItemsFor(type: UserType): NavItem[] {
@@ -60,12 +61,12 @@ function menuItemsFor(type: UserType): NavItem[] {
 }
 
 function generalItemsFor(type: UserType): NavItem[] {
-  const logsPath = LOGS_PATHS[type];
+  const reportsPath = REPORTS_PATHS[type];
 
   return [
-    ...(logsPath === undefined
+    ...(reportsPath === undefined
       ? []
-      : [{ label: 'Logs', icon: ScrollText, to: logsPath } satisfies NavItem]),
+      : [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath } satisfies NavItem]),
     { label: 'Configurações', icon: Settings },
     { label: 'Ajuda', icon: CircleHelp },
   ];

@@ -1,7 +1,7 @@
 import {
   adminCompaniesRoute,
   adminDashboardRoute,
-  adminLogsRoute,
+  adminReportsRoute,
   adminSectorDetailRoute,
   adminSectorsRoute,
   adminUsersRoute,
@@ -12,12 +12,13 @@ import { forbiddenRoute, loginRoute } from '@/presentation/routes/modules/auth.r
 import { dashboardRoute } from '@/presentation/routes/modules/dashboard.routes';
 import {
   empresaDashboardRoute,
-  empresaLogsRoute,
+  empresaReportsRoute,
   empresaSectorDetailRoute,
   empresaSectorsRoute,
 } from '@/presentation/routes/modules/empresa.routes';
 import {
   facilitadorDashboardRoute,
+  facilitadorReportsRoute,
   facilitadorWorkshopRoute,
 } from '@/presentation/routes/modules/facilitador.routes';
 import { assessmentRoute, checkInRoute } from '@/presentation/routes/modules/public.routes';
@@ -38,12 +39,13 @@ export const routeTree = rootRoute.addChildren([
     adminSectorDetailRoute,
     adminWorkshopsRoute,
     workshopDetailRoute,
-    adminLogsRoute,
+    adminReportsRoute,
     empresaDashboardRoute,
     empresaSectorsRoute,
     empresaSectorDetailRoute,
-    empresaLogsRoute,
+    empresaReportsRoute,
     facilitadorDashboardRoute,
+    facilitadorReportsRoute,
     facilitadorWorkshopRoute,
   ]),
 ]);
