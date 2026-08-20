@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { User, UserType } from '@/domain/auth/entities/User';
 import { USER_TYPES, isUserType, labelOfType } from '@/domain/auth/entities/User';
 import { ValidationError } from '@/domain/shared/errors/AppError';
-import type { UpdateUserInput } from '@/domain/user/repositories/UserRepository';
+import type { CreateUserInput, UpdateUserInput } from '@/domain/user/repositories/UserRepository';
 import { Button } from '@/presentation/components/ui/button';
 import {
   Dialog,
@@ -23,9 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/presentation/components/ui/select';
+import { useDirectory } from '@/presentation/hooks/useDirectory';
 import { useCreateUser, useUpdateUser } from '@/presentation/hooks/useUsers';
 
 const MIN_PASSWORD = 8;
+
+const FIELD_BY_API: Record<string, string> = { company_id: 'companyId' };
 
 const identity = z.object({
   name: z.string().min(1, 'Informe o nome.'),
@@ -37,9 +40,10 @@ interface FormValues {
   email: string;
   password: string;
   type: UserType;
+  companyId: string;
 }
 
-const EMPTY: FormValues = { name: '', email: '', password: '', type: 'usuario' };
+const EMPTY: FormValues = { name: '', email: '', password: '', type: 'usuario', companyId: '' };
 
 interface UserFormDialogProps {
   open: boolean;
@@ -51,6 +55,7 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
   const [values, setValues] = useState<FormValues>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const directory = useDirectory({ facilitators: false });
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const editing = user !== null;
@@ -62,7 +67,13 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
     setValues(
       user === null
         ? EMPTY
-        : { name: user.name, email: user.email, password: '', type: user.type },
+        : {
+            name: user.name,
+            email: user.email,
+            password: '',
+            type: user.type,
+            companyId: user.companyId === null ? '' : String(user.companyId),
+          },
     );
     setErrors({});
   }, [open, user]);
@@ -75,7 +86,7 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
     if (error instanceof ValidationError) {
       const fields: Record<string, string> = {};
       for (const [field, messages] of Object.entries(error.fields)) {
-        if (messages[0] !== undefined) fields[field] = messages[0];
+        if (messages[0] !== undefined) fields[FIELD_BY_API[field] ?? field] = messages[0];
       }
       setErrors(fields);
     }
@@ -115,6 +126,12 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
       next.password = `A senha precisa de pelo menos ${MIN_PASSWORD} caracteres.`;
     }
 
+    const companyRequired = values.type === 'empresa';
+
+    if (companyRequired && values.companyId === '') {
+      next.companyId = 'Selecione a empresa deste usuário.';
+    }
+
     if (Object.keys(next).length > 0) {
       setErrors(next);
       return;
@@ -122,12 +139,16 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
 
     setErrors({});
 
+    const companyId = companyRequired ? Number(values.companyId) : null;
+
     if (user === null) {
-      createUser.mutate({ name, email, password, type: values.type }, { onSuccess, onError });
+      const input: CreateUserInput = { name, email, password, type: values.type, companyId };
+
+      createUser.mutate(input, { onSuccess, onError });
       return;
     }
 
-    const input: UpdateUserInput = { name, email, type: values.type };
+    const input: UpdateUserInput = { name, email, type: values.type, companyId };
     if (password !== '') input.password = password;
 
     updateUser.mutate({ id: user.id, input }, { onSuccess, onError });
@@ -215,6 +236,38 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
             </Select>
             {errors.type !== undefined && <p className="text-xs text-destructive">{errors.type}</p>}
           </div>
+
+          {values.type === 'empresa' && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="user-company">Empresa</Label>
+              <Select
+                value={values.companyId}
+                onValueChange={(value) => setField('companyId', value)}
+              >
+                <SelectTrigger
+                  id="user-company"
+                  className="h-10"
+                  aria-invalid={errors.companyId !== undefined}
+                >
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {directory.companies.map((company) => (
+                    <SelectItem key={company.id} value={String(company.id)}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.companyId === undefined ? (
+                <p className="text-xs text-muted-foreground">
+                  Contas do tipo Empresa precisam estar vinculadas a uma empresa.
+                </p>
+              ) : (
+                <p className="text-xs text-destructive">{errors.companyId}</p>
+              )}
+            </div>
+          )}
 
           <DialogFooter>
             <Button

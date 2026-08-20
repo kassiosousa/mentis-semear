@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/presentation/components/ui/table';
+import { useDirectory } from '@/presentation/hooks/useDirectory';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
 import { useDeleteUser, useUsers } from '@/presentation/hooks/useUsers';
 import { UserFormDialog } from '@/presentation/pages/admin/UserFormDialog';
@@ -60,6 +61,7 @@ export function UsersPage() {
   const [pendingDeletion, setPendingDeletion] = useState<User | null>(null);
 
   const currentUser = useCurrentUser();
+  const directory = useDirectory({ facilitators: false });
   const query = useUsers({ type: isUserType(type) ? type : undefined, page });
   const deleteUser = useDeleteUser();
 
@@ -212,7 +214,7 @@ export function UsersPage() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className="pl-4">Nome</TableHead>
                 <TableHead>E-mail</TableHead>
-                <TableHead title={UNSUPPORTED_FIELD}>Empresa</TableHead>
+                <TableHead>Empresa</TableHead>
                 <TableHead>Perfil</TableHead>
                 <TableHead title={UNSUPPORTED_FIELD}>Status</TableHead>
                 <TableHead className="pr-4 text-right">Ações</TableHead>
@@ -272,7 +274,9 @@ export function UsersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                    <TableCell className="text-muted-foreground">—</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {user.companyId === null ? '—' : directory.companyName(user.companyId)}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">{labelOfType(user.type)}</Badge>
                     </TableCell>
