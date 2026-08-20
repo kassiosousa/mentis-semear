@@ -14,6 +14,14 @@ import {
 } from '@/application/diary/useCases/ManageDiaries';
 import { FindLog, ListLogs } from '@/application/log/useCases/ManageLogs';
 import { GetMoodSummary } from '@/application/mood/useCases/GetMoodSummary';
+import {
+  GetAssessmentsReport,
+  GetCheckInsReport,
+  GetCompaniesOverview,
+  GetCompanyPanel,
+  GetMoodReport,
+  GetWorkshopsReport,
+} from '@/application/report/useCases/GetReports';
 import { FindSector, ListSectors } from '@/application/sector/useCases/ManageSectors';
 import {
   CreateUser,
@@ -42,6 +50,7 @@ import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
 import { createApiClient } from '@/infrastructure/http/createApiClient';
 import { HttpLogRepository } from '@/infrastructure/log/HttpLogRepository';
 import { HttpMoodRepository } from '@/infrastructure/mood/HttpMoodRepository';
+import { HttpReportRepository } from '@/infrastructure/report/HttpReportRepository';
 import { HttpSectorRepository } from '@/infrastructure/sector/HttpSectorRepository';
 import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
 import { HttpUserRepository } from '@/infrastructure/user/HttpUserRepository';
@@ -68,6 +77,7 @@ const diaryRepository = new HttpDiaryRepository(http);
 const sectorRepository = new HttpSectorRepository(http);
 const moodRepository = new HttpMoodRepository(http);
 const logRepository = new HttpLogRepository(http);
+const reportRepository = new HttpReportRepository(http);
 
 export const container = {
   sessions,
@@ -117,6 +127,14 @@ export const container = {
   logs: {
     list: new ListLogs(logRepository),
     find: new FindLog(logRepository),
+  },
+  reports: {
+    workshops: new GetWorkshopsReport(reportRepository),
+    checkIns: new GetCheckInsReport(reportRepository),
+    assessments: new GetAssessmentsReport(reportRepository),
+    mood: new GetMoodReport(reportRepository),
+    companiesOverview: new GetCompaniesOverview(reportRepository),
+    companyPanel: new GetCompanyPanel(reportRepository),
   },
 } as const;
 
