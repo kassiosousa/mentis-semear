@@ -41,9 +41,17 @@ interface ReportFilterBarProps {
   onClear: () => void;
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({
+  label,
+  narrow = false,
+  children,
+}: {
+  label: string;
+  narrow?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
+    <div className={cn('flex w-full min-w-0 flex-col gap-1.5', narrow ? 'sm:w-36' : 'sm:w-52')}>
       <Label className="text-xs text-muted-foreground">{label}</Label>
       {children}
     </div>
@@ -63,6 +71,14 @@ export function ReportFilterBar({
   const [open, setOpen] = useState(false);
 
   const has = (field: ReportFilterField) => fields.includes(field);
+
+  const isVisible = (field: ReportFilterField): boolean => {
+    if (field === 'company' || field === 'facilitator') return scope === 'admin';
+    if (field === 'sector') return scope !== 'facilitador';
+
+    return true;
+  };
+
   const selectedCompany = scope === 'empresa' ? companyId : (idOf(value.companyId) ?? null);
 
   const companiesQuery = useCompanies({ page: 1 }, scope === 'admin' && has('company'));
@@ -120,7 +136,7 @@ export function ReportFilterBar({
     if (field === 'time') {
       return (
         <>
-          <Field label="Hora inicial">
+          <Field label="Hora inicial" narrow>
             <Input
               type="time"
               value={value.timeFrom}
@@ -129,7 +145,7 @@ export function ReportFilterBar({
             />
           </Field>
 
-          <Field label="Hora final">
+          <Field label="Hora final" narrow>
             <Input
               type="time"
               value={value.timeTo}
@@ -142,8 +158,6 @@ export function ReportFilterBar({
     }
 
     if (field === 'company') {
-      if (scope !== 'admin') return null;
-
       return (
         <Field label="Empresa">
           <Select
@@ -167,8 +181,6 @@ export function ReportFilterBar({
     }
 
     if (field === 'facilitator') {
-      if (scope !== 'admin') return null;
-
       return (
         <Field label="Facilitador">
           <Select
@@ -192,8 +204,6 @@ export function ReportFilterBar({
     }
 
     if (field === 'sector') {
-      if (scope === 'facilitador') return null;
-
       return (
         <Field label="Setor">
           <Select value={value.sectorId} onValueChange={(next) => change({ sectorId: next })}>
@@ -238,7 +248,7 @@ export function ReportFilterBar({
     if (field === 'score') {
       return (
         <>
-          <Field label="Nota mínima">
+          <Field label="Nota mínima" narrow>
             <Input
               type="number"
               inputMode="decimal"
@@ -252,7 +262,7 @@ export function ReportFilterBar({
             />
           </Field>
 
-          <Field label="Nota máxima">
+          <Field label="Nota máxima" narrow>
             <Input
               type="number"
               inputMode="decimal"
@@ -307,19 +317,18 @@ export function ReportFilterBar({
     );
   };
 
-  const primaryFields = fields.filter((field) => primary.includes(field));
-  const advancedFields = fields.filter((field) => !primary.includes(field));
+  const visibleFields = fields.filter(isVisible);
+  const primaryFields = visibleFields.filter((field) => primary.includes(field));
+  const advancedFields = visibleFields.filter((field) => !primary.includes(field));
   const advancedCount = countActive(value, advancedFields);
-  const canClear = countActive(value, fields) > 0;
+  const canClear = countActive(value, visibleFields) > 0;
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:max-w-xl">
-          {primaryFields.map((field) => (
-            <Fragment key={field}>{renderField(field)}</Fragment>
-          ))}
-        </div>
+        {primaryFields.map((field) => (
+          <Fragment key={field}>{renderField(field)}</Fragment>
+        ))}
 
         <div className="flex items-center gap-1.5">
           {advancedFields.length > 0 && (
@@ -351,7 +360,7 @@ export function ReportFilterBar({
       </div>
 
       {open && advancedFields.length > 0 && (
-        <div className="grid gap-3 border-t border-border pt-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:flex-wrap sm:items-end">
           {advancedFields.map((field) => (
             <Fragment key={field}>{renderField(field)}</Fragment>
           ))}
