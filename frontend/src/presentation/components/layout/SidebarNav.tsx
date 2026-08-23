@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import {
   Building2,
+  ChartColumn,
   CircleHelp,
+  Layers,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -32,8 +34,17 @@ interface NavGroup {
 const ADMIN_ITEMS: NavItem[] = [
   { label: 'Usuários', icon: Users, to: '/admin/usuarios' },
   { label: 'Empresas', icon: Building2, to: '/admin/empresas' },
+  { label: 'Setores', icon: Layers, to: '/admin/setores' },
   { label: 'Oficinas', icon: Sprout, to: '/admin/oficinas' },
 ];
+
+const EMPRESA_ITEMS: NavItem[] = [{ label: 'Setores', icon: Layers, to: '/empresa/setores' }];
+
+const REPORTS_PATHS: Partial<Record<UserType, string>> = {
+  admin: '/admin/relatorios',
+  empresa: '/empresa/relatorios',
+  facilitador: '/facilitador/relatorios',
+};
 
 function menuItemsFor(type: UserType): NavItem[] {
   const home: NavItem = {
@@ -44,20 +55,27 @@ function menuItemsFor(type: UserType): NavItem[] {
   };
 
   if (type === 'admin') return [home, ...ADMIN_ITEMS];
+  if (type === 'empresa') return [home, ...EMPRESA_ITEMS];
 
   return [home];
+}
+
+function generalItemsFor(type: UserType): NavItem[] {
+  const reportsPath = REPORTS_PATHS[type];
+
+  return [
+    ...(reportsPath === undefined
+      ? []
+      : [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath } satisfies NavItem]),
+    { label: 'Configurações', icon: Settings },
+    { label: 'Ajuda', icon: CircleHelp },
+  ];
 }
 
 function groupsFor(type: UserType): NavGroup[] {
   return [
     { label: 'Menu', items: menuItemsFor(type) },
-    {
-      label: 'Geral',
-      items: [
-        { label: 'Configurações', icon: Settings },
-        { label: 'Ajuda', icon: CircleHelp },
-      ],
-    },
+    { label: 'Geral', items: generalItemsFor(type) },
   ];
 }
 

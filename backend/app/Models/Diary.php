@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+use App\Enums\UserType;
 
 class Diary extends Model
 {
@@ -15,13 +17,44 @@ class Diary extends Model
 
     protected $table = 'diaries';
 
+    // file_1/file_2 ficam fora do fillable: são gravados pelo controller ao subir o arquivo.
     /** @var list<string> */
     protected $fillable = ['workshop_id', 'user_creator_id', 'title', 'description', 'datetime'];
+
+    /** URLs de download prontas para o front. */
+    protected $appends = ['file_1_url', 'file_2_url'];
+
+    protected static function booted(): void
+    {
+        // Remove os arquivos físicos ao excluir o diário.
+        static::deleting(function (Diary $diary): void {
+            foreach ([$diary->file_1, $diary->file_2] as $path) {
+                if ($path) {
+                    Storage::disk('local')->delete($path);
+                }
+            }
+        });
+
+        // Notifica os admins ao registrar o diário de uma oficina.
+        static::created(function (Diary $diary): void {
+            Notification::forType(UserType::Admin, 'Novo diário', "Diário registrado na oficina #{$diary->workshop_id}.", 'diary.created');
+        });
+    }
 
     /** @return array<string, string> */
     protected function casts(): array
     {
         return ['datetime' => 'datetime'];
+    }
+
+    public function getFile1UrlAttribute(): ?string
+    {
+        return $this->file_1 ? url("/api/diaries/{$this->id}/files/1") : null;
+    }
+
+    public function getFile2UrlAttribute(): ?string
+    {
+        return $this->file_2 ? url("/api/diaries/{$this->id}/files/2") : null;
     }
 
     public function workshop(): BelongsTo

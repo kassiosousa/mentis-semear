@@ -15,6 +15,7 @@ export interface UserApiModel {
   name: string;
   email: string;
   type?: string | null;
+  company_id?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -44,6 +45,7 @@ export function toUser(model: UserApiModel): User {
     name: model.name,
     email: model.email,
     type: isUserType(model.type) ? model.type : DEFAULT_USER_TYPE,
+    companyId: model.company_id ?? null,
     createdAt: model.created_at ?? null,
     updatedAt: model.updated_at ?? null,
   };

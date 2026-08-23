@@ -18,12 +18,17 @@ final class UpdateCheckInRequest extends FormRequest
     public function rules(): array
     {
         $checkIn = $this->route('checkIn');
+        $companyId = $checkIn?->workshop?->company_id;
 
         // workshop_id é imutável (o check-in pertence ao workshop onde foi feito).
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'position' => ['sometimes', 'required', 'string', 'max:255'],
-            'sector' => ['sometimes', 'required', 'string', 'max:255'],
+            'sector' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'sector_id' => [
+                'sometimes', 'nullable', 'integer',
+                Rule::exists('sectors', 'id')->where(fn ($q) => $q->where('company_id', $companyId)),
+            ],
             'lgpd_read' => ['sometimes', 'required', 'boolean'],
             'cpf' => [
                 'sometimes', 'required', 'digits:11',

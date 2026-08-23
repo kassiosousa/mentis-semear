@@ -592,7 +592,6 @@
                                     "workshop_id",
                                     "name",
                                     "position",
-                                    "sector",
                                     "lgpd_read",
                                     "cpf",
                                     "birthday",
@@ -613,8 +612,16 @@
                                         "example": "Analista"
                                     },
                                     "sector": {
+                                        "description": "Texto livre legado (opcional)",
                                         "type": "string",
-                                        "example": "TI"
+                                        "example": "TI",
+                                        "nullable": true
+                                    },
+                                    "sector_id": {
+                                        "description": "Setor da empresa (null = Sem setor definido)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     },
                                     "lgpd_read": {
                                         "type": "boolean",
@@ -697,7 +704,6 @@
                                     "workshop_id",
                                     "name",
                                     "position",
-                                    "sector",
                                     "lgpd_read",
                                     "cpf",
                                     "birthday",
@@ -718,8 +724,16 @@
                                         "example": "Analista"
                                     },
                                     "sector": {
+                                        "description": "Texto livre legado (opcional)",
                                         "type": "string",
-                                        "example": "TI"
+                                        "example": "TI",
+                                        "nullable": true
+                                    },
+                                    "sector_id": {
+                                        "description": "Setor da empresa (null = Sem setor definido)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     },
                                     "lgpd_read": {
                                         "type": "boolean",
@@ -852,7 +866,12 @@
                                         "type": "string"
                                     },
                                     "sector": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "sector_id": {
+                                        "type": "integer",
+                                        "nullable": true
                                     },
                                     "lgpd_read": {
                                         "type": "boolean"
@@ -1075,6 +1094,9 @@
                     },
                     "422": {
                         "description": "Falha de validação"
+                    },
+                    "500": {
+                        "description": "Não foi possível gerar um token único para a empresa"
                     }
                 },
                 "security": [
@@ -1082,6 +1104,75 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/public/companies/{token}": {
+            "get": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Dados públicos da empresa pelo token (sem autenticação)",
+                "description": "Usado pela página pública do termômetro emocional para carregar a empresa e a lista de setores. Retorna apenas dados públicos — nunca participantes ou respostas.",
+                "operationId": "231469805f352441755db7cf463f07b3",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Token público da empresa (do link do termômetro)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "aB3xK9pQ2mL"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados públicos da empresa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "ACME Ltda"
+                                                },
+                                                "sectors": {
+                                                    "description": "Setores para o participante escolher",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Tecnologia da Informação"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Token inválido"
+                    }
+                }
             }
         },
         "/api/companies/{company}": {
@@ -1305,12 +1396,12 @@
                 "tags": [
                     "Diaries"
                 ],
-                "summary": "Cria o diário de um workshop (1 por workshop)",
+                "summary": "Cria o diário de um workshop (1 por workshop). Aceita até 2 arquivos (multipart)",
                 "operationId": "c7845a0e85d0863872c88bc8cbf6a41b",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "required": [
                                     "workshop_id",
@@ -1334,6 +1425,18 @@
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2026-09-01 16:00:00"
+                                    },
+                                    "file_1": {
+                                        "description": "Arquivo 1 (jpg/png/webp/pdf/doc/docx, até 5 MB)",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "file_2": {
+                                        "description": "Arquivo 2",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -1441,7 +1544,7 @@
                 ],
                 "requestBody": {
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "properties": {
                                     "title": {
@@ -1453,6 +1556,18 @@
                                     "datetime": {
                                         "type": "string",
                                         "format": "date-time"
+                                    },
+                                    "file_1": {
+                                        "description": "Substitui o arquivo 1",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
+                                    },
+                                    "file_2": {
+                                        "description": "Substitui o arquivo 2",
+                                        "type": "string",
+                                        "format": "binary",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -1526,6 +1641,56 @@
                     },
                     "409": {
                         "description": "Vínculo impede a remoção"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/diaries/{diary}/files/{slot}": {
+            "get": {
+                "tags": [
+                    "Diaries"
+                ],
+                "summary": "Baixa um arquivo do diário (slot 1 ou 2)",
+                "operationId": "0131336006fa201651964fb242ca7910",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "slot",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                1,
+                                2
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Conteúdo do arquivo (stream)"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "404": {
+                        "description": "Diário ou arquivo inexistente"
                     }
                 },
                 "security": [
@@ -1935,6 +2100,1313 @@
                 ]
             }
         },
+        "/api/public/mood-entries": {
+            "post": {
+                "tags": [
+                    "Público"
+                ],
+                "summary": "Registra o termômetro emocional (público, anônimo)",
+                "operationId": "919d353a39be003f4cfc0f62395fa9a7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "company_id",
+                                    "sector_id",
+                                    "mood"
+                                ],
+                                "properties": {
+                                    "company_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "sector_id": {
+                                        "description": "Setor da empresa (obrigatório)",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "mood": {
+                                        "description": "1 = muito mal … 5 = muito bem",
+                                        "type": "integer",
+                                        "example": 4,
+                                        "maximum": 5,
+                                        "minimum": 1
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Semana puxada, mas com bom clima no time",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Registrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MoodEntry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Falha de validação (setor fora da empresa, humor fora de 1–5, etc.)"
+                    }
+                }
+            }
+        },
+        "/api/mood-entries": {
+            "get": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Lista registros do termômetro (paginado)",
+                "description": "Admin vê todos (filtro por empresa); usuário \"empresa\" vê apenas os da própria empresa.",
+                "operationId": "2c43a2a7ce106a1b4aba9e79a137d847",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "Filtra por empresa (apenas admin)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sector_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MoodEntry"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/mood-entries/summary": {
+            "get": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Resumo agregado do termômetro (total, média, distribuição, por setor)",
+                "operationId": "f5e3e477a0998f240fc236892ace2e50",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "Filtra por empresa (apenas admin)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sector_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resumo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 42
+                                                },
+                                                "average": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 3.71,
+                                                    "nullable": true
+                                                },
+                                                "distribution": {
+                                                    "type": "object",
+                                                    "example": {
+                                                        "1": 2,
+                                                        "2": 5,
+                                                        "3": 10,
+                                                        "4": 15,
+                                                        "5": 10
+                                                    }
+                                                },
+                                                "by_sector": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "sector_id": {
+                                                                "type": "integer",
+                                                                "example": 1,
+                                                                "nullable": true
+                                                            },
+                                                            "sector": {
+                                                                "type": "string",
+                                                                "example": "TI",
+                                                                "nullable": true
+                                                            },
+                                                            "total": {
+                                                                "type": "integer",
+                                                                "example": 20
+                                                            },
+                                                            "average": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 4.1
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/mood-entries/{moodEntry}": {
+            "get": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Detalha um registro do termômetro",
+                "operationId": "519b3689a822219766396278bca65208",
+                "parameters": [
+                    {
+                        "name": "moodEntry",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Registro",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/MoodEntry"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Registro de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "MoodEntries"
+                ],
+                "summary": "Remove um registro do termômetro",
+                "operationId": "43d4c656594d7841eb6292655949f8f3",
+                "parameters": [
+                    {
+                        "name": "moodEntry",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removido"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Registro de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Lista as notificações do usuário autenticado (paginado)",
+                "operationId": "6d56a555955089a73fdf3f7229e8ead8",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtra por status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "new",
+                                "read"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Notification"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/unread-count": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Quantidade de notificações não lidas (para o badge)",
+                "operationId": "f3e05b69d516049be949f02a45e0eedd",
+                "responses": {
+                    "200": {
+                        "description": "Contagem",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "unread": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/read-all": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Marca todas as não lidas do usuário como lidas",
+                "operationId": "a938b29776d5df701355702f21a24149",
+                "responses": {
+                    "200": {
+                        "description": "Quantidade marcada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "updated": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/{notification}": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Detalha uma notificação",
+                "operationId": "ea7eaa587ff4cfb9b97294857f2adbff",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notificação",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Notification"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Notificação de outro destinatário"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Remove uma notificação",
+                "operationId": "1679d8e573af604ef47333a1cc37e8ee",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removida"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Notificação de outro destinatário"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Atualiza o status (o front envia \"read\" quando o usuário lê)",
+                "operationId": "da2c2bb5fc082e158792a77b28f36fd9",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "read",
+                                        "enum": [
+                                            "new",
+                                            "read"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Notification"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Notificação de outro destinatário"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "422": {
+                        "description": "Status inválido"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/workshops": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Relatório de workshops (filtros: empresa, período, hora, facilitador, avaliação, diário)",
+                "operationId": "ffc0a0994a4821f162e8913f24efc3f7",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "facilitator_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "time_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "14:00"
+                        }
+                    },
+                    {
+                        "name": "time_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "18:00"
+                        }
+                    },
+                    {
+                        "name": "min_score",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "max_score",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "has_diary",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "summary + items (paginado)"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/mood": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Relatório do termômetro emocional (empresa vê a sua; admin todas). Filtros: período, hora, setor",
+                "operationId": "40ebd59d9afe4913140a53f06d3b17f8",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "apenas admin",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sector_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "time_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "time_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "summary (total, média, distribuição, por setor, tendência) + items"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/companies-overview": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Relatório quantitativo: workshops, check-ins e avaliação média por empresa (para gráfico)",
+                "operationId": "a0120566a2b61ef9f9c40cd577e7f866",
+                "parameters": [
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "time_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "time_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "summary + items (uma linha por empresa)"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/check-ins": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Relatório de participação (demografia: setor, gênero, faixa etária, consentimento LGPD)",
+                "operationId": "7a7f493b21c0e918caa10cffe51436f4",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "workshop_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sector_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "summary (demografia) + items (sem CPF/e-mail)"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/assessments": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Relatório de satisfação (média, histograma 0–10, NPS, tendência)",
+                "operationId": "2b25c2d3ac7e9fc186029328a40e368a",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "workshop_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "summary (média, histograma, NPS, tendência) + items"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reports/company/{company}": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Painel consolidado da empresa (workshops + alcance + satisfação + termômetro)",
+                "description": "Empresa acessa apenas a própria; admin acessa qualquer uma.",
+                "operationId": "1e675f3a3e2cfc4589707273b1800fb3",
+                "parameters": [
+                    {
+                        "name": "company",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Painel consolidado"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Empresa de outro dono"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sectors": {
+            "get": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Lista setores (paginado)",
+                "description": "Admin vê todos (com filtro opcional por empresa); usuário \"empresa\" vê apenas os da própria empresa.",
+                "operationId": "8f24bd0155ad42e193e044e4bd98d990",
+                "parameters": [
+                    {
+                        "name": "company_id",
+                        "in": "query",
+                        "description": "Filtra por empresa (apenas admin)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Sector"
+                                            }
+                                        },
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Cria um setor",
+                "description": "Admin informa company_id; usuário \"empresa\" cria sempre para a própria empresa (company_id ignorado).",
+                "operationId": "f4bbed205f9a62292bde7d8eaa564dfe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "company_id": {
+                                        "description": "Obrigatório para admin; ignorado para usuário \"empresa\"",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Tecnologia da Informação"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Sector"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Acesso restrito ao perfil"
+                    },
+                    "422": {
+                        "description": "Falha de validação (nome duplicado na empresa, etc.)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sectors/{sector}": {
+            "get": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Detalha um setor",
+                "operationId": "bf20c5ac9e22f77237079fe548c95f90",
+                "parameters": [
+                    {
+                        "name": "sector",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Setor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Sector"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Setor de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Atualiza um setor (apenas o nome)",
+                "operationId": "407b40ad20a47f6e4e46e2599d2c59c0",
+                "parameters": [
+                    {
+                        "name": "sector",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Recursos Humanos"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Sector"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Setor de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    },
+                    "422": {
+                        "description": "Falha de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Sectors"
+                ],
+                "summary": "Remove um setor (check-ins vinculados ficam sem setor)",
+                "operationId": "8094088afa14ee08b3b119ea250ebe5e",
+                "parameters": [
+                    {
+                        "name": "sector",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removido"
+                    },
+                    "401": {
+                        "description": "Não autenticado"
+                    },
+                    "403": {
+                        "description": "Setor de outra empresa"
+                    },
+                    "404": {
+                        "description": "Não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -2045,6 +3517,12 @@
                                             "facilitador",
                                             "empresa"
                                         ]
+                                    },
+                                    "company_id": {
+                                        "description": "Obrigatório quando type = empresa (empresa existente)",
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -2178,6 +3656,11 @@
                                             "facilitador",
                                             "empresa"
                                         ]
+                                    },
+                                    "company_id": {
+                                        "description": "Obrigatório quando type = empresa",
+                                        "type": "integer",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -2611,6 +4094,23 @@
                                                 "company": {
                                                     "type": "string",
                                                     "example": "ACME Ltda"
+                                                },
+                                                "sectors": {
+                                                    "description": "Setores da empresa para o participante escolher no check-in",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Tecnologia da Informação"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
                                                 }
                                             },
                                             "type": "object"
@@ -2703,8 +4203,16 @@
                         "example": "Analista"
                     },
                     "sector": {
+                        "description": "Texto livre legado (opcional, retrocompatível)",
                         "type": "string",
-                        "example": "TI"
+                        "example": "TI",
+                        "nullable": true
+                    },
+                    "sector_id": {
+                        "description": "Setor da empresa (null = Sem setor definido)",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
                     },
                     "lgpd_read": {
                         "type": "boolean",
@@ -2755,6 +4263,11 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "token": {
+                        "description": "Token público (usado no link do termômetro)",
+                        "type": "string",
+                        "example": "aB3xK9pQ2mL"
+                    },
                     "name": {
                         "type": "string",
                         "example": "ACME Ltda"
@@ -2767,6 +4280,11 @@
                         "type": "string",
                         "format": "email",
                         "example": "contato@acme.com"
+                    },
+                    "thermometer_link": {
+                        "description": "Link público do termômetro emocional (derivado do token)",
+                        "type": "string",
+                        "example": "https://mentis.kassiosousa.com.br/termometro/aB3xK9pQ2mL"
                     },
                     "created_at": {
                         "type": "string",
@@ -2836,6 +4354,26 @@
                         "type": "string",
                         "format": "date-time"
                     },
+                    "file_1": {
+                        "description": "Caminho do arquivo 1 no storage",
+                        "type": "string",
+                        "example": "diaries/abc123.pdf",
+                        "nullable": true
+                    },
+                    "file_2": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "file_1_url": {
+                        "description": "URL autenticada de download",
+                        "type": "string",
+                        "example": "https://.../api/diaries/1/files/1",
+                        "nullable": true
+                    },
+                    "file_2_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
@@ -2870,6 +4408,132 @@
                 },
                 "type": "object"
             },
+            "MoodEntry": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "company_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "sector_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "mood": {
+                        "description": "1 = muito mal … 5 = muito bem",
+                        "type": "integer",
+                        "example": 4,
+                        "maximum": 5,
+                        "minimum": 1
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Semana puxada, mas com bom clima no time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Notification": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "Destinatário específico (ou null se for por tipo)",
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "user_type": {
+                        "description": "Tipo destinatário (ou null se for usuário específico)",
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                            "admin",
+                            "usuario",
+                            "facilitador",
+                            "empresa"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Nova oficina"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Oficina criada."
+                    },
+                    "event": {
+                        "type": "string",
+                        "example": "workshop.created",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "new",
+                        "enum": [
+                            "new",
+                            "read"
+                        ]
+                    },
+                    "read_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Sector": {
+                "properties": {
+                    "id": {
+                        "description": "OpenAPI schema only — never instantiated.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "company_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Tecnologia da Informação"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "properties": {
                     "id": {
@@ -2891,6 +4555,12 @@
                             "facilitador",
                             "empresa"
                         ]
+                    },
+                    "company_id": {
+                        "description": "Empresa vinculada (obrigatório quando type = empresa)",
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
                     },
                     "email": {
                         "type": "string",
@@ -3003,6 +4673,22 @@
         {
             "name": "Logs",
             "description": "Logs"
+        },
+        {
+            "name": "MoodEntries",
+            "description": "MoodEntries"
+        },
+        {
+            "name": "Notifications",
+            "description": "Notifications"
+        },
+        {
+            "name": "Reports",
+            "description": "Reports"
+        },
+        {
+            "name": "Sectors",
+            "description": "Sectors"
         },
         {
             "name": "Users",

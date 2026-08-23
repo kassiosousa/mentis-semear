@@ -17,6 +17,7 @@ export interface CreateUserInput {
   email: string;
   password: string;
   type: UserType;
+  companyId?: number | null;
 }
 
 export interface UpdateUserInput {
@@ -24,6 +25,7 @@ export interface UpdateUserInput {
   email?: string;
   password?: string;
   type?: UserType;
+  companyId?: number | null;
 }
 
 export interface UserRepository {

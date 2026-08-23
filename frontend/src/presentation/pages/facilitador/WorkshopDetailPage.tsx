@@ -71,6 +71,9 @@ export function WorkshopDetailPage() {
   const checkIns = useWorkshopCheckIns(workshopId);
   const assessments = useWorkshopAssessments(workshopId);
 
+  const thermometerLink =
+    workshop.data === undefined ? null : directory.thermometerLink(workshop.data.companyId);
+
   const average = assessments.data === undefined ? null : averageScore(assessments.data);
 
   const showQr = (label: string, url: string) => {
@@ -174,7 +177,9 @@ export function WorkshopDetailPage() {
               <div className="flex flex-col gap-2">
                 <p className="text-xs font-medium text-muted-foreground">Links de participação</p>
 
-                {workshop.data.checkinLink === null && workshop.data.assessmentLink === null ? (
+                {workshop.data.checkinLink === null &&
+                workshop.data.assessmentLink === null &&
+                thermometerLink === null ? (
                   <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
                     A API ainda não retornou os links desta oficina.
                   </p>
@@ -192,6 +197,13 @@ export function WorkshopDetailPage() {
                         label="Avaliação"
                         url={workshop.data.assessmentLink}
                         onShowQr={() => showQr('Avaliação', workshop.data.assessmentLink ?? '')}
+                      />
+                    )}
+                    {thermometerLink !== null && (
+                      <WorkshopLinkRow
+                        label="Termômetro do setor"
+                        url={thermometerLink}
+                        onShowQr={() => showQr('Termômetro do setor', thermometerLink)}
                       />
                     )}
                   </>

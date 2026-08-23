@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-#[Fillable(['name', 'type', 'email', 'password'])]
+#[Fillable(['name', 'type', 'company_id', 'email', 'password'])]
 #[Hidden(['password'])]
 class User extends Authenticatable implements JWTSubject
 {
@@ -21,7 +22,7 @@ class User extends Authenticatable implements JWTSubject
     use HasFactory, HasUuids, Notifiable;
 
     /** @var list<string> */
-    protected $fillable = ['name', 'type', 'email', 'password'];
+    protected $fillable = ['name', 'type', 'company_id', 'email', 'password'];
 
     /** @var list<string> */
     protected $hidden = ['password'];
@@ -35,6 +36,14 @@ class User extends Authenticatable implements JWTSubject
             'password' => 'hashed',
             'type' => UserType::class,
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Notifica os admins ao criar um usuário.
+        static::created(function (User $user): void {
+            Notification::forType(UserType::Admin, 'Novo usuário', "Usuário {$user->name} ({$user->type->value}) criado.", 'user.created');
+        });
     }
 
     // ---- JWT (guard `api`) ----
@@ -52,6 +61,12 @@ class User extends Authenticatable implements JWTSubject
     }
 
     // ---- Relationships ----
+
+    /** Empresa vinculada (obrigatória para usuários do tipo "empresa"). */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
 
     /** Workshops the user created. */
     public function createdWorkshops(): HasMany

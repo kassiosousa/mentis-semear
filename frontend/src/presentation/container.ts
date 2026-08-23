@@ -4,6 +4,7 @@ import { SignOut } from '@/application/auth/useCases/SignOut';
 import {
   CreateCompany,
   DeleteCompany,
+  FindCompany,
   ListCompanies,
   UpdateCompany,
 } from '@/application/company/useCases/ManageCompanies';
@@ -12,6 +13,27 @@ import {
   FindWorkshopDiary,
   UpdateDiary,
 } from '@/application/diary/useCases/ManageDiaries';
+import { FindLog, ListLogs } from '@/application/log/useCases/ManageLogs';
+import { GetMoodSummary } from '@/application/mood/useCases/GetMoodSummary';
+import {
+  FindPublicCompany,
+  RegisterMoodEntry,
+} from '@/application/mood/useCases/PublicMoodAccess';
+import {
+  GetAssessmentsReport,
+  GetCheckInsReport,
+  GetCompaniesOverview,
+  GetCompanyPanel,
+  GetMoodReport,
+  GetWorkshopsReport,
+} from '@/application/report/useCases/GetReports';
+import {
+  CreateSector,
+  DeleteSector,
+  FindSector,
+  ListSectors,
+  UpdateSector,
+} from '@/application/sector/useCases/ManageSectors';
 import {
   CreateUser,
   DeleteUser,
@@ -37,6 +59,11 @@ import { HttpCompanyRepository } from '@/infrastructure/company/HttpCompanyRepos
 import { HttpDiaryRepository } from '@/infrastructure/diary/HttpDiaryRepository';
 import { AxiosHttpClient } from '@/infrastructure/http/AxiosHttpClient';
 import { createApiClient } from '@/infrastructure/http/createApiClient';
+import { HttpLogRepository } from '@/infrastructure/log/HttpLogRepository';
+import { HttpMoodRepository } from '@/infrastructure/mood/HttpMoodRepository';
+import { HttpPublicMoodRepository } from '@/infrastructure/mood/HttpPublicMoodRepository';
+import { HttpReportRepository } from '@/infrastructure/report/HttpReportRepository';
+import { HttpSectorRepository } from '@/infrastructure/sector/HttpSectorRepository';
 import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
 import { HttpUserRepository } from '@/infrastructure/user/HttpUserRepository';
 import { HttpPublicWorkshopRepository } from '@/infrastructure/workshop/HttpPublicWorkshopRepository';
@@ -59,6 +86,11 @@ const companyRepository = new HttpCompanyRepository(http);
 const workshopRepository = new HttpWorkshopRepository(http);
 const publicWorkshopRepository = new HttpPublicWorkshopRepository(http);
 const diaryRepository = new HttpDiaryRepository(http);
+const sectorRepository = new HttpSectorRepository(http);
+const moodRepository = new HttpMoodRepository(http);
+const publicMoodRepository = new HttpPublicMoodRepository(http);
+const logRepository = new HttpLogRepository(http);
+const reportRepository = new HttpReportRepository(http);
 
 export const container = {
   sessions,
@@ -94,9 +126,36 @@ export const container = {
   },
   companies: {
     list: new ListCompanies(companyRepository),
+    find: new FindCompany(companyRepository),
     create: new CreateCompany(companyRepository),
     update: new UpdateCompany(companyRepository),
     remove: new DeleteCompany(companyRepository),
+  },
+  sectors: {
+    list: new ListSectors(sectorRepository),
+    find: new FindSector(sectorRepository),
+    create: new CreateSector(sectorRepository),
+    update: new UpdateSector(sectorRepository),
+    remove: new DeleteSector(sectorRepository),
+  },
+  moods: {
+    summary: new GetMoodSummary(moodRepository),
+  },
+  publicMoods: {
+    findCompanyByToken: new FindPublicCompany(publicMoodRepository),
+    register: new RegisterMoodEntry(publicMoodRepository),
+  },
+  logs: {
+    list: new ListLogs(logRepository),
+    find: new FindLog(logRepository),
+  },
+  reports: {
+    workshops: new GetWorkshopsReport(reportRepository),
+    checkIns: new GetCheckInsReport(reportRepository),
+    assessments: new GetAssessmentsReport(reportRepository),
+    mood: new GetMoodReport(reportRepository),
+    companiesOverview: new GetCompaniesOverview(reportRepository),
+    companyPanel: new GetCompanyPanel(reportRepository),
   },
 } as const;
 

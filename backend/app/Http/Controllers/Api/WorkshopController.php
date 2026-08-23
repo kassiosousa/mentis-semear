@@ -129,6 +129,10 @@ final class WorkshopController extends Controller
                     new OA\Property(property: 'datetime', type: 'string', format: 'date-time', example: '2026-09-01T14:00:00Z'),
                     new OA\Property(property: 'address', type: 'string', example: 'Auditório - Matriz'),
                     new OA\Property(property: 'company', type: 'string', example: 'ACME Ltda'),
+                    new OA\Property(property: 'sectors', type: 'array', description: 'Setores da empresa para o participante escolher no check-in', items: new OA\Items(properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'name', type: 'string', example: 'Tecnologia da Informação'),
+                    ], type: 'object')),
                 ]),
             ])),
             new OA\Response(response: 404, description: 'Token inválido'),
@@ -137,11 +141,13 @@ final class WorkshopController extends Controller
     public function publicShow(Workshop $workshop): JsonResponse
     {
         // Somente dados do evento — nada de check-ins/dados pessoais.
+        // Inclui os setores da empresa para o formulário público de check-in.
         return response()->json(['data' => [
             'id' => $workshop->id,
             'datetime' => $workshop->datetime,
             'address' => $workshop->address,
             'company' => $workshop->company->name,
+            'sectors' => $workshop->company->sectors()->orderBy('name')->get(['id', 'name']),
         ]]);
     }
 

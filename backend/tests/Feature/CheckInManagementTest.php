@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\UserType;
 use App\Models\Company;
+use App\Models\Sector;
 use App\Models\User;
 use App\Models\Workshop;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,7 +36,7 @@ final class CheckInManagementTest extends TestCase
     private function payload(Workshop $workshop, string $cpf = '12345678901'): array
     {
         return [
-            'workshop_id' => $workshop->id, 'name' => 'João', 'position' => 'Analista', 'sector' => 'TI',
+            'workshop_id' => $workshop->id, 'name' => 'João', 'position' => 'Analista',
             'lgpd_read' => true, 'cpf' => $cpf, 'birthday' => '1990-05-20', 'gender' => 'M', 'celphone' => '11999999999',
         ];
     }
@@ -91,6 +92,42 @@ final class CheckInManagementTest extends TestCase
 
         $this->withToken($this->tokenFor($admin))
             ->postJson('/api/check-ins', $payload)
+            ->assertStatus(422);
+    }
+
+    public function test_check_in_still_accepts_the_legacy_sector_text(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $workshop = $this->workshop();
+
+        // Retrocompatibilidade: o front atual pode continuar enviando `sector` (texto).
+        $this->withToken($this->tokenFor($admin))
+            ->postJson('/api/check-ins', [...$this->payload($workshop), 'sector' => 'TI'])
+            ->assertCreated()
+            ->assertJsonPath('data.sector', 'TI');
+    }
+
+    public function test_check_in_accepts_a_sector_of_the_workshop_company(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $workshop = $this->workshop();
+        $sector = Sector::create(['company_id' => $workshop->company_id, 'name' => 'TI']);
+
+        $this->withToken($this->tokenFor($admin))
+            ->postJson('/api/check-ins', [...$this->payload($workshop), 'sector_id' => $sector->id])
+            ->assertCreated()
+            ->assertJsonPath('data.sector_id', $sector->id);
+    }
+
+    public function test_check_in_rejects_a_sector_from_another_company(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $workshop = $this->workshop();
+        $other = Company::create(['name' => 'Other', 'address' => 'R', 'email' => 'o@ex.com']);
+        $foreign = Sector::create(['company_id' => $other->id, 'name' => 'Externo']);
+
+        $this->withToken($this->tokenFor($admin))
+            ->postJson('/api/check-ins', [...$this->payload($workshop), 'sector_id' => $foreign->id])
             ->assertStatus(422);
     }
 }

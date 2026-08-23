@@ -1,10 +1,11 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/presentation/components/ui/card';
+import { Skeleton } from '@/presentation/components/ui/skeleton';
 import { TableCell, TableRow } from '@/presentation/components/ui/table';
 
 interface StatCardProps {
@@ -12,9 +13,18 @@ interface StatCardProps {
   value: string;
   hint?: string;
   icon: ComponentType<{ className?: string }>;
+  accessory?: ReactNode;
+  loading?: boolean;
 }
 
-export function StatCard({ label, value, hint, icon: Icon }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  accessory,
+  loading = false,
+}: StatCardProps) {
   return (
     <Card size="sm">
       <CardHeader>
@@ -22,7 +32,10 @@ export function StatCard({ label, value, hint, icon: Icon }: StatCardProps) {
           <Icon className="size-4 text-primary" />
           {label}
         </CardDescription>
-        <CardTitle className="text-3xl font-semibold tabular-nums">{value}</CardTitle>
+        <CardTitle className="flex items-center justify-between gap-3 text-3xl font-semibold tabular-nums">
+          {loading ? <Skeleton className="h-8 w-24" /> : value}
+          {accessory}
+        </CardTitle>
         {hint !== undefined && (
           <span className="text-xs text-muted-foreground">{hint}</span>
         )}

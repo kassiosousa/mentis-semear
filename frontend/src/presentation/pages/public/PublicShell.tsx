@@ -1,5 +1,6 @@
 import { Building2, CalendarDays, CheckCircle2, LinkIcon, MapPin } from 'lucide-react';
 import type { ReactNode } from 'react';
+import type { PublicCompany } from '@/domain/company/entities/PublicCompany';
 import type { PublicWorkshop } from '@/domain/workshop/entities/Workshop';
 import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent } from '@/presentation/components/ui/card';
@@ -22,7 +23,7 @@ function formatDateTime(value: string): string {
 
 export function PublicShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-surface-primary">
+    <div className="flex flex-1 flex-col bg-surface-primary">
       <header className="relative isolate overflow-hidden bg-linear-to-br from-primary-700 via-primary-500 to-secondary-700 px-6 py-10">
         <div
           aria-hidden
@@ -80,6 +81,40 @@ export function WorkshopSummary({
               <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
               <p className="text-sm break-words">{workshop.address}</p>
             </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function CompanySummary({
+  company,
+  pending,
+  description,
+}: {
+  company: PublicCompany | undefined;
+  pending: boolean;
+  description: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-3">
+        {pending && (
+          <>
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-2/3" />
+          </>
+        )}
+
+        {company !== undefined && (
+          <>
+            <div className="flex items-center gap-2.5">
+              <Building2 className="size-4 shrink-0 text-primary" />
+              <p className="font-semibold text-title">{company.name}</p>
+            </div>
+
+            <p className="text-sm text-muted-foreground">{description}</p>
           </>
         )}
       </CardContent>

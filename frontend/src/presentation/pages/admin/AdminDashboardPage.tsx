@@ -16,6 +16,7 @@ import {
   StatCard,
 } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
+import { SectorsOverview } from '@/presentation/components/sector/SectorsOverview';
 // import { Badge } from '@/presentation/components/ui/badge';
 import {
   Card,
@@ -32,6 +33,7 @@ import {
 //   TableHeader,
 //   TableRow,
 // } from '@/presentation/components/ui/table';
+import { useDirectory } from '@/presentation/hooks/useDirectory';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
 
 // interface Shortcut {
@@ -64,6 +66,7 @@ import { useCurrentUser } from '@/presentation/hooks/useSession';
 
 export function AdminDashboardPage() {
   const user = useCurrentUser();
+  const directory = useDirectory({ facilitators: false });
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,6 +78,8 @@ export function AdminDashboardPage() {
         <StatCard label="Oficinas" value="—" icon={Sprout} />
         <StatCard label="Pessoas alcançadas" value="—" icon={HeartHandshake} />
       </div>
+
+      <SectorsOverview scope="admin" companyName={directory.companyName} />
 
       {/* <Card>
         <CardHeader className="border-b">

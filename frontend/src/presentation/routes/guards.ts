@@ -15,11 +15,12 @@ export interface AuthenticatedContext {
 
 export type RouteGuard = (args: GuardArgs) => Promise<AuthenticatedContext>;
 
-export type HomePath = '/admin' | '/facilitador' | '/';
+export type HomePath = '/admin' | '/facilitador' | '/empresa' | '/';
 
 export function homePathFor(type: UserType): HomePath {
   if (type === 'admin') return '/admin';
   if (type === 'facilitador') return '/facilitador';
+  if (type === 'empresa') return '/empresa';
 
   return '/';
 }
@@ -40,8 +41,12 @@ export async function requireAuth({
 export async function requireGuest({ context }: GuardArgs): Promise<void> {
   const session = await context.container.auth.restoreSession.execute();
 
-  if (session !== null) {
-    throw redirect({ to: homePathFor(session.user.type) });
+  if (session === null) return;
+
+  const path = homePathFor(session.user.type);
+
+  if (path !== '/') {
+    throw redirect({ to: path });
   }
 }
 

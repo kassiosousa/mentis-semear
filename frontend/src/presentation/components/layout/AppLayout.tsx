@@ -11,8 +11,8 @@ export function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-muted text-foreground">
-      <div className="flex min-h-screen gap-4 p-3 sm:p-4">
+    <div className="flex flex-1 flex-col bg-muted text-foreground">
+      <div className="flex flex-1 gap-4 p-3 sm:p-4">
         <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-64 shrink-0 lg:block">
           <SidebarNav user={user} />
         </aside>

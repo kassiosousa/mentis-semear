@@ -124,9 +124,9 @@
     <h1>Mentis Semear — API de workshops</h1>
     <p class="lede">Monólito Laravel 13 (PHP 8.4) + MySQL, autenticação JWT, endpoints públicos para participantes e auditoria automática. Diagramas e requisitos atendidos abaixo.</p>
     <div class="stats">
-      <div class="stat"><div class="n">8</div><div class="l">entidades / tabelas</div></div>
-      <div class="stat"><div class="n">46</div><div class="l">rotas de API</div></div>
-      <div class="stat"><div class="n">66</div><div class="l">testes (156 asserts)</div></div>
+      <div class="stat"><div class="n">11</div><div class="l">entidades / tabelas</div></div>
+      <div class="stat"><div class="n">71</div><div class="l">rotas de API</div></div>
+      <div class="stat"><div class="n">123</div><div class="l">testes (350 asserts)</div></div>
       <div class="stat"><div class="n">4</div><div class="l">perfis de usuário</div></div>
     </div>
   </header>
@@ -141,19 +141,22 @@
         <ul class="checks">
           <li>JWT via guard <code>api</code>: <code>register</code>, <code>login</code>, <code>me</code>, <code>logout</code> (access token)</li>
           <li>Perfis por enum <code>UserType</code>: admin, usuario, facilitador, empresa</li>
-          <li>Gate por perfil (middleware <code>type</code>): <code>users</code> só admin; domínio para admin + usuário padrão</li>
+          <li>Gate por perfil (middleware <code>type</code>): <code>users</code>/logs só admin; domínio para admin + usuário; setores para admin + empresa</li>
+          <li>Ownership: usuário <code>empresa</code> (vinculado a uma empresa) só vê/gerencia os setores da própria empresa</li>
           <li><code>users.id</code> em <strong>UUID</strong> (v7); demais tabelas em <code>bigint</code></li>
           <li>Senha com hash bcrypt; nunca retornada</li>
         </ul>
       </div>
 
       <div class="card">
-        <h3>Entidades &amp; CRUD <span class="tag">7 recursos</span></h3>
+        <h3>Entidades &amp; CRUD <span class="tag">8 recursos</span></h3>
         <ul class="checks">
-          <li>CRUD RESTful: Users, Companies, Workshops, CheckIns, Assessments, Diaries, DiaryEvidences</li>
+          <li>CRUD RESTful: Users, Companies, <strong>Sectors</strong>, Workshops, CheckIns, Assessments, Diaries, DiaryEvidences</li>
           <li>Validação isolada em <code>FormRequest</code> (Store/Update parcial)</li>
-          <li>Regras de negócio: Diary <strong>1:1</strong> com workshop; CPF único por workshop; <code>score</code> 0–10; criador = usuário autenticado</li>
-          <li>Integridade referencial: FK bloqueia remoção → <code>409</code>; referência inexistente → <code>422</code></li>
+          <li>Regras de negócio: Diary <strong>1:1</strong> com workshop; CPF único por workshop; <code>score</code> 0–10; setor <strong>único por empresa</strong>; criador = usuário autenticado</li>
+          <li>Setor no check-in via <code>sector_id</code> (opcional; <code>null</code> = "sem setor"), validado contra a empresa do workshop; texto livre <code>sector</code> mantido (retrocompatível)</li>
+          <li>Diário com <strong>2 anexos</strong> (upload de arquivo → storage privado; download autenticado); termômetro com <strong>descrição</strong> livre</li>
+          <li>Integridade referencial: FK bloqueia remoção → <code>409</code>; referência inexistente → <code>422</code>; setor em <code>cascade</code> com a empresa</li>
           <li>Listagens paginadas com filtros</li>
         </ul>
       </div>
@@ -162,8 +165,10 @@
         <h3>Participantes (público) <span class="tag">sem login</span></h3>
         <ul class="checks">
           <li><code>POST /api/public/check-ins</code> — auto check-in do participante</li>
-          <li><code>POST /api/public/assessments</code> — avaliação anônima</li>
-          <li><code>throttle:60,1</code> contra abuso</li>
+          <li><code>POST /api/public/assessments</code> — avaliação anônima (satisfação 0–10 por workshop)</li>
+          <li><code>POST /api/public/mood-entries</code> — <strong>termômetro emocional</strong> por empresa (setor + humor 1–5, anônimo)</li>
+          <li>Links por token: workshop (<code>/checkin</code>, <code>/avaliacao</code>) e empresa (<code>/termometro</code>); lookup público resolve empresa + setores</li>
+          <li><code>throttle:60,1</code> contra abuso; resumo agregado do termômetro para admin/empresa</li>
           <li>Consentimento LGPD registrado com timestamp (<code>lgpd_consent_at</code>)</li>
         </ul>
       </div>
@@ -188,9 +193,30 @@
       </div>
 
       <div class="card">
+        <h3>Relatórios &amp; analytics <span class="tag">6 relatórios</span></h3>
+        <ul class="checks">
+          <li><code>/reports/workshops</code> — filtros: empresa, período, hora, facilitador, avaliação, diário</li>
+          <li><code>/reports/mood</code> — termômetro por empresa/setor com tendência; <code>/reports/company/{id}</code> painel consolidado</li>
+          <li><code>/reports/companies-overview</code> — quantitativo (workshops + avaliação por empresa) p/ gráfico</li>
+          <li><code>/reports/check-ins</code> (demografia) e <code>/reports/assessments</code> (histograma 0–10 + NPS)</li>
+          <li>Saída <strong>agregada</strong> (gráfico) + <strong>lista paginada</strong>; escopo por perfil (empresa só a sua)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Notificações <span class="tag">eventos</span></h3>
+        <ul class="checks">
+          <li>Alvo por <strong>usuário específico</strong> (<code>user_id</code>) ou <strong>tipo</strong> (<code>user_type</code>); status <code>new</code> → <code>read</code></li>
+          <li>Criadas automaticamente (hooks <code>created</code>): nova empresa, usuário, oficina e diário → <strong>admins</strong></li>
+          <li>Oficina atribuída a um facilitador → notifica <strong>esse usuário</strong></li>
+          <li>API do próprio usuário: listar (<code>?status</code>), <code>unread-count</code>, <code>read-all</code>, marcar lida (<code>PATCH</code>)</li>
+        </ul>
+      </div>
+
+      <div class="card">
         <h3>Qualidade &amp; entrega <span class="tag">devops</span></h3>
         <ul class="checks">
-          <li><strong>66 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
+          <li><strong>123 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
           <li>Laravel Pint (formatação) + hooks de projeto</li>
           <li>Docker dev + prod; CI no GitHub Actions</li>
           <li>Deploy automático: push em <code>homolog</code> → VPS (rsync + compose via SSH)</li>
@@ -213,7 +239,13 @@ erDiagram
   USERS ||--o{ DIARIES : "cria"
   USERS ||--o{ DIARY_EVIDENCES : "cria"
   USERS ||..o{ LOGS : "executa (solto)"
+  USERS ||..o{ USER_NOTIFICATIONS : "destina (ou por tipo)"
   COMPANIES ||--o{ WORKSHOPS : "hospeda"
+  COMPANIES ||--o{ SECTORS : "define"
+  COMPANIES ||--o{ USERS : "emprega (tipo empresa)"
+  SECTORS ||--o{ CHECK_INS : "classifica (opcional)"
+  COMPANIES ||--o{ MOOD_ENTRIES : "coleta (termometro)"
+  SECTORS ||--o{ MOOD_ENTRIES : "classifica"
   WORKSHOPS ||--o{ CHECK_INS : "recebe"
   WORKSHOPS ||--o{ ASSESSMENTS : "recebe"
   WORKSHOPS ||--|| DIARIES : "tem 1:1"
@@ -223,14 +255,28 @@ erDiagram
     char36 id PK
     string name
     string type "admin|usuario|facilitador|empresa"
+    bigint company_id FK "nullable (tipo empresa)"
     string email UK
     string password
   }
   COMPANIES {
     bigint id PK
+    string token UK "link do termometro"
     string name
     string address
     string email
+  }
+  SECTORS {
+    bigint id PK
+    bigint company_id FK
+    string name "unico por empresa"
+  }
+  MOOD_ENTRIES {
+    bigint id PK
+    bigint company_id FK
+    bigint sector_id FK "nullable"
+    tinyint mood "1-5"
+    text description "nullable"
   }
   WORKSHOPS {
     bigint id PK
@@ -244,6 +290,7 @@ erDiagram
   CHECK_INS {
     bigint id PK
     bigint workshop_id FK
+    bigint sector_id FK "nullable"
     string name
     char11 cpf "unico por workshop"
     bool lgpd_read
@@ -263,6 +310,8 @@ erDiagram
     string title
     text description
     datetime datetime
+    string file_1 "anexo, nullable"
+    string file_2 "anexo, nullable"
   }
   DIARY_EVIDENCES {
     bigint id PK
@@ -275,6 +324,13 @@ erDiagram
     string description
     char36 user_id "nullable"
     datetime created_at
+  }
+  USER_NOTIFICATIONS {
+    bigint id PK
+    char36 user_id FK "nullable"
+    string user_type "nullable"
+    string title
+    string status "new|read"
   }
       </pre>
       <figcaption>Linha tracejada = referência solta (logs.user_id, sem FK rígida, preserva o rastro após exclusão).</figcaption>
@@ -305,14 +361,35 @@ classDiagram
     +string name
     +UserType type
     +string email
+    +company()
     +createdWorkshops()
     +facilitatedWorkshops()
     +diaries()
   }
   class Company {
     +int id
+    +string token
     +string name
+    +thermometer_link
     +workshops()
+    +sectors()
+    +moodEntries()
+  }
+  class Sector {
+    +int id
+    +int company_id
+    +string name
+    +company()
+    +checkIns()
+    +moodEntries()
+  }
+  class MoodEntry {
+    +int id
+    +int company_id
+    +int sector_id
+    +int mood (1-5)
+    +company()
+    +sector()
   }
   class Workshop {
     +int id
@@ -329,6 +406,7 @@ classDiagram
     +string cpf
     +bool lgpd_read
     +workshop()
+    +sector()
   }
   class Assessment {
     +int id
@@ -353,10 +431,23 @@ classDiagram
     +string description
     +user()
   }
+  class Notification {
+    +int id
+    +string user_id
+    +string user_type
+    +string status
+    +forUser()
+    +user()
+  }
 
   User ..|> JWTSubject
   User --> UserType : type
   Company "1" --> "0..*" Workshop
+  Company "1" --> "0..*" Sector
+  Company "1" --> "0..*" User : empresa
+  Company "1" --> "0..*" MoodEntry
+  Sector "1" --> "0..*" CheckIn
+  Sector "1" --> "0..*" MoodEntry
   User "1" --> "0..*" Workshop : creator / facilitator
   Workshop "1" --> "0..*" CheckIn
   Workshop "1" --> "0..*" Assessment
@@ -365,6 +456,7 @@ classDiagram
   Diary "1" --> "0..*" DiaryEvidence
   User "1" --> "0..*" DiaryEvidence
   Log ..> User
+  Notification ..> User
       </pre>
       <figcaption>Associações traçadas espelham os métodos Eloquent (belongsTo / hasMany / hasOne).</figcaption>
     </figure>
@@ -445,7 +537,7 @@ flowchart TB
   </section>
 
   <footer>
-    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (8 entidades, 46 rotas, 66 testes verdes).
+    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (11 entidades, 71 rotas, 123 testes verdes).
   </footer>
 </div>
 

@@ -75,13 +75,50 @@ final class CompanyController extends Controller
             new OA\Response(response: 401, description: 'Não autenticado'),
             new OA\Response(response: 403, description: 'Acesso restrito ao perfil'),
             new OA\Response(response: 422, description: 'Falha de validação'),
+            new OA\Response(response: 500, description: 'Não foi possível gerar um token único para a empresa'),
         ],
     )]
     public function store(StoreCompanyRequest $request): JsonResponse
     {
-        $company = Company::create($request->validated());
+        try {
+            $company = Company::createWithUniqueToken($request->validated());
+        } catch (\RuntimeException) {
+            return response()->json([
+                'message' => 'Não foi possível criar a empresa: falha ao gerar um token único. Tente novamente.',
+            ], 500);
+        }
 
         return response()->json(['data' => $company], 201);
+    }
+
+    #[OA\Get(
+        path: '/api/public/companies/{token}',
+        summary: 'Dados públicos da empresa pelo token (sem autenticação)',
+        description: 'Usado pela página pública do termômetro emocional para carregar a empresa e a lista de setores. Retorna apenas dados públicos — nunca participantes ou respostas.',
+        tags: ['Público'],
+        parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Token público da empresa (do link do termômetro)', schema: new OA\Schema(type: 'string', example: 'aB3xK9pQ2mL'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Dados públicos da empresa', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'data', type: 'object', properties: [
+                    new OA\Property(property: 'id', type: 'integer', example: 1),
+                    new OA\Property(property: 'name', type: 'string', example: 'ACME Ltda'),
+                    new OA\Property(property: 'sectors', type: 'array', description: 'Setores para o participante escolher', items: new OA\Items(properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'name', type: 'string', example: 'Tecnologia da Informação'),
+                    ], type: 'object')),
+                ]),
+            ])),
+            new OA\Response(response: 404, description: 'Token inválido'),
+        ],
+    )]
+    public function publicShow(Company $company): JsonResponse
+    {
+        // Apenas dados públicos + setores para o formulário do termômetro.
+        return response()->json(['data' => [
+            'id' => $company->id,
+            'name' => $company->name,
+            'sectors' => $company->sectors()->orderBy('name')->get(['id', 'name']),
+        ]]);
     }
 
     #[OA\Get(

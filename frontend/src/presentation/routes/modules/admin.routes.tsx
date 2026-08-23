@@ -42,6 +42,26 @@ export const adminCompaniesRoute = createRoute({
   ),
 });
 
+export const adminSectorsRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/setores',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/SectorsPage'),
+    'SectorsPage',
+  ),
+});
+
+export const adminSectorDetailRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/setores/$id',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/SectorDetailPage'),
+    'SectorDetailPage',
+  ),
+});
+
 export const adminUsersRoute = createRoute({
   getParentRoute: () => protectedRoute,
   path: '/admin/usuarios',
@@ -49,5 +69,25 @@ export const adminUsersRoute = createRoute({
   component: lazyRouteComponent(
     () => import('@/presentation/pages/admin/UsersPage'),
     'UsersPage',
+  ),
+});
+
+export const adminCompanyReportRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/relatorios/empresas/$id',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/CompanyReportPage'),
+    'CompanyReportPage',
+  ),
+});
+
+export const adminReportsRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/relatorios',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(
+    () => import('@/presentation/pages/admin/ReportsPage'),
+    'ReportsPage',
   ),
 });

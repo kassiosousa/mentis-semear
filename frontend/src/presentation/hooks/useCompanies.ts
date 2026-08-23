@@ -1,18 +1,30 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CompanyInput } from '@/domain/company/entities/Company';
+import type { Company, CompanyInput } from '@/domain/company/entities/Company';
 import type { CompanyFilters, CompanyPage } from '@/domain/company/repositories/CompanyRepository';
 import { container } from '@/presentation/container';
 
 export const companyKeys = {
   all: ['companies'] as const,
   list: (filters: CompanyFilters) => [...companyKeys.all, 'list', filters] as const,
+  detail: (id: number) => [...companyKeys.all, 'detail', id] as const,
 };
 
-export function useCompanies(filters: CompanyFilters) {
+export function useCompanies(filters: CompanyFilters, enabled = true) {
   return useQuery<CompanyPage>({
     queryKey: companyKeys.list(filters),
     queryFn: () => container.companies.list.execute(filters),
     placeholderData: keepPreviousData,
+    enabled,
+  });
+}
+
+export function useCompany(id: number | undefined) {
+  return useQuery<Company>({
+    queryKey: companyKeys.detail(id ?? 0),
+    queryFn: () => container.companies.find.execute(id as number),
+    enabled: id !== undefined,
+    staleTime: 5 * 60_000,
+    meta: { silentError: true },
   });
 }
 
