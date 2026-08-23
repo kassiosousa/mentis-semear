@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use App\Enums\UserType;
 
 class Diary extends Model
 {
@@ -32,6 +33,11 @@ class Diary extends Model
                     Storage::disk('local')->delete($path);
                 }
             }
+        });
+
+        // Notifica os admins ao registrar o diário de uma oficina.
+        static::created(function (Diary $diary): void {
+            Notification::forType(UserType::Admin, 'Novo diário', "Diário registrado na oficina #{$diary->workshop_id}.", 'diary.created');
         });
     }
 
