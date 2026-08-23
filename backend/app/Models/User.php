@@ -38,6 +38,14 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    protected static function booted(): void
+    {
+        // Notifica os admins ao criar um usuário.
+        static::created(function (User $user): void {
+            Notification::forType(UserType::Admin, 'Novo usuário', "Usuário {$user->name} ({$user->type->value}) criado.", 'user.created');
+        });
+    }
+
     // ---- JWT (guard `api`) ----
 
     /** The identifier stored in the JWT `sub` claim (the user's UUID). */

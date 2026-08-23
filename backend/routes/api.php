@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DiaryController;
 use App\Http\Controllers\Api\DiaryEvidenceController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\MoodEntryController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SectorController;
 use App\Http\Controllers\Api\UserController;
@@ -38,6 +39,16 @@ Route::prefix('auth')->group(function (): void {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
     });
+});
+
+// Notificações do usuário autenticado (criação é interna, via eventos).
+Route::middleware('auth:api')->prefix('notifications')->group(function (): void {
+    Route::get('/', [NotificationController::class, 'index']);
+    Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('/read-all', [NotificationController::class, 'readAll']);
+    Route::get('/{notification}', [NotificationController::class, 'show']);
+    Route::patch('/{notification}', [NotificationController::class, 'update']);
+    Route::delete('/{notification}', [NotificationController::class, 'destroy']);
 });
 
 // Gestão de usuários + auditoria — apenas admin.
