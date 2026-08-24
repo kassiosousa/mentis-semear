@@ -2,7 +2,7 @@ import { useEffect, useState, type ComponentProps } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import type { User, UserType } from '@/domain/auth/entities/User';
-import { USER_TYPES, isUserType, labelOfType } from '@/domain/auth/entities/User';
+import { ASSIGNABLE_USER_TYPES, isUserType, labelOfType } from '@/domain/auth/entities/User';
 import { ValidationError } from '@/domain/shared/errors/AppError';
 import type { CreateUserInput, UpdateUserInput } from '@/domain/user/repositories/UserRepository';
 import { Button } from '@/presentation/components/ui/button';
@@ -39,11 +39,11 @@ interface FormValues {
   name: string;
   email: string;
   password: string;
-  type: UserType;
+  type: UserType | '';
   companyId: string;
 }
 
-const EMPTY: FormValues = { name: '', email: '', password: '', type: 'usuario', companyId: '' };
+const EMPTY: FormValues = { name: '', email: '', password: '', type: '', companyId: '' };
 
 interface UserFormDialogProps {
   open: boolean;
@@ -60,6 +60,10 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
   const updateUser = useUpdateUser();
   const editing = user !== null;
   const pending = createUser.isPending || updateUser.isPending;
+  const typeOptions =
+    user !== null && !ASSIGNABLE_USER_TYPES.includes(user.type)
+      ? [...ASSIGNABLE_USER_TYPES, user.type]
+      : ASSIGNABLE_USER_TYPES;
 
   useEffect(() => {
     if (!open) return;
@@ -126,13 +130,19 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
       next.password = `A senha precisa de pelo menos ${MIN_PASSWORD} caracteres.`;
     }
 
+    const type = isUserType(values.type) ? values.type : null;
+
+    if (type === null) {
+      next.type = 'Selecione o perfil de acesso.';
+    }
+
     const companyRequired = values.type === 'empresa';
 
     if (companyRequired && values.companyId === '') {
       next.companyId = 'Selecione a empresa deste usuário.';
     }
 
-    if (Object.keys(next).length > 0) {
+    if (type === null || Object.keys(next).length > 0) {
       setErrors(next);
       return;
     }
@@ -142,13 +152,13 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
     const companyId = companyRequired ? Number(values.companyId) : null;
 
     if (user === null) {
-      const input: CreateUserInput = { name, email, password, type: values.type, companyId };
+      const input: CreateUserInput = { name, email, password, type, companyId };
 
       createUser.mutate(input, { onSuccess, onError });
       return;
     }
 
-    const input: UpdateUserInput = { name, email, type: values.type, companyId };
+    const input: UpdateUserInput = { name, email, type, companyId };
     if (password !== '') input.password = password;
 
     updateUser.mutate({ id: user.id, input }, { onSuccess, onError });
@@ -223,11 +233,15 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
                 if (isUserType(value)) setValues((current) => ({ ...current, type: value }));
               }}
             >
-              <SelectTrigger id="user-type" className="h-10">
-                <SelectValue />
+              <SelectTrigger
+                id="user-type"
+                className="h-10"
+                aria-invalid={errors.type !== undefined}
+              >
+                <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
-                {USER_TYPES.map((value) => (
+                {typeOptions.map((value) => (
                   <SelectItem key={value} value={value}>
                     {labelOfType(value)}
                   </SelectItem>
