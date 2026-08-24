@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/presentation/components/ui/card';
 import { QrCodeDialog, type QrTarget } from '@/presentation/components/ui/qr-code-dialog';
+import { Skeleton } from '@/presentation/components/ui/skeleton';
 import { WorkshopLinkRow } from '@/presentation/components/workshop/WorkshopLinkRow';
 import { useCompany } from '@/presentation/hooks/useCompanies';
 
@@ -33,14 +34,18 @@ export function ThermometerLinkCard({ companyId, sector }: ThermometerLinkCardPr
   const companyLink =
     company.data === undefined ? null : thermometerLinkOf(company.data, window.location.origin);
 
-  if (companyLink === null) return null;
-
+  const loading = companyId !== undefined && company.isPending;
   const companyName = company.data?.name ?? '';
-  const link = sector === undefined ? companyLink : linkWithSector(companyLink, sector.id);
+  const link =
+    companyLink === null || sector === undefined
+      ? companyLink
+      : linkWithSector(companyLink, sector.id);
   const label =
     sector === undefined ? 'Termômetro da empresa' : `Termômetro do setor ${sector.name}`;
 
   const showQr = () => {
+    if (link === null) return;
+
     setQrTarget({
       title: `QR Code — ${label}`,
       description:
@@ -70,7 +75,16 @@ export function ThermometerLinkCard({ companyId, sector }: ThermometerLinkCardPr
       </CardHeader>
 
       <CardContent>
-        <WorkshopLinkRow label={label} url={link} onShowQr={showQr} />
+        {loading && <Skeleton className="h-16 w-full" />}
+
+        {!loading && link === null && (
+          <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
+            O link ainda não está disponível para este acesso. Fale com o administrador do
+            programa.
+          </p>
+        )}
+
+        {link !== null && <WorkshopLinkRow label={label} url={link} onShowQr={showQr} />}
       </CardContent>
 
       <QrCodeDialog
