@@ -1,6 +1,7 @@
 import { Outlet } from '@tanstack/react-router';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
+import { AppFooter } from '@/presentation/components/layout/AppFooter';
 import { BrandMark } from '@/presentation/components/layout/BrandMark';
 import { SidebarNav } from '@/presentation/components/layout/SidebarNav';
 import { Sheet, SheetContent, SheetTrigger } from '@/presentation/components/ui/sheet';
@@ -13,7 +14,7 @@ export function AppLayout() {
   return (
     <div className="flex flex-1 flex-col bg-muted text-foreground">
       <div className="flex flex-1 gap-4 p-3 sm:p-4">
-        <aside className="sticky top-4 hidden h-[calc(100vh-2rem)] w-64 shrink-0 lg:block">
+        <aside className="sticky top-4 hidden max-h-[calc(100vh-2rem)] w-64 shrink-0 lg:block">
           <SidebarNav user={user} />
         </aside>
 
@@ -38,6 +39,8 @@ export function AppLayout() {
           <main className="min-w-0 flex-1">
             <Outlet />
           </main>
+
+          <AppFooter className="rounded-2xl border-t-0 ring-1 ring-foreground/5" />
         </div>
       </div>
     </div>
