@@ -10,6 +10,7 @@ import {
 } from '@/application/company/useCases/ManageCompanies';
 import {
   CreateDiary,
+  FetchDiaryPhoto,
   FindWorkshopDiary,
   UpdateDiary,
 } from '@/application/diary/useCases/ManageDiaries';
@@ -123,6 +124,7 @@ export const container = {
     findByWorkshop: new FindWorkshopDiary(diaryRepository),
     create: new CreateDiary(diaryRepository),
     update: new UpdateDiary(diaryRepository),
+    photo: new FetchDiaryPhoto(diaryRepository),
   },
   companies: {
     list: new ListCompanies(companyRepository),
