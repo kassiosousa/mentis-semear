@@ -6,6 +6,7 @@ import { MOOD_SCORES, moodLabel, moodScoreFromAverage } from '@/domain/mood/enti
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { MoodFace, MoodFaceBadge, MoodFaceScale } from '@/presentation/components/mood/MoodFace';
 import { moodBarClass } from '@/presentation/components/mood/moodTone';
+import { ThermometerLinkCard } from '@/presentation/components/mood/ThermometerLinkCard';
 import { SectorDeleteDialog } from '@/presentation/components/sector/SectorDeleteDialog';
 import { SectorFormDialog } from '@/presentation/components/sector/SectorFormDialog';
 import { SectorsListLink, type SectorScope } from '@/presentation/components/sector/SectorLink';
@@ -161,6 +162,13 @@ export function SectorDetail({ sectorId, scope, companyName, companies }: Sector
           )}
         </CardContent>
       </Card>
+
+      {sector.isSuccess && (
+        <ThermometerLinkCard
+          companyId={sector.data.companyId}
+          sector={{ id: sector.data.id, name: sector.data.name }}
+        />
+      )}
 
       <Card>
         <CardHeader className="border-b">

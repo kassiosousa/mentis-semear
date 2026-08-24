@@ -12,27 +12,46 @@ import { QrCodeDialog, type QrTarget } from '@/presentation/components/ui/qr-cod
 import { WorkshopLinkRow } from '@/presentation/components/workshop/WorkshopLinkRow';
 import { useCompany } from '@/presentation/hooks/useCompanies';
 
-const LABEL = 'Termômetro do setor';
+interface ThermometerSector {
+  id: number;
+  name: string;
+}
 
 interface ThermometerLinkCardProps {
   companyId: number | undefined;
+  sector?: ThermometerSector;
 }
 
-export function ThermometerLinkCard({ companyId }: ThermometerLinkCardProps) {
+function linkWithSector(link: string, sectorId: number): string {
+  return `${link}${link.includes('?') ? '&' : '?'}setor=${sectorId}`;
+}
+
+export function ThermometerLinkCard({ companyId, sector }: ThermometerLinkCardProps) {
   const [qrTarget, setQrTarget] = useState<QrTarget | null>(null);
 
   const company = useCompany(companyId);
-  const link =
+  const companyLink =
     company.data === undefined ? null : thermometerLinkOf(company.data, window.location.origin);
 
-  if (link === null) return null;
+  if (companyLink === null) return null;
+
+  const companyName = company.data?.name ?? '';
+  const link = sector === undefined ? companyLink : linkWithSector(companyLink, sector.id);
+  const label =
+    sector === undefined ? 'Termômetro da empresa' : `Termômetro do setor ${sector.name}`;
 
   const showQr = () => {
     setQrTarget({
-      title: `QR Code — ${LABEL}`,
-      description: `${company.data?.name ?? ''}. Aponte a câmera para responder.`,
+      title: `QR Code — ${label}`,
+      description:
+        sector === undefined
+          ? `${companyName}. Aponte a câmera para responder.`
+          : `${companyName} · setor ${sector.name}. Aponte a câmera para responder.`,
       url: link,
-      fileName: `termometro-${company.data?.id ?? ''}`,
+      fileName:
+        sector === undefined
+          ? `termometro-${company.data?.id ?? ''}`
+          : `termometro-setor-${sector.id}`,
     });
   };
 
@@ -41,16 +60,17 @@ export function ThermometerLinkCard({ companyId }: ThermometerLinkCardProps) {
       <CardHeader className="border-b">
         <CardTitle className="flex items-center gap-2">
           <MessageSquareHeart className="size-4 text-primary" />
-          Termômetro emocional
+          {sector === undefined ? 'Termômetro emocional' : 'Link do termômetro'}
         </CardTitle>
         <CardDescription>
-          Compartilhe o link com a equipe: cada pessoa escolhe o próprio setor e responde de forma
-          anônima.
+          {sector === undefined
+            ? 'Compartilhe o link com a equipe: cada pessoa escolhe o próprio setor e responde de forma anônima.'
+            : `Compartilhe com a equipe do setor: o formulário abre com ${sector.name} já selecionado e a resposta continua anônima.`}
         </CardDescription>
       </CardHeader>
 
       <CardContent>
-        <WorkshopLinkRow label={LABEL} url={link} onShowQr={showQr} />
+        <WorkshopLinkRow label={label} url={link} onShowQr={showQr} />
       </CardContent>
 
       <QrCodeDialog
