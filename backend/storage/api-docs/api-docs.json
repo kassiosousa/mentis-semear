@@ -527,7 +527,7 @@
                 "tags": [
                     "CheckIns"
                 ],
-                "summary": "Lista check-ins (paginado)",
+                "summary": "Lista check-ins (paginado). Facilitador vê os das oficinas que facilita; empresa, os da sua empresa",
                 "operationId": "4ec1707208d5361e97dd9e6fb8142140",
                 "parameters": [
                     {

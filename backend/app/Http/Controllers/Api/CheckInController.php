@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CheckIn\StoreCheckInRequest;
 use App\Http\Requests\CheckIn\UpdateCheckInRequest;
 use App\Models\CheckIn;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +23,7 @@ final class CheckInController extends Controller
 {
     #[OA\Get(
         path: '/api/check-ins',
-        summary: 'Lista check-ins (paginado)',
+        summary: 'Lista check-ins (paginado). Facilitador vê os das oficinas que facilita; empresa, os da sua empresa',
         security: [['bearerAuth' => []]],
         tags: ['CheckIns'],
         parameters: [new OA\Parameter(name: 'workshop_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))],
@@ -37,8 +39,14 @@ final class CheckInController extends Controller
     )]
     public function index(Request $request): JsonResponse
     {
+        $user = $this->currentUser();
+
         $checkIns = CheckIn::query()
             ->when($request->query('workshop_id'), fn ($q, $id) => $q->where('workshop_id', $id))
+            // Facilitador só enxerga check-ins de oficinas que ele facilita.
+            ->when($user->type === UserType::Facilitador, fn ($q) => $q->whereHas('workshop', fn ($w) => $w->where('user_facilitator_id', $user->id)))
+            // Empresa só enxerga check-ins de oficinas da própria empresa.
+            ->when($user->type === UserType::Empresa, fn ($q) => $q->whereHas('workshop', fn ($w) => $w->where('company_id', $user->company_id)))
             ->orderByDesc('created_at')
             ->paginate(15);
 
@@ -134,6 +142,8 @@ final class CheckInController extends Controller
     )]
     public function show(CheckIn $checkIn): JsonResponse
     {
+        $this->authorizeReadAccess($checkIn);
+
         return response()->json(['data' => $checkIn]);
     }
 
@@ -192,5 +202,27 @@ final class CheckInController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    private function currentUser(): User
+    {
+        /** @var User $user */
+        $user = auth('api')->user();
+
+        return $user;
+    }
+
+    /** Facilitador só acessa check-ins das oficinas que facilita; empresa, das da sua empresa. */
+    private function authorizeReadAccess(CheckIn $checkIn): void
+    {
+        $user = $this->currentUser();
+
+        if ($user->type === UserType::Facilitador && $checkIn->workshop->user_facilitator_id !== $user->id) {
+            abort(403, 'Check-in de uma oficina que não é sua.');
+        }
+
+        if ($user->type === UserType::Empresa && $checkIn->workshop->company_id !== $user->company_id) {
+            abort(403, 'Check-in de uma oficina de outra empresa.');
+        }
     }
 }
