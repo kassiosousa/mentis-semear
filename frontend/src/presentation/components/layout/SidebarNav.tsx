@@ -6,6 +6,7 @@ import {
   Layers,
   LayoutDashboard,
   LogOut,
+  ScrollText,
   Settings,
   Sprout,
   Users,
@@ -67,6 +68,9 @@ function generalItemsFor(type: UserType): NavItem[] {
     ...(reportsPath === undefined
       ? []
       : [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath } satisfies NavItem]),
+    ...(type === 'admin'
+      ? [{ label: 'Logs', icon: ScrollText, to: '/admin/logs' } satisfies NavItem]
+      : []),
     { label: 'Configurações', icon: Settings },
     { label: 'Ajuda', icon: CircleHelp },
   ];
