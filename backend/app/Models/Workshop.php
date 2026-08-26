@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use RuntimeException;
+use App\Enums\UserType;
 
 class Workshop extends Model
 {
@@ -40,6 +41,12 @@ class Workshop extends Model
             $workshop->token ??= Str::random(11);
             $workshop->checkin_link = self::checkinLinkFor($workshop->token);
             $workshop->assessment_link = self::assessmentLinkFor($workshop->token);
+        });
+
+        // Notifica os admins e, se houver, o facilitador atribuído.
+        static::created(function (Workshop $workshop): void {
+            Notification::forType(UserType::Admin, 'Nova oficina', "Oficina #{$workshop->id} criada.", 'workshop.created');
+            Notification::forUserId($workshop->user_facilitator_id, 'Você foi atribuído a uma oficina', "Você é facilitador da oficina #{$workshop->id}.", 'workshop.assigned');
         });
     }
 

@@ -124,9 +124,9 @@
     <h1>Mentis Semear — API de workshops</h1>
     <p class="lede">Monólito Laravel 13 (PHP 8.4) + MySQL, autenticação JWT, endpoints públicos para participantes e auditoria automática. Diagramas e requisitos atendidos abaixo.</p>
     <div class="stats">
-      <div class="stat"><div class="n">10</div><div class="l">entidades / tabelas</div></div>
-      <div class="stat"><div class="n">65</div><div class="l">rotas de API</div></div>
-      <div class="stat"><div class="n">113</div><div class="l">testes (329 asserts)</div></div>
+      <div class="stat"><div class="n">11</div><div class="l">entidades / tabelas</div></div>
+      <div class="stat"><div class="n">71</div><div class="l">rotas de API</div></div>
+      <div class="stat"><div class="n">124</div><div class="l">testes (362 asserts)</div></div>
       <div class="stat"><div class="n">4</div><div class="l">perfis de usuário</div></div>
     </div>
   </header>
@@ -204,9 +204,19 @@
       </div>
 
       <div class="card">
+        <h3>Notificações <span class="tag">eventos</span></h3>
+        <ul class="checks">
+          <li>Alvo por <strong>usuário específico</strong> (<code>user_id</code>) ou <strong>tipo</strong> (<code>user_type</code>); status <code>new</code> → <code>read</code></li>
+          <li>Criadas automaticamente (hooks <code>created</code>): nova empresa, usuário, oficina e diário → <strong>admins</strong></li>
+          <li>Oficina atribuída a um facilitador → notifica <strong>esse usuário</strong></li>
+          <li>API do próprio usuário: listar (<code>?status</code>), <code>unread-count</code>, <code>read-all</code>, marcar lida (<code>PATCH</code>)</li>
+        </ul>
+      </div>
+
+      <div class="card">
         <h3>Qualidade &amp; entrega <span class="tag">devops</span></h3>
         <ul class="checks">
-          <li><strong>113 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
+          <li><strong>124 testes</strong> (PHPUnit) — caminho feliz, autorização, validação, regras</li>
           <li>Laravel Pint (formatação) + hooks de projeto</li>
           <li>Docker dev + prod; CI no GitHub Actions</li>
           <li>Deploy automático: push em <code>homolog</code> → VPS (rsync + compose via SSH)</li>
@@ -229,6 +239,7 @@ erDiagram
   USERS ||--o{ DIARIES : "cria"
   USERS ||--o{ DIARY_EVIDENCES : "cria"
   USERS ||..o{ LOGS : "executa (solto)"
+  USERS ||..o{ USER_NOTIFICATIONS : "destina (ou por tipo)"
   COMPANIES ||--o{ WORKSHOPS : "hospeda"
   COMPANIES ||--o{ SECTORS : "define"
   COMPANIES ||--o{ USERS : "emprega (tipo empresa)"
@@ -313,6 +324,13 @@ erDiagram
     string description
     char36 user_id "nullable"
     datetime created_at
+  }
+  USER_NOTIFICATIONS {
+    bigint id PK
+    char36 user_id FK "nullable"
+    string user_type "nullable"
+    string title
+    string status "new|read"
   }
       </pre>
       <figcaption>Linha tracejada = referência solta (logs.user_id, sem FK rígida, preserva o rastro após exclusão).</figcaption>
@@ -413,6 +431,14 @@ classDiagram
     +string description
     +user()
   }
+  class Notification {
+    +int id
+    +string user_id
+    +string user_type
+    +string status
+    +forUser()
+    +user()
+  }
 
   User ..|> JWTSubject
   User --> UserType : type
@@ -430,6 +456,7 @@ classDiagram
   Diary "1" --> "0..*" DiaryEvidence
   User "1" --> "0..*" DiaryEvidence
   Log ..> User
+  Notification ..> User
       </pre>
       <figcaption>Associações traçadas espelham os métodos Eloquent (belongsTo / hasMany / hasOne).</figcaption>
     </figure>
@@ -510,7 +537,7 @@ flowchart TB
   </section>
 
   <footer>
-    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (10 entidades, 65 rotas, 113 testes verdes).
+    Mentis Semear · backend Laravel 13 / PHP 8.4 / MySQL 8 · gerado a partir do código em <code>homolog</code> (11 entidades, 71 rotas, 124 testes verdes).
   </footer>
 </div>
 

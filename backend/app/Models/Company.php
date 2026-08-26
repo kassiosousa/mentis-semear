@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use RuntimeException;
+use App\Enums\UserType;
 
 class Company extends Model
 {
@@ -29,6 +30,11 @@ class Company extends Model
         // Token público gerado automaticamente (fallback para seeders/testes/tinker).
         static::creating(function (Company $company): void {
             $company->token ??= Str::random(11);
+        });
+
+        // Notifica os admins ao cadastrar uma empresa.
+        static::created(function (Company $company): void {
+            Notification::forType(UserType::Admin, 'Nova empresa', "Empresa {$company->name} cadastrada.", 'company.created');
         });
     }
 
