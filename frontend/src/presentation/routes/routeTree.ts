@@ -19,7 +19,6 @@ import {
 } from '@/presentation/routes/modules/empresa.routes';
 import {
   facilitadorDashboardRoute,
-  facilitadorReportsRoute,
   facilitadorWorkshopRoute,
 } from '@/presentation/routes/modules/facilitador.routes';
 import {
@@ -52,7 +51,6 @@ export const routeTree = rootRoute.addChildren([
     empresaSectorDetailRoute,
     empresaReportsRoute,
     facilitadorDashboardRoute,
-    facilitadorReportsRoute,
     facilitadorWorkshopRoute,
   ]),
 ]);
