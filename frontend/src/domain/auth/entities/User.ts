@@ -4,6 +4,8 @@ export type UserType = (typeof USER_TYPES)[number];
 
 export const DEFAULT_USER_TYPE: UserType = 'usuario';
 
+export const ASSIGNABLE_USER_TYPES: readonly UserType[] = ['admin', 'facilitador', 'empresa'];
+
 export interface User {
   id: string;
   name: string;

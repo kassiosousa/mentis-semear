@@ -7,11 +7,6 @@ export function SectorDetailPage() {
   const directory = useDirectory({ facilitators: false });
 
   return (
-    <SectorDetail
-      sectorId={Number(id)}
-      scope="admin"
-      companyName={directory.companyName}
-      companies={directory.companies}
-    />
+    <SectorDetail sectorId={Number(id)} scope="admin" companies={directory.companies} />
   );
 }

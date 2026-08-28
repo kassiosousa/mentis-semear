@@ -43,7 +43,6 @@ const EMPRESA_ITEMS: NavItem[] = [{ label: 'Setores', icon: Layers, to: '/empres
 const REPORTS_PATHS: Partial<Record<UserType, string>> = {
   admin: '/admin/relatorios',
   empresa: '/empresa/relatorios',
-  facilitador: '/facilitador/relatorios',
 };
 
 function menuItemsFor(type: UserType): NavItem[] {
