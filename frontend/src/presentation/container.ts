@@ -16,6 +16,12 @@ import {
 import { FindLog, ListLogs } from '@/application/log/useCases/ManageLogs';
 import { GetMoodSummary } from '@/application/mood/useCases/GetMoodSummary';
 import {
+  CountUnreadNotifications,
+  ListNotifications,
+  MarkAllNotificationsRead,
+  MarkNotificationRead,
+} from '@/application/notification/useCases/ManageNotifications';
+import {
   FindPublicCompany,
   RegisterMoodEntry,
 } from '@/application/mood/useCases/PublicMoodAccess';
@@ -62,6 +68,7 @@ import { createApiClient } from '@/infrastructure/http/createApiClient';
 import { HttpLogRepository } from '@/infrastructure/log/HttpLogRepository';
 import { HttpMoodRepository } from '@/infrastructure/mood/HttpMoodRepository';
 import { HttpPublicMoodRepository } from '@/infrastructure/mood/HttpPublicMoodRepository';
+import { HttpNotificationRepository } from '@/infrastructure/notification/HttpNotificationRepository';
 import { HttpReportRepository } from '@/infrastructure/report/HttpReportRepository';
 import { HttpSectorRepository } from '@/infrastructure/sector/HttpSectorRepository';
 import { BrowserSessionStorage } from '@/infrastructure/storage/BrowserSessionStorage';
@@ -91,6 +98,7 @@ const moodRepository = new HttpMoodRepository(http);
 const publicMoodRepository = new HttpPublicMoodRepository(http);
 const logRepository = new HttpLogRepository(http);
 const reportRepository = new HttpReportRepository(http);
+const notificationRepository = new HttpNotificationRepository(http);
 
 export const container = {
   sessions,
@@ -144,6 +152,12 @@ export const container = {
   publicMoods: {
     findCompanyByToken: new FindPublicCompany(publicMoodRepository),
     register: new RegisterMoodEntry(publicMoodRepository),
+  },
+  notifications: {
+    list: new ListNotifications(notificationRepository),
+    unreadCount: new CountUnreadNotifications(notificationRepository),
+    markRead: new MarkNotificationRead(notificationRepository),
+    readAll: new MarkAllNotificationsRead(notificationRepository),
   },
   logs: {
     list: new ListLogs(logRepository),
