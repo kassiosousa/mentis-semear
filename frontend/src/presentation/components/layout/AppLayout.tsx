@@ -3,6 +3,7 @@ import { Menu } from 'lucide-react';
 import { useState } from 'react';
 import { BrandMark } from '@/presentation/components/layout/BrandMark';
 import { SidebarNav } from '@/presentation/components/layout/SidebarNav';
+import { NotificationsBell } from '@/presentation/components/notification/NotificationsBell';
 import { Sheet, SheetContent, SheetTrigger } from '@/presentation/components/ui/sheet';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
 
@@ -18,7 +19,7 @@ export function AppLayout() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-4">
-          <header className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-surface px-3 ring-1 ring-foreground/5 lg:hidden">
+          <header className="sticky top-3 z-30 flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-surface px-3 ring-1 ring-foreground/5 sm:top-4 lg:hidden">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger
                 aria-label="Abrir menu"
@@ -33,6 +34,8 @@ export function AppLayout() {
             </Sheet>
 
             <BrandMark className="min-w-0" />
+
+            <NotificationsBell className="ml-auto" />
           </header>
 
           <main className="min-w-0 flex-1">
