@@ -2,11 +2,9 @@ import { Link } from '@tanstack/react-router';
 import {
   Building2,
   ChartColumn,
-  CircleHelp,
   Layers,
   LayoutDashboard,
   LogOut,
-  Settings,
   Sprout,
   Users,
 } from 'lucide-react';
@@ -63,20 +61,18 @@ function menuItemsFor(type: UserType): NavItem[] {
 function generalItemsFor(type: UserType): NavItem[] {
   const reportsPath = REPORTS_PATHS[type];
 
-  return [
-    ...(reportsPath === undefined
-      ? []
-      : [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath } satisfies NavItem]),
-    { label: 'Configurações', icon: Settings },
-    { label: 'Ajuda', icon: CircleHelp },
-  ];
+  if (reportsPath === undefined) return [];
+
+  return [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath }];
 }
 
 function groupsFor(type: UserType): NavGroup[] {
-  return [
+  const groups: NavGroup[] = [
     { label: 'Menu', items: menuItemsFor(type) },
     { label: 'Geral', items: generalItemsFor(type) },
   ];
+
+  return groups.filter((group) => group.items.length > 0);
 }
 
 const ITEM_BASE =
