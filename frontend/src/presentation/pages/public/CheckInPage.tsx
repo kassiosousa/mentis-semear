@@ -108,6 +108,8 @@ export function CheckInPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done, setDone] = useState(false);
 
+  const sectors = workshop.data?.sectors ?? [];
+
   const setField = <Field extends keyof FormValues>(field: Field, value: FormValues[Field]) => {
     setValues((current) => ({ ...current, [field]: value }));
   };
@@ -352,14 +354,36 @@ export function CheckInPage() {
 
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="checkin-sector">Setor</Label>
-                  <Input
-                    id="checkin-sector"
-                    value={values.sector}
-                    onChange={(event) => setField('sector', event.target.value)}
-                    aria-invalid={errors.sector !== undefined}
-                    placeholder="Operações"
-                    className="h-11"
-                  />
+                  {sectors.length > 0 ? (
+                    <Select
+                      value={values.sector}
+                      onValueChange={(value) => setField('sector', value)}
+                    >
+                      <SelectTrigger
+                        id="checkin-sector"
+                        className="h-11 w-full"
+                        aria-invalid={errors.sector !== undefined}
+                      >
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sectors.map((sector) => (
+                          <SelectItem key={sector.id} value={sector.name}>
+                            {sector.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      id="checkin-sector"
+                      value={values.sector}
+                      onChange={(event) => setField('sector', event.target.value)}
+                      aria-invalid={errors.sector !== undefined}
+                      placeholder="Informe seu setor"
+                      className="h-11"
+                    />
+                  )}
                   {errors.sector !== undefined && (
                     <p className="text-xs text-destructive">{errors.sector}</p>
                   )}
