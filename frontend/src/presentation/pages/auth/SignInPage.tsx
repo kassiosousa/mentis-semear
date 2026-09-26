@@ -25,7 +25,7 @@ export function SignInPage() {
   const signIn = useMutation({
     mutationFn: (credentials: Credentials) => container.auth.signIn.execute(credentials),
     onSuccess: async (session) => {
-      toast.success('Login realizado com sucesso.', { id: SIGN_IN_TOAST });
+      toast.success('Credenciais válidas.', { id: SIGN_IN_TOAST });
 
       const home = homePathFor(session.user.type);
 
