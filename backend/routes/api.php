@@ -69,6 +69,12 @@ Route::middleware(['auth:api', 'type:admin,usuario,facilitador'])->group(functio
     Route::apiResource('diary-evidences', DiaryEvidenceController::class)->parameters(['diary-evidences' => 'diaryEvidence']);
 });
 
+// Leitura de check-ins — admin/usuário (tudo), facilitador (oficinas dele), empresa (da sua empresa).
+// O escopo por perfil é aplicado no CheckInController.
+Route::middleware(['auth:api', 'type:admin,usuario,facilitador,empresa'])->group(function (): void {
+    Route::apiResource('check-ins', CheckInController::class)->only(['index', 'show'])->parameters(['check-ins' => 'checkIn']);
+});
+
 // Setores + termômetro emocional — admin (todas as empresas) e usuário "empresa" (só a sua).
 Route::middleware(['auth:api', 'type:admin,empresa'])->group(function (): void {
     Route::apiResource('sectors', SectorController::class);
@@ -85,7 +91,8 @@ Route::middleware(['auth:api', 'type:admin,usuario'])->group(function (): void {
     Route::apiResource('companies', CompanyController::class);
     // Escrita de workshop (criar/editar/deletar) fica restrita a admin/usuário.
     Route::apiResource('workshops', WorkshopController::class)->except(['index', 'show']);
-    Route::apiResource('check-ins', CheckInController::class)->parameters(['check-ins' => 'checkIn']);
+    // Escrita de check-ins (criar/editar/deletar) fica restrita a admin/usuário.
+    Route::apiResource('check-ins', CheckInController::class)->except(['index', 'show'])->parameters(['check-ins' => 'checkIn']);
     Route::apiResource('assessments', AssessmentController::class);
 });
 

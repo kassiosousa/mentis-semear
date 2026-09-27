@@ -51,11 +51,12 @@ const MESSAGE_BY_API: Record<string, string> = {
 
 export function ThermometerPage() {
   const { token } = thermometerRoute.useParams();
+  const { setor } = thermometerRoute.useSearch();
 
   const company = usePublicCompany(token);
   const registerMood = useRegisterMoodEntry();
 
-  const [sectorId, setSectorId] = useState('');
+  const [chosenSector, setChosenSector] = useState<string | null>(null);
   const [mood, setMood] = useState<MoodScore | null>(null);
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -63,6 +64,8 @@ export function ThermometerPage() {
 
   const sectors = company.data?.sectors ?? [];
   const withoutSectors = company.isSuccess && sectors.length === 0;
+  const suggestedSector = sectors.some((sector) => sector.id === setor) ? String(setor) : '';
+  const sectorId = chosenSector ?? suggestedSector;
 
   const onSubmit: ComponentProps<'form'>['onSubmit'] = (event) => {
     event.preventDefault();
@@ -148,7 +151,7 @@ export function ThermometerPage() {
                 <Label htmlFor="mood-sector">Qual é o seu setor?</Label>
                 <Select
                   value={sectorId}
-                  onValueChange={setSectorId}
+                  onValueChange={setChosenSector}
                   disabled={registerMood.isPending || sectors.length === 0}
                 >
                   <SelectTrigger

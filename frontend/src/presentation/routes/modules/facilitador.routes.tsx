@@ -12,16 +12,6 @@ export const facilitadorDashboardRoute = createRoute({
   ),
 });
 
-export const facilitadorReportsRoute = createRoute({
-  getParentRoute: () => protectedRoute,
-  path: '/facilitador/relatorios',
-  beforeLoad: requireType('facilitador'),
-  component: lazyRouteComponent(
-    () => import('@/presentation/pages/facilitador/ReportsPage'),
-    'ReportsPage',
-  ),
-});
-
 export const facilitadorWorkshopRoute = createRoute({
   getParentRoute: () => protectedRoute,
   path: '/facilitador/oficinas/$id',

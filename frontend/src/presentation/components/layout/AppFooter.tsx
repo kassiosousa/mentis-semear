@@ -1,6 +1,8 @@
-export function AppFooter() {
+import { cn } from '@/lib/utils';
+
+export function AppFooter({ className }: { className?: string }) {
   return (
-    <footer className="border-t border-border bg-surface px-6 py-5">
+    <footer className={cn('border-t border-border bg-surface px-6 py-5', className)}>
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
         <img
           src="/assets/marca-sesi-azul.webp"

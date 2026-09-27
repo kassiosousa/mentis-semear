@@ -2,6 +2,7 @@ import {
   adminCompaniesRoute,
   adminCompanyReportRoute,
   adminDashboardRoute,
+  adminLogsRoute,
   adminReportsRoute,
   adminSectorDetailRoute,
   adminSectorsRoute,
@@ -19,7 +20,6 @@ import {
 } from '@/presentation/routes/modules/empresa.routes';
 import {
   facilitadorDashboardRoute,
-  facilitadorReportsRoute,
   facilitadorWorkshopRoute,
 } from '@/presentation/routes/modules/facilitador.routes';
 import {
@@ -47,12 +47,12 @@ export const routeTree = rootRoute.addChildren([
     workshopDetailRoute,
     adminReportsRoute,
     adminCompanyReportRoute,
+    adminLogsRoute,
     empresaDashboardRoute,
     empresaSectorsRoute,
     empresaSectorDetailRoute,
     empresaReportsRoute,
     facilitadorDashboardRoute,
-    facilitadorReportsRoute,
     facilitadorWorkshopRoute,
   ]),
 ]);

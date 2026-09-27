@@ -5,6 +5,7 @@ import {
   Layers,
   LayoutDashboard,
   LogOut,
+  ScrollText,
   Sprout,
   Users,
 } from 'lucide-react';
@@ -41,7 +42,6 @@ const EMPRESA_ITEMS: NavItem[] = [{ label: 'Setores', icon: Layers, to: '/empres
 const REPORTS_PATHS: Partial<Record<UserType, string>> = {
   admin: '/admin/relatorios',
   empresa: '/empresa/relatorios',
-  facilitador: '/facilitador/relatorios',
 };
 
 function menuItemsFor(type: UserType): NavItem[] {
@@ -61,9 +61,14 @@ function menuItemsFor(type: UserType): NavItem[] {
 function generalItemsFor(type: UserType): NavItem[] {
   const reportsPath = REPORTS_PATHS[type];
 
-  if (reportsPath === undefined) return [];
-
-  return [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath }];
+  return [
+    ...(reportsPath === undefined
+      ? []
+      : [{ label: 'Relatórios', icon: ChartColumn, to: reportsPath } satisfies NavItem]),
+    ...(type === 'admin'
+      ? [{ label: 'Logs', icon: ScrollText, to: '/admin/logs' } satisfies NavItem]
+      : []),
+  ];
 }
 
 function groupsFor(type: UserType): NavGroup[] {

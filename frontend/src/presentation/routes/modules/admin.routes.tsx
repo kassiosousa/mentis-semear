@@ -91,3 +91,10 @@ export const adminReportsRoute = createRoute({
     'ReportsPage',
   ),
 });
+
+export const adminLogsRoute = createRoute({
+  getParentRoute: () => protectedRoute,
+  path: '/admin/logs',
+  beforeLoad: requireType('admin'),
+  component: lazyRouteComponent(() => import('@/presentation/pages/admin/LogsPage'), 'LogsPage'),
+});

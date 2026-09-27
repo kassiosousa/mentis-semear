@@ -1,9 +1,16 @@
-import { BookOpen, Pencil } from 'lucide-react';
+import { BookOpen, Eye, Pencil } from 'lucide-react';
 import { useEffect, useState, type ComponentProps } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import type { DiaryInput } from '@/domain/diary/entities/Diary';
+import type { Diary, DiaryInput, DiaryPhotos, DiaryPhotoSlot } from '@/domain/diary/entities/Diary';
+import { photoRejection } from '@/domain/diary/entities/Diary';
 import { ValidationError } from '@/domain/shared/errors/AppError';
+import { DiaryPhotoField } from '@/presentation/components/diary/DiaryPhotoField';
+import { formatDiaryDateTime } from '@/presentation/components/diary/diaryFormat';
+import {
+  DiaryPreviewDialog,
+  type DiaryPreview,
+} from '@/presentation/components/diary/DiaryPreviewDialog';
 import { Button } from '@/presentation/components/ui/button';
 import {
   Card,
@@ -26,6 +33,10 @@ const schema = z.object({
   datetime: z.string().min(1, 'Informe a data e a hora.'),
 });
 
+const FIELD_BY_API: Record<string, string> = { file_1: 'photo1', file_2: 'photo2' };
+
+const EMPTY_PHOTOS: DiaryPhotos = { photo1: null, photo2: null };
+
 interface FormValues {
   title: string;
   description: string;
@@ -47,19 +58,6 @@ function toIso(local: string): string {
   return Number.isNaN(date.getTime()) ? local : date.toISOString();
 }
 
-function formatDateTime(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
-
-  return date.toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function DiarySection({
   workshopId,
   workshopDatetime,
@@ -73,7 +71,9 @@ export function DiarySection({
 
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState<FormValues>({ title: '', description: '', datetime: '' });
+  const [photos, setPhotos] = useState<DiaryPhotos>(EMPTY_PHOTOS);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [preview, setPreview] = useState<DiaryPreview | null>(null);
 
   const diary = query.data ?? null;
   const pending = createDiary.isPending || updateDiary.isPending;
@@ -87,6 +87,7 @@ export function DiarySection({
       description: diary?.description ?? '',
       datetime: toLocalInput(diary?.datetime ?? workshopDatetime),
     });
+    setPhotos(EMPTY_PHOTOS);
     setErrors({});
   }, [query.isSuccess, diary, workshopDatetime]);
 
@@ -94,16 +95,56 @@ export function DiarySection({
     setValues((current) => ({ ...current, [field]: value }));
   };
 
+  const savedPhotoUrl = (slot: DiaryPhotoSlot): string | null =>
+    (slot === 1 ? diary?.photo1Url : diary?.photo2Url) ?? null;
+
+  const selectPhoto = (slot: DiaryPhotoSlot, file: File | null) => {
+    const field = slot === 1 ? 'photo1' : 'photo2';
+    const rejection = file === null ? null : photoRejection(file);
+
+    setErrors((current) => ({ ...current, [field]: rejection ?? '' }));
+
+    if (rejection !== null) return;
+
+    setPhotos((current) => ({ ...current, [field]: file }));
+  };
+
   const onError = (error: Error) => {
     if (error instanceof ValidationError) {
       const fields: Record<string, string> = {};
       for (const [field, messages] of Object.entries(error.fields)) {
-        if (messages[0] !== undefined) fields[field] = messages[0];
+        if (messages[0] !== undefined) fields[FIELD_BY_API[field] ?? field] = messages[0];
       }
       setErrors(fields);
     }
 
     toast.error(error.message, { id: 'diary-form' });
+  };
+
+  const openFormPreview = () => {
+    setPreview({
+      diaryId: diary?.id ?? null,
+      title: values.title.trim(),
+      datetime: toIso(values.datetime),
+      description: values.description.trim(),
+      photo1: photos.photo1,
+      photo2: photos.photo2,
+      savedPhoto1Url: savedPhotoUrl(1),
+      savedPhoto2Url: savedPhotoUrl(2),
+    });
+  };
+
+  const openSavedPreview = (saved: Diary) => {
+    setPreview({
+      diaryId: saved.id,
+      title: saved.title,
+      datetime: saved.datetime,
+      description: saved.description,
+      photo1: null,
+      photo2: null,
+      savedPhoto1Url: saved.photo1Url,
+      savedPhoto2Url: saved.photo2Url,
+    });
   };
 
   const onSubmit: ComponentProps<'form'>['onSubmit'] = (event) => {
@@ -115,21 +156,32 @@ export function DiarySection({
       datetime: values.datetime,
     };
 
+    const next: Record<string, string> = {};
     const parsed = schema.safeParse(candidate);
 
     if (!parsed.success) {
-      const next: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
         const field = String(issue.path[0]);
         next[field] ??= issue.message;
       }
+    }
+
+    if (photos.photo1 === null && savedPhotoUrl(1) === null) {
+      next.photo1 = 'Envie a primeira foto do encontro.';
+    }
+
+    if (photos.photo2 === null && savedPhotoUrl(2) === null) {
+      next.photo2 = 'Envie a segunda foto do encontro.';
+    }
+
+    if (Object.keys(next).length > 0) {
       setErrors(next);
       return;
     }
 
     setErrors({});
 
-    const payload = { ...candidate, datetime: toIso(candidate.datetime) };
+    const payload = { ...candidate, datetime: toIso(candidate.datetime), ...photos };
 
     if (diary === null) {
       const input: DiaryInput = { workshopId, ...payload };
@@ -164,10 +216,15 @@ export function DiarySection({
           Diário da oficina
         </CardTitle>
         <CardDescription>
-          Registro do encontro. Cada oficina tem um único diário.
+          Relato e registro fotográfico do encontro. Cada oficina tem um único diário.
         </CardDescription>
         {diary !== null && !editing && (
-          <CardAction>
+          <CardAction className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => openSavedPreview(diary)}>
+              <Eye className="size-3.5" />
+              Visualizar diário
+            </Button>
+
             <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
               <Pencil className="size-3.5" />
               Editar
@@ -183,7 +240,7 @@ export function DiarySection({
 
         {query.isSuccess && !showForm && diary !== null && (
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground">{formatDateTime(diary.datetime)}</p>
+            <p className="text-xs text-muted-foreground">{formatDiaryDateTime(diary.datetime)}</p>
             <h3 className="font-medium text-title">{diary.title}</h3>
             <p className="text-sm whitespace-pre-wrap text-body">{diary.description}</p>
           </div>
@@ -234,6 +291,37 @@ export function DiarySection({
               )}
             </div>
 
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-1">
+                <Label>Fotos do encontro</Label>
+                <span className="text-xs text-muted-foreground">
+                  2 arquivos obrigatórios · JPEG, PNG ou PDF · até 5 MB cada
+                </span>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <DiaryPhotoField
+                  slot={1}
+                  diaryId={diary?.id ?? null}
+                  file={photos.photo1}
+                  savedUrl={savedPhotoUrl(1)}
+                  error={errors.photo1 === '' ? undefined : errors.photo1}
+                  disabled={pending}
+                  onSelect={(file) => selectPhoto(1, file)}
+                />
+
+                <DiaryPhotoField
+                  slot={2}
+                  diaryId={diary?.id ?? null}
+                  file={photos.photo2}
+                  savedUrl={savedPhotoUrl(2)}
+                  error={errors.photo2 === '' ? undefined : errors.photo2}
+                  disabled={pending}
+                  onSelect={(file) => selectPhoto(2, file)}
+                />
+              </div>
+            </div>
+
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               {diary !== null && (
                 <Button
@@ -246,6 +334,12 @@ export function DiarySection({
                   Cancelar
                 </Button>
               )}
+
+              <Button type="button" variant="outline" size="lg" onClick={openFormPreview}>
+                <Eye className="size-4" />
+                Visualizar diário
+              </Button>
+
               <Button type="submit" size="lg" disabled={pending}>
                 {pending ? 'Salvando…' : diary === null ? 'Registrar diário' : 'Salvar'}
               </Button>
@@ -253,6 +347,13 @@ export function DiarySection({
           </form>
         )}
       </CardContent>
+
+      <DiaryPreviewDialog
+        preview={preview}
+        onOpenChange={(open) => {
+          if (!open) setPreview(null);
+        }}
+      />
     </Card>
   );
 }

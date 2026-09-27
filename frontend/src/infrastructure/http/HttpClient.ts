@@ -5,6 +5,7 @@ export interface HttpRequestOptions {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   skipAuth?: boolean;
+  responseType?: 'blob';
 }
 
 export interface HttpClient {

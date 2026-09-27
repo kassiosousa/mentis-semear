@@ -44,7 +44,7 @@ function DateTimePicker({
   id,
   invalid = false,
   disabled = false,
-  portal = false,
+  portal = true,
 }: DateTimePickerProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -88,7 +88,7 @@ function DateTimePicker({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent portal={portal} className="p-0">
+        <PopoverContent portal={portal} className="z-[60] p-0">
           <Calendar mode="single" selected={selected} onSelect={onSelectDate} autoFocus />
         </PopoverContent>
       </Popover>

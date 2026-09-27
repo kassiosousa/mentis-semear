@@ -19,9 +19,18 @@ export const assessmentRoute = createRoute({
   ),
 });
 
+export interface ThermometerSearch {
+  setor?: number;
+}
+
 export const thermometerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/termometro/$token',
+  validateSearch: (search: Record<string, unknown>): ThermometerSearch => {
+    const setor = Number(search.setor);
+
+    return Number.isInteger(setor) && setor > 0 ? { setor } : {};
+  },
   component: lazyRouteComponent(
     () => import('@/presentation/pages/public/ThermometerPage'),
     'ThermometerPage',

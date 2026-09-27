@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import SplitText from '@/presentation/components/animations/SplitText';
+import { NotificationsBell } from '@/presentation/components/notification/NotificationsBell';
 
 interface PageHeadingProps {
   title: string;
@@ -32,7 +33,10 @@ export function PageHeading({ title, subtitle, children }: PageHeadingProps) {
         )}
       </div>
 
-      {children}
+      <div className="flex items-center gap-3">
+        {children}
+        <NotificationsBell className="hidden lg:grid" />
+      </div>
     </div>
   );
 }

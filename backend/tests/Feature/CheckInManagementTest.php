@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\UserType;
+use App\Models\CheckIn;
 use App\Models\Company;
 use App\Models\Sector;
 use App\Models\User;
@@ -46,10 +47,60 @@ final class CheckInManagementTest extends TestCase
         $this->getJson('/api/check-ins')->assertUnauthorized();
     }
 
-    public function test_facilitador_cannot_list_check_ins(): void
+    public function test_facilitador_reads_only_check_ins_of_workshops_it_facilitates(): void
     {
-        $token = $this->tokenFor(User::factory()->create(['type' => UserType::Facilitador]));
-        $this->withToken($token)->getJson('/api/check-ins')->assertForbidden();
+        $fac = User::factory()->create(['type' => UserType::Facilitador]);
+        $company = Company::create(['name' => 'ACME', 'address' => 'R', 'email' => 'ci@ex.com']);
+
+        // Oficina facilitada por ele + check-in.
+        $mine = Workshop::create(['company_id' => $company->id, 'user_creator_id' => $fac->id, 'user_facilitator_id' => $fac->id, 'datetime' => now(), 'address' => 'L']);
+        $ciMine = CheckIn::create($this->payload($mine, '11122233344'));
+
+        // Oficina de outro (facilitador diferente) + check-in.
+        $other = $this->workshop();
+        $ciOther = CheckIn::create($this->payload($other, '99988877766'));
+
+        $token = $this->tokenFor($fac);
+
+        // Lista: vê só o da própria oficina.
+        $list = $this->withToken($token)->getJson('/api/check-ins')->assertOk()->json('data');
+        $this->assertCount(1, $list);
+        $this->assertSame($ciMine->id, $list[0]['id']);
+
+        // Detalhe: o dele 200; o de outra oficina 403.
+        $this->withToken($token)->getJson("/api/check-ins/{$ciMine->id}")->assertOk();
+        $this->withToken($token)->getJson("/api/check-ins/{$ciOther->id}")->assertForbidden();
+
+        // Escrita continua bloqueada para facilitador.
+        $this->withToken($token)->postJson('/api/check-ins', $this->payload($mine, '88877766655'))->assertForbidden();
+        $this->withToken($token)->deleteJson("/api/check-ins/{$ciMine->id}")->assertForbidden();
+    }
+
+    public function test_empresa_reads_only_check_ins_of_its_company(): void
+    {
+        $mineCompany = Company::create(['name' => 'Mine', 'address' => 'R', 'email' => 'mine@ex.com']);
+        $otherCompany = Company::create(['name' => 'Other', 'address' => 'R', 'email' => 'other@ex.com']);
+        $creator = User::factory()->create();
+
+        $mineWorkshop = Workshop::create(['company_id' => $mineCompany->id, 'user_creator_id' => $creator->id, 'user_facilitator_id' => $creator->id, 'datetime' => now(), 'address' => 'L']);
+        $otherWorkshop = Workshop::create(['company_id' => $otherCompany->id, 'user_creator_id' => $creator->id, 'user_facilitator_id' => $creator->id, 'datetime' => now(), 'address' => 'L']);
+        $ciMine = CheckIn::create($this->payload($mineWorkshop, '11122233344'));
+        $ciOther = CheckIn::create($this->payload($otherWorkshop, '99988877766'));
+
+        $empresa = User::factory()->create(['type' => UserType::Empresa, 'company_id' => $mineCompany->id]);
+        $token = $this->tokenFor($empresa);
+
+        // Lista: só os da própria empresa.
+        $list = $this->withToken($token)->getJson('/api/check-ins')->assertOk()->json('data');
+        $this->assertCount(1, $list);
+        $this->assertSame($ciMine->id, $list[0]['id']);
+
+        // Detalhe: o da própria empresa 200; o de outra 403.
+        $this->withToken($token)->getJson("/api/check-ins/{$ciMine->id}")->assertOk();
+        $this->withToken($token)->getJson("/api/check-ins/{$ciOther->id}")->assertForbidden();
+
+        // Escrita bloqueada para empresa.
+        $this->withToken($token)->postJson('/api/check-ins', $this->payload($mineWorkshop, '88877766655'))->assertForbidden();
     }
 
     public function test_usuario_can_create_a_check_in_and_records_lgpd_consent(): void

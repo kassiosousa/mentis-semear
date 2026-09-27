@@ -18,13 +18,13 @@ import {
   CardTitle,
 } from '@/presentation/components/ui/card';
 import { Skeleton } from '@/presentation/components/ui/skeleton';
+import { useCompany } from '@/presentation/hooks/useCompanies';
 import { useMoodSummary } from '@/presentation/hooks/useMoodSummary';
 import { useSector } from '@/presentation/hooks/useSectors';
 
 interface SectorDetailProps {
   sectorId: number;
   scope: SectorScope;
-  companyName?: (id: number) => string;
   companies?: Company[];
 }
 
@@ -64,13 +64,22 @@ function Field({
   );
 }
 
-export function SectorDetail({ sectorId, scope, companyName, companies }: SectorDetailProps) {
+export function SectorDetail({ sectorId, scope, companies }: SectorDetailProps) {
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const sector = useSector(sectorId);
   const moods = useMoodSummary({ sectorId }, Number.isInteger(sectorId) && sectorId > 0);
+
+  const companyId = sector.data?.companyId;
+  const companyFromList = companies?.find((company) => company.id === companyId)?.name;
+  const company = useCompany(
+    companyId !== undefined && companyFromList === undefined ? companyId : undefined,
+  );
+
+  const resolvedCompanyName = companyFromList ?? company.data?.name;
+  const companyPending = resolvedCompanyName === undefined && company.isPending;
 
   const summary = moods.data;
   const peak =
@@ -104,7 +113,7 @@ export function SectorDetail({ sectorId, scope, companyName, companies }: Sector
             sector.data === undefined
               ? undefined
               : scope === 'admin'
-                ? (companyName?.(sector.data.companyId) ?? undefined)
+                ? resolvedCompanyName
                 : 'Setor da sua empresa.'
           }
         >
@@ -151,7 +160,7 @@ export function SectorDetail({ sectorId, scope, companyName, companies }: Sector
               </Field>
 
               <Field icon={Building2} label="Empresa">
-                {companyName?.(sector.data.companyId) ?? `Empresa #${sector.data.companyId}`}
+                {companyPending ? <Skeleton className="h-4 w-32" /> : (resolvedCompanyName ?? '—')}
               </Field>
 
               <Field icon={CalendarDays} label="Criado em">

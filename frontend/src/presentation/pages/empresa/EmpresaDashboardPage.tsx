@@ -3,8 +3,7 @@ import { moodLabel, moodScoreFromAverage } from '@/domain/mood/entities/MoodSumm
 import { StatCard } from '@/presentation/components/dashboard/panels';
 import { PageHeading } from '@/presentation/components/layout/PageHeading';
 import { MoodFaceScale } from '@/presentation/components/mood/MoodFace';
-import { ThermometerLinkCard } from '@/presentation/components/mood/ThermometerLinkCard';
-import { SectorsOverview } from '@/presentation/components/sector/SectorsOverview';
+import { SectorRatingsPanel } from '@/presentation/components/sector/SectorRatingsPanel';
 import { useMoodSummary } from '@/presentation/hooks/useMoodSummary';
 import { useSectors } from '@/presentation/hooks/useSectors';
 import { useCurrentUser } from '@/presentation/hooks/useSession';
@@ -21,8 +20,6 @@ export function EmpresaDashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeading title="Painel da Empresa" subtitle={`Bem-vindo, ${user?.name ?? ''}.`} />
-
-      <ThermometerLinkCard companyId={companyId} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
@@ -48,7 +45,7 @@ export function EmpresaDashboardPage() {
         />
       </div>
 
-      <SectorsOverview scope="empresa" companyId={companyId} />
+      <SectorRatingsPanel companyId={companyId} />
     </div>
   );
 }

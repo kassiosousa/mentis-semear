@@ -38,6 +38,7 @@ export class AxiosHttpClient implements HttpClient {
       headers: options.headers,
       signal: options.signal,
       skipAuth: options.skipAuth,
+      responseType: options.responseType,
     };
 
     const response = await this.instance.request<T>(config);
