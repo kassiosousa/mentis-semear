@@ -4,11 +4,15 @@ import { useCompanies } from '@/presentation/hooks/useCompanies';
 import { useUsers } from '@/presentation/hooks/useUsers';
 
 interface DirectoryOptions {
+  companies?: boolean;
   facilitators?: boolean;
 }
 
-export function useDirectory({ facilitators: withFacilitators = true }: DirectoryOptions = {}) {
-  const companiesQuery = useCompanies({ page: 1 });
+export function useDirectory({
+  companies: withCompanies = true,
+  facilitators: withFacilitators = true,
+}: DirectoryOptions = {}) {
+  const companiesQuery = useCompanies({ page: 1 }, withCompanies);
   const facilitatorsQuery = useUsers({ type: 'facilitador', page: 1 }, withFacilitators);
 
   const companies = useMemo(
