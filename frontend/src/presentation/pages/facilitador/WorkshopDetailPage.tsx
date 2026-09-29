@@ -66,10 +66,10 @@ export function WorkshopDetailPage() {
   const [qrTarget, setQrTarget] = useState<QrTarget | null>(null);
 
   const user = useCurrentUser();
-  const directory = useDirectory({ facilitators: false });
+  const directory = useDirectory({ companies: false, facilitators: false });
   const workshop = useWorkshop(workshopId);
-  const checkIns = useWorkshopCheckIns(workshopId);
-  const assessments = useWorkshopAssessments(workshopId);
+  const checkIns = useWorkshopCheckIns(workshopId, { silentError: true });
+  const assessments = useWorkshopAssessments(workshopId, { silentError: true });
 
   const thermometerLink =
     workshop.data === undefined ? null : directory.thermometerLink(workshop.data.companyId);

@@ -1,3 +1,5 @@
+import type { PublicSector } from '@/domain/company/entities/PublicCompany';
+
 export interface Workshop {
   id: number;
   companyId: number;
@@ -16,6 +18,7 @@ export interface PublicWorkshop {
   datetime: string;
   address: string;
   company: string;
+  sectors: PublicSector[];
 }
 
 export interface CheckIn {

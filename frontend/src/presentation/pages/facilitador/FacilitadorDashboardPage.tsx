@@ -14,7 +14,7 @@ export function FacilitadorDashboardPage() {
   const user = useCurrentUser();
   const [page, setPage] = useState(1);
 
-  const directory = useDirectory({ facilitators: false });
+  const directory = useDirectory({ companies: false, facilitators: false });
   const query = useWorkshops({ page });
 
   const mine = useMemo(() => {

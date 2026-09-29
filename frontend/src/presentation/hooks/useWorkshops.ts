@@ -58,18 +58,27 @@ export function useDeleteWorkshop() {
   });
 }
 
-export function useWorkshopCheckIns(id: number) {
+interface WorkshopRelationOptions {
+  silentError?: boolean;
+}
+
+export function useWorkshopCheckIns(id: number, { silentError = false }: WorkshopRelationOptions = {}) {
   return useQuery<CheckIn[]>({
     queryKey: workshopKeys.checkIns(id),
     queryFn: () => container.workshops.checkIns.execute(id),
     staleTime: 60_000,
+    meta: { silentError },
   });
 }
 
-export function useWorkshopAssessments(id: number) {
+export function useWorkshopAssessments(
+  id: number,
+  { silentError = false }: WorkshopRelationOptions = {},
+) {
   return useQuery<Assessment[]>({
     queryKey: workshopKeys.assessments(id),
     queryFn: () => container.workshops.assessments.execute(id),
     staleTime: 60_000,
+    meta: { silentError },
   });
 }

@@ -2,12 +2,10 @@ import { Link } from '@tanstack/react-router';
 import {
   Building2,
   ChartColumn,
-  CircleHelp,
   Layers,
   LayoutDashboard,
   LogOut,
   ScrollText,
-  Settings,
   Sprout,
   Users,
 } from 'lucide-react';
@@ -70,16 +68,16 @@ function generalItemsFor(type: UserType): NavItem[] {
     ...(type === 'admin'
       ? [{ label: 'Logs', icon: ScrollText, to: '/admin/logs' } satisfies NavItem]
       : []),
-    { label: 'Configurações', icon: Settings },
-    { label: 'Ajuda', icon: CircleHelp },
   ];
 }
 
 function groupsFor(type: UserType): NavGroup[] {
-  return [
+  const groups: NavGroup[] = [
     { label: 'Menu', items: menuItemsFor(type) },
     { label: 'Geral', items: generalItemsFor(type) },
   ];
+
+  return groups.filter((group) => group.items.length > 0);
 }
 
 const ITEM_BASE =

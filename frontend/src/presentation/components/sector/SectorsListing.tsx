@@ -14,9 +14,18 @@ import { Button } from '@/presentation/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/presentation/components/ui/card';
 import { Input } from '@/presentation/components/ui/input';
 import { Label } from '@/presentation/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/presentation/components/ui/select';
 import { Skeleton } from '@/presentation/components/ui/skeleton';
 import { useMoodSummary } from '@/presentation/hooks/useMoodSummary';
 import { useSectors } from '@/presentation/hooks/useSectors';
+
+const ALL_COMPANIES = 'todas';
 
 interface SectorsListingProps {
   scope: SectorScope;
@@ -36,9 +45,14 @@ export function SectorsListing({
   const [editing, setEditing] = useState<Sector | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [pendingDeletion, setPendingDeletion] = useState<Sector | null>(null);
+  const [companyFilter, setCompanyFilter] = useState(ALL_COMPANIES);
 
-  const query = useSectors({ companyId, page });
-  const moods = useMoodSummary({ companyId });
+  const canFilterByCompany = scope === 'admin' && companies !== undefined;
+  const selectedCompanyId =
+    companyId ?? (companyFilter === ALL_COMPANIES ? undefined : Number(companyFilter));
+
+  const query = useSectors({ companyId: selectedCompanyId, page });
+  const moods = useMoodSummary({ companyId: selectedCompanyId });
 
   const sectors = useMemo(() => query.data?.sectors ?? [], [query.data]);
   const visible = useMemo(
@@ -87,8 +101,35 @@ export function SectorsListing({
       </PageHeading>
 
       <Card>
-        <CardHeader className="border-b">
-          <div className="flex flex-col gap-1.5 sm:max-w-xs">
+        <CardHeader className="flex flex-col gap-3 border-b sm:flex-row sm:items-start">
+          {canFilterByCompany && (
+            <div className="flex w-full min-w-0 flex-col gap-1.5 sm:w-64">
+              <Label htmlFor="sector-company" className="text-xs text-muted-foreground">
+                Empresa
+              </Label>
+              <Select
+                value={companyFilter}
+                onValueChange={(next) => {
+                  setCompanyFilter(next);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger id="sector-company" className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_COMPANIES}>Todas</SelectItem>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={String(company.id)}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="flex w-full flex-col gap-1.5 sm:max-w-xs">
             <Label htmlFor="sector-search" className="text-xs text-muted-foreground">
               Buscar por nome
             </Label>

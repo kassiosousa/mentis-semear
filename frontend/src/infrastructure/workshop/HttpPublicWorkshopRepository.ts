@@ -20,6 +20,7 @@ interface PublicWorkshopApiModel {
   datetime: string;
   address: string;
   company: string;
+  sectors?: { id: number; name: string }[] | null;
 }
 
 function toPublicWorkshop(model: PublicWorkshopApiModel): PublicWorkshop {
@@ -28,6 +29,7 @@ function toPublicWorkshop(model: PublicWorkshopApiModel): PublicWorkshop {
     datetime: model.datetime,
     address: model.address,
     company: model.company,
+    sectors: (model.sectors ?? []).map((sector) => ({ id: sector.id, name: sector.name })),
   };
 }
 

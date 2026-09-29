@@ -40,7 +40,7 @@ import {
 } from '@/presentation/hooks/useWorkshops';
 import { workshopDetailRoute } from '@/presentation/routes/modules/admin.routes';
 
-const CHECKIN_COLUMNS = 7;
+const CHECKIN_COLUMNS = 6;
 
 function formatDateTime(value: string | null): string {
   if (value === null) return '—';
@@ -238,7 +238,6 @@ export function WorkshopDetailPage() {
               <TableRow className="hover:bg-transparent">
                 <TableHead className="pl-4">Nome</TableHead>
                 <TableHead>Cargo</TableHead>
-                <TableHead>Setor</TableHead>
                 <TableHead>E-mail</TableHead>
                 <TableHead>Telefone</TableHead>
                 <TableHead>LGPD</TableHead>
@@ -282,7 +281,6 @@ export function WorkshopDetailPage() {
                 <TableRow key={checkIn.id}>
                   <TableCell className="pl-4 font-medium text-title">{checkIn.name}</TableCell>
                   <TableCell className="text-muted-foreground">{checkIn.position ?? '—'}</TableCell>
-                  <TableCell className="text-muted-foreground">{checkIn.sector ?? '—'}</TableCell>
                   <TableCell className="text-muted-foreground">{checkIn.email ?? '—'}</TableCell>
                   <TableCell className="text-muted-foreground">{checkIn.celphone ?? '—'}</TableCell>
                   <TableCell>
